@@ -1,0 +1,77 @@
+{% extends 'base.html.j2' %}
+
+{% macro show_categories(categories) -%}
+	<li>
+		{% for category in categories %}
+		<ul>
+			<a href="{{ url_for('.sorts', category_id=category.id) }}">{{ category.name_de }}</a>
+			{% if category.children %}
+			{{ show_categories(category.children) }}
+			{% endif %}
+		</ul>
+		{% endfor %}
+	</li>
+{%- endmacro %}
+
+{% block body %}
+
+<div class="modal fade" id="confirm-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h5 class="modal-title"></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			</div>
+
+			<div class="modal-body">
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+				<a class="btn btn-danger btn-ok">Process</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+	<div class="col-xs-1"><button id="sidebarCollapse" class="btn btn-primary d-xs-block d-md-none" ><i class="fa fa-bars fa-2x"></i></button></div>
+	<div class="col-xs-11"><a class="navbar-brand col-xs-11 col-sm-3 col-md-2 mr-0" href="/">Lenticular Cloud</a></div>
+</nav>
+
+
+<div style="height: 40px"></div>
+<div class="container-fluid">
+	<div class="row">
+		{% if current_user.is_authenticated %}
+		<nav class="col-md-2 d-none d-md-block bg-light sidebar fixed-top">
+			<div class="sidebar-sticky active">
+				{#<a href="/"><img alt="logo" class="container-fluid" src="/static/images/dog_main_small.png"></a>#}
+				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.index') }}">{{ gettext('Account') }}</a></li>
+				<li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">{{ gettext('Logout') }}</a></li>
+				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.client_cert') }}">{{ gettext('Client Cert') }}</a></li>
+			</div>
+		</nav>
+		{% endif %}
+
+		<main class="col-md-9 ml-sm-auto col-lg-10 px-4" role="main">
+			<h1>{% block title %}{% endblock %}</h1>
+			<div class="card">
+				<div class="card-body mt-5 mb-5">
+					<div class="tab-content">
+						{% block content %}{% endblock %}
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
+</div>
+<div class="mt-5 row justify-content-center">
+	<footer>
+		<span class="text-muted">Render Time: {{ g.request_time() }}</span> | <span class="text-muted">{{ gettext('All right reserved. &copy;2019') }}</span>
+	</footer>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,17 @@
+pyop
+Flask
+gunicorn
+flask_babel
+flask_wtf
+flask_login
+flask_sqlalchemy
+
+ldap3
+ldap3_orm
+python-u2flib-server
+pyotp
+cryptography
+
+
+flask-debug
+

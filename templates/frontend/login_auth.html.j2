@@ -1,0 +1,13 @@
+{% extends 'frontend/base.html.j2' %}
+
+{% block title %}{{ gettext('Login') }}{% endblock %}
+
+{% block content %}
+
+{% for form in forms %}
+	{{ render_form(form) }}
+{% endfor %}
+
+
+{% endblock %}
+

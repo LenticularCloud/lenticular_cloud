@@ -1,0 +1,6 @@
+/venv
+/tmp
+/production.cfg
+/pki
+signing_key.pem
+node_modules

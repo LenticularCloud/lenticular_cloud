@@ -1,0 +1,101 @@
+{
+    "entries": [
+        {
+            "attributes": {
+                "dc": "example",
+                "o": [
+                    "example.org"
+                ],
+                "objectClass": [
+                    "top",
+                    "dcObject",
+                    "organization"
+                ]
+            },
+            "dn": "dc=example,dc=org",
+            "raw": {
+                "dc": [
+                    "example"
+                ],
+                "o": [
+                    "example.org"
+                ],
+                "objectClass": [
+                    "top",
+                    "dcObject",
+                    "organization"
+                ]
+            }
+        },
+        {
+            "attributes": {
+                "objectClass": [
+                    "top",
+                    "organizationalUnit"
+                ],
+                "ou": [
+                    "users"
+                ]
+            },
+            "dn": "ou=users,dc=example,dc=org",
+            "raw": {
+                "objectClass": [
+                    "top",
+                    "organizationalUnit"
+                ],
+                "ou": [
+                    "users"
+                ]
+            }
+        },
+        {
+            "attributes": {
+                "mail": [
+                    "tuxcoder@example.org"
+                ],
+                "masterPasswordEnable": false,
+                "objectClass": [
+                    "shadowAccount",
+                    "service"
+                ],
+                "uid": [
+                    "tuxcoder"
+                ],
+                "userPassword": [
+                    "{crypt}$6$rounds=60000$tardis=li73gGUfH$3CEo3QBsOL69bLFPy8v/t67FnDpf5qLAHIJiSYG.jDNgyev.pJDnxKd1fqaP.hPgdPcw2rvPkSordu.OQTpBj1",
+                    "{crypt}$6$rounds=60000$main+M6vIDjSu79a$OjvUAC.6JODDtx7dOxq/hOXe0m2eysvc19pOYHqUmvK9CHMEC9t1kvIxGafwQywiMis3tHF2nB0hbT3T2sVaz.",
+                    "{crypt}$6$rounds=60000$mi5=KtfUhqqFWtXZ$3PWk.f1LUMUUUIMI8WmL1ATDkRO9r2oaSya.kfrCtQgle2DFGAxm9eJfSEizzFqJYZHHHiIlsvwp143pl6bku.",
+                    "{crypt}$6$rounds=60000$tardis_g=RvPLkXK$ijZRuMw0RYXm6X.EF4EW.6ybQw9hx/byGvQk89zugsjSAN6TD4cig0F7rnqjefhAefZgG6N0ytEQZtAt7SPHZ/",
+                    "{crypt}$6$rounds=60000$blackbox=JRGZK5F$/0iXVMAaOpMEuAVrfg0xysJ5c5TzXBCBF7xuAPn8dkm65vobLZ8m.GWNU5Fmz61EWDFXaSTaWEw7gM5bcf4Qe/",
+                    "{crypt}$6$rounds=60000$tardis=bi62LDVv7$XvTlwgI1scbk/1VpkmwE3oqquEbzlOOWQPMsWXk25Ltwu8pKe6F3BH3lRWUuuhhrZm8azANw9RGN0HbcAdXD90",
+                    "{crypt}$6$rounds=60000$s2=CanQqwr5GT8vS$yFCT57z8nqprma96JKzs5q7.xuTN41FZ6tFGNTXoy4btnUcHc2V8smiTeLa6FckrwPjwKMXnhFXwlOboSQhXo."
+                ]
+            },
+            "dn": "uid=tuxcoder,ou=users,dc=example,dc=org",
+            "raw": {
+                "mail": [
+                    "tuxcoder@example.org"
+                ],
+                "masterPasswordEnable": [
+                    "FALSE"
+                ],
+                "objectClass": [
+                    "shadowAccount",
+                    "service"
+                ],
+                "uid": [
+                    "tuxcoder"
+                ],
+                "userPassword": [
+                    "{crypt}$6$rounds=60000$tardis=li73gGUfH$3CEo3QBsOL69bLFPy8v/t67FnDpf5qLAHIJiSYG.jDNgyev.pJDnxKd1fqaP.hPgdPcw2rvPkSordu.OQTpBj1",
+                    "{crypt}$6$rounds=60000$main+M6vIDjSu79a$OjvUAC.6JODDtx7dOxq/hOXe0m2eysvc19pOYHqUmvK9CHMEC9t1kvIxGafwQywiMis3tHF2nB0hbT3T2sVaz.",
+                    "{crypt}$6$rounds=60000$mi5=KtfUhqqFWtXZ$3PWk.f1LUMUUUIMI8WmL1ATDkRO9r2oaSya.kfrCtQgle2DFGAxm9eJfSEizzFqJYZHHHiIlsvwp143pl6bku.",
+                    "{crypt}$6$rounds=60000$tardis_g=RvPLkXK$ijZRuMw0RYXm6X.EF4EW.6ybQw9hx/byGvQk89zugsjSAN6TD4cig0F7rnqjefhAefZgG6N0ytEQZtAt7SPHZ/",
+                    "{crypt}$6$rounds=60000$blackbox=JRGZK5F$/0iXVMAaOpMEuAVrfg0xysJ5c5TzXBCBF7xuAPn8dkm65vobLZ8m.GWNU5Fmz61EWDFXaSTaWEw7gM5bcf4Qe/",
+                    "{crypt}$6$rounds=60000$tardis=bi62LDVv7$XvTlwgI1scbk/1VpkmwE3oqquEbzlOOWQPMsWXk25Ltwu8pKe6F3BH3lRWUuuhhrZm8azANw9RGN0HbcAdXD90",
+                    "{crypt}$6$rounds=60000$s2=CanQqwr5GT8vS$yFCT57z8nqprma96JKzs5q7.xuTN41FZ6tFGNTXoy4btnUcHc2V8smiTeLa6FckrwPjwKMXnhFXwlOboSQhXo."
+                ]
+            }
+        }
+    ]
+}
