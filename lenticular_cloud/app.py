@@ -1,5 +1,5 @@
 from flask.app import Flask
-from flask import g
+from flask import g, redirect
 from flask.helpers import url_for
 from jwkest.jwk import RSAKey, rsa_load
 from flask_babel import Babel
@@ -171,3 +171,7 @@ def init_login_manager(app):
     @app.login_manager.request_loader
     def request_loader(request):
         pass
+
+    @app.login_manager.unauthorized_handler
+    def unauthorized():
+        return redirect(url_for('auth.login'))
