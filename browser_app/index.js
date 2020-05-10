@@ -32,6 +32,12 @@ function randBase32() {
 	return result;
 }
 
+window.$(document).ready(function () {
+	$('#sidebarCollapse').on('click', function () {
+		$('nav.sidebar').toggleClass('d-none');
+	});
+});
+
 
 window.totp = {
 	init_list: function(){
