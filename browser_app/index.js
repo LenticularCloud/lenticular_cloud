@@ -109,7 +109,7 @@ window.client_cert = {
 					var keypair = form.data('keypair');
 					var p12Asn1;
 					if (password == '') {
-						p12Asn1 = pkcs12.toPkcs12Asn1(keypair.privateKey, certs, null); // without password
+						p12Asn1 = pkcs12.toPkcs12Asn1(keypair.privateKey, certs, null, {algorithm: '3des'}); // without password
 					} else {
 						p12Asn1 = pkcs12.toPkcs12Asn1(keypair.privateKey, certs, password, {algorithm: '3des'}); // without password
 					}
