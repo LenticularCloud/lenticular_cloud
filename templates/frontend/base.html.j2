@@ -44,6 +44,14 @@
 <div style="height: 40px"></div>
 <div class="container-fluid">
 	<div class="row">
+		{% for message in get_flashed_messages() %}
+		<div class="alert alert-warning">
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
+			{{ message }}
+		</div>
+		{% endfor %}
+	</div>
+	<div class="row">
 		{% if current_user.is_authenticated %}
 		<nav class="col-md-2 d-none d-md-block bg-light sidebar fixed-top">
 			<div class="sidebar-sticky active">
@@ -51,6 +59,7 @@
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.index') }}">{{ gettext('Account') }}</a></li>
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">{{ gettext('Logout') }}</a></li>
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.client_cert') }}">{{ gettext('Client Cert') }}</a></li>
+				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.totp') }}">{{ gettext('2FA - TOTP') }}</a></li>
 			</div>
 		</nav>
 		{% endif %}

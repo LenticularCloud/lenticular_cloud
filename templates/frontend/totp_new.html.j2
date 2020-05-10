@@ -1,0 +1,20 @@
+{% extends 'frontend/base.html.j2' %}
+
+{% block title %}{{ gettext('2FA - TOTP - New') }}{% endblock %}
+
+{% block content %}
+
+{{ render_form(form) }}
+
+<div id="svg-container">
+</div>
+
+{% endblock %}
+
+
+{% block script_js %}
+
+totp.init_new();
+
+
+{% endblock %}

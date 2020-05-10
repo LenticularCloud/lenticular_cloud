@@ -19,8 +19,43 @@ function ab2str(buf) {
 }
 
 
+function randBase32() {
+	// src: https://en.wikipedia.org/wiki/Base32 RFC4648
+	const alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y','Z','2', '3', '4', '5', '6', '7'];
+	var result = '';
+	var buf = new Uint8Array(1);
+	for ( var i = 0; i < 16; i++ ) {
+		window.crypto.getRandomValues(buf);
+		var rand_val = buf[0] & 31;
+		result += alphabet[rand_val];
+	}
+	return result;
+}
+
+
 window.totp = {
-	init: function() {
+	init_list: function(){
+	},
+	init_new: function() {
+		//create new TOTP secret, create qrcode and ask for token.
+		var form = $('form');
+		var secret = randBase32();
+		var input_secret = form.find('#secret')
+		if(input_secret.val() == '') {
+			input_secret.val(secret);
+		}
+
+		form.find('#name').on('change',window.totp.generate_qrcode);
+		window.totp.generate_qrcode();
+	},
+	generate_qrcode: function(){
+		var form = $('form');
+		var secret = form.find('#secret').val();
+		var name = form.find('#name').val();
+		var issuer = 'Lenticular%20Cloud';
+		var svg_container = $('#svg-container')
+		var svg = new QRCode(`otpauth://totp/${issuer}:${name}?secret=${secret}&issuer=${issuer}`).svg();
+		svg_container.html(svg);
 	}
 }
 

@@ -1,0 +1,35 @@
+{% extends 'frontend/base.html.j2' %}
+
+{% block title %}{{ gettext('2FA - TOTP') }}{% endblock %}
+
+{% block content %}
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>name</th>
+			<th>created_at</th>
+			<th>action<th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for totp in current_user.totps %}
+		<tr>
+			<td>{{ totp.name }}</td>
+			<td>{{ totp.created_at }}</td>
+			<td>{{ render_form(delete_form, action_url=url_for('frontend.totp_delete', totp_name=totp.name)) }}</td>
+		{% endfor %}
+</table>
+<a class="btn btn-default" href="{{ url_for('frontend.totp_new') }}">
+	New TOTP
+</a>
+
+{% endblock %}
+
+
+{% block script_js %}
+
+totp.init_list();
+
+
+{% endblock %}

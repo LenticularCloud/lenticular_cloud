@@ -3,11 +3,10 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextField, \
         TextAreaField, PasswordField, IntegerField, FloatField, \
         DateTimeField, DateField, FormField, BooleanField, \
-        SelectField, Form as NoCsrfForm
+        SelectField, Form as NoCsrfForm, HiddenField
 from wtforms.widgets.html5 import NumberInput, DateInput
-from wtforms.validators import DataRequired, NumberRange, Optional, NoneOf, Length
-from datetime import datetime
-
+from wtforms.validators import DataRequired, NumberRange, \
+        Optional, NoneOf, Length
 
 
 class ClientCertForm(FlaskForm):
@@ -22,3 +21,14 @@ class ClientCertForm(FlaskForm):
                 NumberRange(min=1, max=365*2)
             ])
     submit = SubmitField(gettext('Submit'))
+
+
+class TOTPForm(FlaskForm):
+    secret = HiddenField(gettext('totp-Secret'))
+    token = TextField(gettext('totp-verify token'))
+    name = TextField(gettext('name'))
+    submit = SubmitField(gettext('Activate'))
+
+
+class TOTPDeleteForm(FlaskForm):
+    submit = SubmitField(gettext('Delete'))

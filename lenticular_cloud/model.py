@@ -7,6 +7,10 @@ from flask_login import UserMixin
 from ldap3.core.exceptions import LDAPSessionTerminatedByServerError
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
+from collections.abc import MutableSequence
+from datetime import datetime
+import pyotp
+import json
 
 ldap_conn = None  # type: Connection
 base_dn = ''
@@ -160,11 +164,78 @@ class Certificate(object):
     def __str__(self):
         return f'Certificate(cn={self._cn}, ca_name={self._ca_name}, not_valid_before={self.not_valid_before}, not_valid_after={self.not_valid_after})'
 
+
+class Totp(object):
+
+    def __init__(self, name, secret, created_at=datetime.now()):
+        self._secret = secret
+        self._name = name
+        self._created_at = created_at
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def created_at(self):
+        return self._created_at
+
+    def verify(self, token: str):
+        totp = pyotp.TOTP(self._secret)
+        return totp.verify(token)
+
+    def to_dict(self):
+        return {
+                'secret': self._secret,
+                'name': self._name,
+                'created_at': int(self._created_at.timestamp())}
+
+    @staticmethod
+    def from_dict(data):
+        return Totp(
+                name=data['name'],
+                secret=data['secret'],
+                created_at=datetime.fromtimestamp(data['created_at']))
+
+
+class TotpList(MutableSequence):
+    def __init__(self, ldap_attr):
+        super().__init__()
+        self._ldap_attr = ldap_attr
+
+    def __getitem__(self, ii):
+        return Totp.from_dict(json.loads(self._ldap_attr[ii]))
+
+    def __setitem__(self, ii, val: Totp):
+        self._ldap_attr[ii] = json.dumps(val.to_dict()).encode()
+
+    def __len__(self):
+        return len(self._ldap_attr)
+
+    def __delitem__(self, ii):
+        del self._ldap_attr[ii]
+
+    def delete(self, totp_name):
+        for i in range(len(self)):
+            if self[i].name == totp_name:
+                self._ldap_attr.delete(self._ldap_attr[i])
+
+    def insert(self, ii, val):
+        self.append(val)
+
+    def append(self, val):
+        self._ldap_attr.add(json.dumps(val.to_dict()).encode())
+
+
 class User(EntryBase):
 
     dn = "uid={uid},{base_dn}"
     base_dn = "ou=users,{_base_dn}"
     object_classes = ["top", "inetOrgPerson", "LenticularUser"]
+
+    def __init__(self, ldap_object=None, **kwargs):
+        super().__init__(ldap_object, **kwargs)
+        self._totp_list = TotpList(ldap_object.totpSecret)
 
     @property
     def is_authenticated(self):
@@ -172,6 +243,10 @@ class User(EntryBase):
 
     def get(self, key):
         print(f'getitem: {key}')
+
+    def make_writeable(self):
+        self._ldap_object = self._ldap_object.entry_writable()
+        self._totp_list = TotpList(self._ldap_object.totpSecret)
 
     @property
     def entry_dn(self):
@@ -219,7 +294,7 @@ class User(EntryBase):
 
     @property
     def totps(self):
-        return ['JBSWY3DPEHPK3PXP']
+        return self._totp_list
 
     class _query(EntryBase._query):
         def by_username(self, username) -> 'User':

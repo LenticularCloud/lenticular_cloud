@@ -19,11 +19,12 @@ from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.utils import redirect
 import logging
 from datetime import timedelta
+import pyotp
 
 
-from ..model import User, SecurityUser
+from ..model import User, SecurityUser, Totp
 from ..form.login import LoginForm
-from ..form.frontend import ClientCertForm
+from ..form.frontend import ClientCertForm, TOTPForm, TOTPDeleteForm
 from ..auth_providers import AUTH_PROVIDER_LIST
 
 
@@ -68,7 +69,7 @@ def client_cert_new(service_name):
                 service,
                 form.data['publickey'],
                 valid_time=valid_time)
-        return jsonify( {
+        return jsonify({
                 'status': 'ok',
                 'data': {
                     'cert': cert.pem(),
@@ -88,6 +89,38 @@ def client_cert_new(service_name):
 @frontend_views.route('/totp')
 @login_required
 def totp():
-    return render_template('frontend/totp.html.j2')
+    delete_form = TOTPDeleteForm()
+    return render_template('frontend/totp.html.j2', delete_form=delete_form)
 
 
+@frontend_views.route('/totp/new', methods=['GET','POST'])
+@login_required
+def totp_new():
+    form = TOTPForm()
+
+    if form.validate_on_submit():
+        totp = Totp(name=form.data['name'], secret=form.data['secret'])
+        if totp.verify(form.data['token']):
+            current_user.make_writeable()
+            current_user.totps.append(totp)
+            current_user._ldap_object.entry_commit_changes()
+            return jsonify({
+                    'status': 'ok'})
+        else:
+            return jsonify({
+                'status': 'error',
+                'errors': [
+                    'TOTP Token invalid'
+                    ]})
+    return render_template('frontend/totp_new.html.j2', form=form)
+
+
+@frontend_views.route('/totp/<totp_name>/delete', methods=['GET','POST'])
+@login_required
+def totp_delete(totp_name):
+    current_user.make_writeable()
+    current_user.totps.delete(totp_name)
+    current_user._ldap_object.entry_commit_changes()
+
+    return jsonify({
+            'status': 'ok'})

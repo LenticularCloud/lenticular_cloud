@@ -61,8 +61,10 @@ class TotpAuthProvider(AuthProvider):
         data = form.data['totp']
         if data is not None:
             print(f'data totp: {data}')
+            if len(user.totps) == 0:  # migration, TODO remove
+                return True
             for totp in user.totps:
-                if pyotp.TOTP(totp).verify(data):
+                if totp.verify(data):
                     return True
         return False
 

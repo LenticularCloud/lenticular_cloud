@@ -89,7 +89,7 @@ def init_oidc_provider(app):
 
         def get_claims_for(self, user_id, requested_claims):
             user = self[user_id]
-            print(f'user {user.username}')
+            print(f'user {user.username} {requested_claims}')
             claims = {}
             for claim in requested_claims:
                 if claim == 'name':
