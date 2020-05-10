@@ -86,8 +86,8 @@ class Pki(object):
         ca_public_key = ca_private_key.public_key()
         end_entity_cert_builder = x509.CertificateBuilder().\
             subject_name(x509.Name([
-                x509.NameAttribute(NameOID.COMMON_NAME, username),
-                x509.NameAttribute(NameOID.EMAIL_ADDRESS, f'{username}@jabber.{domain}'),
+                x509.NameAttribute(NameOID.COMMON_NAME, config['cn'].format(username=username, domain=domain)),
+                x509.NameAttribute(NameOID.EMAIL_ADDRESS, config['email'].format(username=username, domain=domain)),
             ])).\
             issuer_name(ca_cert.subject).\
             not_valid_before(not_valid_before).\

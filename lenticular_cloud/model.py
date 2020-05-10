@@ -113,7 +113,7 @@ class Service(object):
         if 'client_cert' in config:
             service._client_cert = bool(config['client_cert'])
         if 'pki_config' in config:
-            service._pki_config = config['pki_config']
+            service._pki_config.update(config['pki_config'])
 
         return service
 
