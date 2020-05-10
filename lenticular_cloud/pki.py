@@ -123,7 +123,18 @@ class Pki(object):
                 critical=False).\
             add_extension(
                 x509.SubjectKeyIdentifier.from_public_key(_public_key),
+                critical=False).\
+            add_extension(
+                x509.AuthorityInformationAccess([
+                    x509.AccessDescription(
+                        access_method=x509.AuthorityInformationAccessOID.CA_ISSUERS,
+                        access_location=x509.UniformResourceIdentifier(f'https://www.{self._domain}')),
+                    x509.AccessDescription(
+                        access_method=x509.AuthorityInformationAccessOID.OCSP,
+                        access_location=x509.UniformResourceIdentifier(f'http://ocsp.{self._domain}/{ca_name}/'))
+                    ]),
                 critical=False)
+
         end_entity_cert = end_entity_cert_builder.\
             sign(
                 private_key=ca_private_key,
@@ -203,23 +214,6 @@ class Pki(object):
                 add_extension(
                     x509.SubjectKeyIdentifier.from_public_key(ca_public_key),
                     critical=False).\
-                add_extension(
-                    x509.CRLDistributionPoints([
-                            x509.DistributionPoint(
-                                full_name=[x509.UniformResourceIdentifier(f'http://crl.{self._domain}/{ca_name}.crl')],
-                                relative_name=None, crl_issuer=None, reasons=None)
-                        ]),
-                    critical=False).\
-                add_extension(
-                    x509.AuthorityInformationAccess([
-                        x509.AccessDescription(
-                            access_method=x509.AuthorityInformationAccessOID.CA_ISSUERS,
-                            access_location=x509.UniformResourceIdentifier(f'https://www.{self._domain}')),
-                        x509.AccessDescription(
-                            access_method=x509.AuthorityInformationAccessOID.OCSP,
-                            access_location=x509.UniformResourceIdentifier(f'http://ocsp.{self._domain}'))
-                        ]),
-                    critical=True).\
                 sign(
                     private_key=ca_private_key,
                     algorithm=hashes.SHA256(),
