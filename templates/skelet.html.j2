@@ -4,12 +4,12 @@
     <meta charset="utf-8" />
     <title>{% block title %}{% endblock %} - Lenticular Cloud</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="/static/main.css" />
+    <link rel="stylesheet" href="/static/main.css?v={{ GIT_HASH }}" />
     {% block head %}{% endblock %}
 </head>
 <body>
 {% block body %}{% endblock %}
-<script type="application/javascript" src="/static/main.js" ></script>
+<script type="application/javascript" src="/static/main.js?v={{ GIT_HASH }}" ></script>
 <script type="application/javascript" >
 {% block script_js %}{% endblock %}
 </script>

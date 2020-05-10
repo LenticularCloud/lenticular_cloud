@@ -5,6 +5,7 @@ from jwkest.jwk import RSAKey, rsa_load
 from flask_babel import Babel
 from flask_login import LoginManager
 import time
+import subprocess
 
 from pyop.authz_state import AuthorizationState
 from pyop.provider import Provider
@@ -15,6 +16,12 @@ from ldap3 import Connection, Server, ALL
 from . import model
 from .pki import Pki
 
+
+def get_git_hash():
+    try:
+        return subprocess.check_output(['git', 'rev-parse', 'HEAD'])[:10].decode()
+    except Exception:
+        return ''
 
 def init_oidc_provider(app):
     with app.app_context():
@@ -126,6 +133,8 @@ def oidc_provider_init_app(name=None):
     app = Flask(name)
     app.config.from_pyfile('application.cfg')
     app.config.from_pyfile('production.cfg')
+
+    app.jinja_env.globals['GIT_HASH'] = get_git_hash()
 
     #app.ldap_orm = Connection(app.config['LDAP_URL'], app.config['LDAP_BIND_DN'], app.config['LDAP_BIND_PW'], auto_bind=True)
     server = Server(app.config['LDAP_URL'], get_info=ALL)
