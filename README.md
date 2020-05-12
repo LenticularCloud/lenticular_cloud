@@ -31,8 +31,8 @@ TODO
 Tested Services
 ---------------
 
-* ~~GitTea (OpenId)~~
-* ~~Seafile (OpenId)~~
-* ~~Postfix/Dovecot (Oauth/client cert)~~
-* ~~prosody (client cert)~~
+* GitTea (OAuth2)
+* Seafile (OAtuh2)
+* ~~Postfix~~/Dovecot (~~Oauth2~~/client cert/password)
+* prosody (client cert/~~password~~)
 
