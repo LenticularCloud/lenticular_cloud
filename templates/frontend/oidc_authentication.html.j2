@@ -6,9 +6,13 @@
 
 <div class="container">
 	<p>
-	A service ask for access to your account data.<br>
-
-	You can confirm this pressing "Continue"
+		A service ask for access to your account data.<br>
+	</p>
+	<p>
+		<b> Requested Scopes: {{ auth_req['scope'] }}</b>
+	</p>
+	<p>
+		You can confirm this pressing "Continue"
 	</p>
 
 	{{ render_form(form) }}

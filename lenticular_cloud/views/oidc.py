@@ -33,7 +33,9 @@ def registration_endpoint():
 @login_required
 def authentication_endpoint_confirm():
     form = OidcAuthenticationConfirm()
-    return render_template('frontend/oidc_authentication.html.j2', form=form)
+    auth_req = current_app.provider.parse_authentication_request(urlencode(flask.request.args),
+                                                                     flask.request.args)
+    return render_template('frontend/oidc_authentication.html.j2', form=form, auth_req=auth_req)
 
 
 @oidc_provider_views.route('/authentication', methods=['POST'])
