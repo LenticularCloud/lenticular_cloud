@@ -48,9 +48,13 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query().by_username(form.data['name'])
-        session['username'] = str(user.username)
+        if user:
+            session['username'] = str(user.username)
+        else:
+            session['user'] = None
         session['auth_providers'] = []
         return redirect(url_for('auth.login_auth', next=flask.request.args.get('next')))
+        
     return render_template('frontend/login.html.j2', form=form)
 
 
@@ -78,8 +82,8 @@ def login_auth():
             _host_url = urlparse(request.url)
             if _next_url.scheme == _host_url.scheme and _next_url.netloc == _host_url.netloc :
                 _next = _next_url.geturl()
-        except Exception as e:
-            raise e
+        except TypeError:
+            _next = None
         return redirect(_next or url_for('frontend.index'))
     return render_template('frontend/login_auth.html.j2', forms=auth_forms)
 
