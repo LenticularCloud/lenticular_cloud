@@ -4,9 +4,21 @@
 
 {% block content %}
 
-{% for form in forms %}
-	{{ render_form(form) }}
-{% endfor %}
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  {% for auth_name in forms.keys() %}
+	<li class="nav-item">
+		<a class="nav-link{{' active' if loop.first else ''}}" id="home-tab" data-toggle="tab" href="#{{ auth_name }}" role="tab" aria-controls="home" aria-selected="true">{{ gettext(auth_name) }}</a>
+	</li>
+  {% endfor %}
+</ul>
+<div class="tab-content" id="myTabContent">
+	{% for auth_name, form in forms.items() %}
+	<div class="tab-pane fade{{ ' show active' if loop.first else '' }}" id="{{ auth_name }}" role="tabpanel" aria-labelledby="{{ auth_name }}-tab">
+
+		{{ render_form(form) }}
+	</div>
+	{% endfor %}
+</div>
 
 
 {% endblock %}

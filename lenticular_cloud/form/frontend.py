@@ -32,3 +32,7 @@ class TOTPForm(FlaskForm):
 
 class TOTPDeleteForm(FlaskForm):
     submit = SubmitField(gettext('Delete'))
+
+
+class OidcAuthenticationConfirm(FlaskForm):
+    submit = SubmitField(gettext('Continue'))

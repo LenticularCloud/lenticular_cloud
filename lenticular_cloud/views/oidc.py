@@ -1,7 +1,7 @@
 from urllib.parse import urlencode, parse_qs
 
 import flask
-from flask import Blueprint, redirect
+from flask import Blueprint, redirect, request
 from flask import current_app, session
 from flask import jsonify
 from flask.helpers import make_response
@@ -13,6 +13,8 @@ from pyop.access_token import AccessToken, BearerTokenError
 from pyop.exceptions import InvalidAuthenticationRequest, InvalidAccessToken, InvalidClientAuthentication, OAuthError, \
     InvalidSubjectIdentifier, InvalidClientRegistrationRequest
 from pyop.util import should_fragment_encode
+
+from ..form.frontend import OidcAuthenticationConfirm
 
 oidc_provider_views = Blueprint('oidc_provider', __name__, url_prefix='')
 
@@ -29,10 +31,17 @@ def registration_endpoint():
 
 @oidc_provider_views.route('/authentication', methods=['GET'])
 @login_required
+def authentication_endpoint_confirm():
+    form = OidcAuthenticationConfirm()
+    return render_template('frontend/oidc_authentication.html.j2', form=form)
+
+
+@oidc_provider_views.route('/authentication', methods=['POST'])
+@login_required
 def authentication_endpoint():
     # parse authentication request
-    print(flask.request)
-    print(flask.request.headers)
+    print(request)
+    print(request.headers)
     try:
         auth_req = current_app.provider.parse_authentication_request(urlencode(flask.request.args),
                                                                      flask.request.args)
@@ -45,7 +54,7 @@ def authentication_endpoint():
             # show error to user
             return make_response('Something went wrong: {}'.format(str(e)), 400)
 
-    # automagic authentication
+    # automatically authentication
     authn_response = current_app.provider.authorize(auth_req, str(current_user.username))
     response_url = authn_response.request(auth_req['redirect_uri'], should_fragment_encode(auth_req))
     return redirect(response_url, 303)

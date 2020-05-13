@@ -1,0 +1,17 @@
+{% extends 'frontend/base.html.j2' %}
+
+{% block title %}{{ gettext('Oauth2 Request') }}{% endblock %}
+
+{% block content %}
+
+<div class="container">
+	<p>
+	A service ask for access to your account data.<br>
+
+	You can confirm this pressing "Continue"
+	</p>
+
+	{{ render_form(form) }}
+</div>
+
+{% endblock %}

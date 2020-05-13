@@ -144,9 +144,9 @@ def oidc_provider_init_app(name=None):
 
     app.babel = Babel(app)
     app.login_manager = LoginManager(app)
-    init_login_manager(app)
 
-    from .views import oidc_provider_views, auth_views, frontend_views
+    from .views import oidc_provider_views, auth_views, frontend_views, init_login_manager
+    init_login_manager(app)
     app.register_blueprint(oidc_provider_views)
     app.register_blueprint(auth_views)
     app.register_blueprint(frontend_views)
@@ -171,16 +171,3 @@ def oidc_provider_init_app(name=None):
 
     return app
 
-
-def init_login_manager(app):
-    @app.login_manager.user_loader
-    def user_loader(username):
-        return model.User.query().by_username(username)
-
-    @app.login_manager.request_loader
-    def request_loader(request):
-        pass
-
-    @app.login_manager.unauthorized_handler
-    def unauthorized():
-        return redirect(url_for('auth.login'))
