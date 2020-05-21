@@ -1,4 +1,3 @@
-pyop
 Flask
 gunicorn
 flask_babel
@@ -12,6 +11,10 @@ python-u2flib-server
 pyotp
 cryptography
 
+requests
+requests_oauthlib
+blinker
+ory-hydra-client
 
 flask-debug
 

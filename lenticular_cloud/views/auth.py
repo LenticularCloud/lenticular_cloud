@@ -20,31 +20,44 @@ from werkzeug.utils import redirect
 import logging
 from urllib.parse import urlparse
 from base64 import b64decode, b64encode
+import http
 
 from ..model import User, SecurityUser
+from ..model_db import db, User as DbUser
 from ..form.login import LoginForm
 from ..auth_providers import AUTH_PROVIDER_LIST
-from .oidc import do_logout
 
 
-auth_views = Blueprint('auth', __name__, url_prefix='')
+auth_views = Blueprint('auth', __name__, url_prefix='/auth')
 
+@auth_views.route('/consent', methods=['GET', 'POST'])
+def consent():
+    """Always grant consent."""
+    # DUMMPY ONLY
 
-def init_login_manager(app):
-    @app.login_manager.user_loader
-    def user_loader(username):
-        return User.query().by_username(username)
+    remember_me = True
+    remember_for = 60*60*24*7 # remember for 7 days
 
-    @app.login_manager.request_loader
-    def request_loader(request):
-        pass
-
-    @app.login_manager.unauthorized_handler
-    def unauthorized():
-        return redirect(url_for('auth.login', next=b64encode(request.url.encode())))
+    consent_request = current_app.hydra_api.get_consent_request(request.args['consent_challenge'])
+    requested_scope = consent_request.requested_scope
+    resp = current_app.hydra_api.accept_consent_request(consent_request.challenge, body={
+        'grant_scope': requested_scope,
+        'remember': remember_me,
+        'remember_for': remember_for,
+        })
+    return redirect(resp.redirect_to)
 
 @auth_views.route('/login', methods=['GET', 'POST'])
 def login():
+    login_challenge = request.args.get('login_challenge')
+    login_request = current_app.hydra_api.get_login_request(login_challenge)
+
+
+    if login_request.skip:
+        resp = current_app.hydra_api.accept_login_request(
+            login_challenge,
+            body={'subject': login_request.subject})
+        return redirect(resp.redirect_to)
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query().by_username(form.data['name'])
@@ -53,13 +66,14 @@ def login():
         else:
             session['user'] = None
         session['auth_providers'] = []
-        return redirect(url_for('auth.login_auth', next=flask.request.args.get('next')))
-        
+        return redirect(url_for('auth.login_auth', login_challenge=login_challenge))
     return render_template('frontend/login.html.j2', form=form)
 
 
 @auth_views.route('/login/auth', methods=['GET', 'POST'])
 def login_auth():
+    login_challenge = request.args.get('login_challenge')
+    login_request = current_app.hydra_api.get_login_request(login_challenge)
     if 'username' not in session:
         return redirect(url_for('auth.login'))
     auth_forms = {}
@@ -74,6 +88,21 @@ def login_auth():
             auth_forms[auth_provider.get_name()]=form
 
     if len(session['auth_providers']) >= 2:
+        remember_me = True
+        db_user = DbUser.query.filter(DbUser.username == session['username']).one_or_none()
+        if db_user is None:
+            db_user = DbUser(username=session['username'])
+            db.session.add(db_user)
+            db.session.commit()
+
+        subject = db_user.id
+
+        resp = current_app.hydra_api.accept_login_request(
+            login_challenge, body={
+                'subject': subject,
+                'remember': remember_me})
+        return redirect(resp.redirect_to)
+
         login_user(SecurityUser(session['username']))
         # TODO use this var
         _next = None
@@ -89,9 +118,10 @@ def login_auth():
 
 
 @auth_views.route("/logout")
-@login_required
 def logout():
-    logout_user()
-    do_logout()
-    return redirect(url_for('.login'))
+    logout_challenge = request.args.get('logout_challenge')
+    logout_request = current_app.hydra_api.get_logout_request(logout_challenge)
+    resp = current_app.hydra_api.accept_logout_request(logout_challenge)
+    return redirect(resp.redirect_to)
+
 

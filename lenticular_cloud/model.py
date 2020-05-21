@@ -80,6 +80,9 @@ class EntryBase(object):
         def __init__(self, clazz):
             self._class = clazz
 
+        def _mapping(self, ldap_object):
+            return ldap_object
+
         def _query(self, ldap_filter: str):
             reader = Reader(ldap_conn, self._class.get_object_def(), self._class.get_base(), ldap_filter)
             try:
@@ -87,7 +90,7 @@ class EntryBase(object):
             except LDAPSessionTerminatedByServerError:
                 ldap_conn.bind()
                 reader.search()
-            return list(reader)
+            return [self._mapping(entry) for entry in reader]
 
         def all(self):
             return self._query(None)
@@ -277,7 +280,7 @@ class User(EntryBase):
         return self._ldap_object.surname
 
     @property
-    def mail(self):
+    def email(self):
         return self._ldap_object.mail
 
     @property
@@ -297,10 +300,14 @@ class User(EntryBase):
         return self._totp_list
 
     class _query(EntryBase._query):
+
+        def _mapping(self, ldap_object):
+            return User(ldap_object=ldap_object)
+
         def by_username(self, username) -> 'User':
             result = self._query('(uid={username:s})'.format(username=escape_filter_chars(username)))
             if len(result) > 0:
-                return User(result[0])
+                return result[0]
             else:
                 return None
 

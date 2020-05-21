@@ -57,7 +57,7 @@
 			<div class="sidebar-sticky active">
 				{#<a href="/"><img alt="logo" class="container-fluid" src="/static/images/dog_main_small.png"></a>#}
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.index') }}">{{ gettext('Account') }}</a></li>
-				<li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">{{ gettext('Logout') }}</a></li>
+				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.logout') }}">{{ gettext('Logout') }}</a></li>
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.client_cert') }}">{{ gettext('Client Cert') }}</a></li>
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.totp') }}">{{ gettext('2FA - TOTP') }}</a></li>
 			</div>

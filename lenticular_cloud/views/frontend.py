@@ -14,21 +14,100 @@ from pyop.exceptions import InvalidAuthenticationRequest, InvalidAccessToken, In
     InvalidSubjectIdentifier, InvalidClientRegistrationRequest
 from pyop.util import should_fragment_encode
 
-from flask import Blueprint, render_template, request, url_for
+from flask import Blueprint, render_template, request, url_for, flash
 from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.utils import redirect
 import logging
 from datetime import timedelta
 import pyotp
-
+from base64 import b64decode, b64encode
+from flask_dance.consumer import oauth_authorized
+from sqlalchemy.orm.exc import NoResultFound
+from flask_dance.consumer import OAuth2ConsumerBlueprint
 
 from ..model import User, SecurityUser, Totp
+from ..model_db import OAuth, db, User as DbUser
 from ..form.login import LoginForm
 from ..form.frontend import ClientCertForm, TOTPForm, TOTPDeleteForm
 from ..auth_providers import AUTH_PROVIDER_LIST
 
 
 frontend_views = Blueprint('frontend', __name__, url_prefix='')
+
+
+def init_login_manager(app):
+    @app.login_manager.user_loader
+    def user_loader(username):
+        return User.query().by_username(username)
+
+    @app.login_manager.request_loader
+    def request_loader(request):
+        pass
+
+    @app.login_manager.unauthorized_handler
+    def unauthorized():
+        return redirect(url_for('oauth.login'))
+
+    base_url = app.config['HYDRA_PUBLIC_URL']
+    example_blueprint = OAuth2ConsumerBlueprint(
+        "oauth", __name__,
+        client_id=app.config['OAUTH_ID'],
+        client_secret=app.config['OAUTH_SECRET'],
+        base_url=base_url,
+        token_url=f"{base_url}/oauth2/token",
+        authorization_url=f"{base_url}/oauth2/auth",
+        scope=['openid', 'profile', 'manage']
+    )
+    app.register_blueprint(example_blueprint, url_prefix="/")
+    app.oauth = example_blueprint
+
+    @oauth_authorized.connect_via(app.oauth)
+    def github_logged_in(blueprint, token):
+        if not token:
+            flash("Failed to log in.", category="error")
+            return False
+        print(f'debug ---------------{token}')
+
+        resp = blueprint.session.get("/userinfo")
+        if not resp.ok:
+            msg = "Failed to fetch user info from GitHub."
+            flash(msg, category="error")
+            return False
+
+        oauth_info = resp.json()
+
+        db_user = DbUser.query.get(str(oauth_info["sub"]))
+        oauth_username = db_user.username
+
+        # Find this OAuth token in the database, or create it
+        query = OAuth.query.filter_by(
+            provider=blueprint.name,
+            provider_username=oauth_username,
+        )
+        try:
+            oauth = query.one()
+        except NoResultFound:
+            oauth = OAuth(
+                provider=blueprint.name,
+                provider_username=oauth_username,
+                token=token,
+            )
+
+
+        login_user(SecurityUser(oauth.provider_username))
+        #flash("Successfully signed in with GitHub.")
+
+        # Since we're manually creating the OAuth model in the database,
+        # we should return False so that Flask-Dance knows that
+        # it doesn't have to do it. If we don't return False, the OAuth token
+        # could be saved twice, or Flask-Dance could throw an error when
+        # trying to incorrectly save it for us.
+        return True
+
+    @frontend_views.route('/logout')
+    def logout():
+        logout_user()
+        return redirect(f'{current_app.config["HYDRA_PUBLIC_URL"]}/oauth2/sessions/logout')
 
 
 @frontend_views.route('/', methods=['GET'])

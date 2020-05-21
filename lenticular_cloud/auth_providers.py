@@ -32,8 +32,12 @@ class LdapAuthProvider(AuthProvider):
 
     @staticmethod
     def check_auth(user, form):
+        return LdapAuthProvider.check_auth_internal(user, form.data['password'])
+
+    @staticmethod
+    def check_auth_internal(user, password):
         server = Server(current_app.config['LDAP_URL'])
-        ldap_conn = Connection(server, user.entry_dn, form.data['password'])
+        ldap_conn = Connection(server, user.entry_dn, password)
         try:
             return ldap_conn.bind()
         except LDAPException:
