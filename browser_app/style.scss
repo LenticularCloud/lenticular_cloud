@@ -3,3 +3,13 @@
 @import "~@fortawesome/fontawesome-free/css/all.css";
 //@import "~datatables.net-bs4/css/dataTables.bootstrap4.css";
 
+
+
+.messages-box {
+	position: fixed;
+	width: 100%;
+	margin-top: 30px;
+	z-index: 500;
+
+}
+

@@ -15,6 +15,28 @@
 
 {% block body %}
 
+<div class='messages-box'>
+</div>
+<template id='confirm-dialog-template'>
+	<div class="modal-dialog">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h5 class="modal-title"></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			</div>
+
+			<div class="modal-body">
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger close" data-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-primary btn-ok process">Process</button>
+			</div>
+		</div>
+	</div>
+</template>
+
 <div class="modal fade" id="confirm-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -57,9 +79,9 @@
 			<div class="sidebar-sticky active">
 				{#<a href="/"><img alt="logo" class="container-fluid" src="/static/images/dog_main_small.png"></a>#}
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.index') }}">{{ gettext('Account') }}</a></li>
-				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.logout') }}">{{ gettext('Logout') }}</a></li>
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.client_cert') }}">{{ gettext('Client Cert') }}</a></li>
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.totp') }}">{{ gettext('2FA - TOTP') }}</a></li>
+				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.logout') }}">{{ gettext('Logout') }}</a></li>
 			</div>
 		</nav>
 		{% endif %}
@@ -76,10 +98,12 @@
 		</main>
 	</div>
 </div>
-<div class="mt-5 row justify-content-center">
-	<footer>
-		<span class="text-muted">Render Time: {{ g.request_time() }}</span> | <span class="text-muted">{{ gettext('All right reserved. &copy;2019') }}</span>
-	</footer>
+<div class='container'>
+	<div class="mt-5 row justify-content-center">
+		<footer>
+			<span class="text-muted">Render Time: {{ g.request_time() }}</span> | <span class="text-muted">{{ gettext('All right reserved. &copy;') + '2020' }}</span>
+		</footer>
+	</div>
 </div>
 {% endblock %}
 

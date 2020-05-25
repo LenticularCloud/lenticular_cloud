@@ -21,18 +21,27 @@
 				<tr>
 					<th>not valid before</th>
 					<th>not valid after</th>
-					<th>fingerprint<th>
+					<th>serial_number<th>
+					<th> <th>
 				</tr>
 			</thead>
 			<tbody>
 				{% for cert in client_certs[service.name] %}
-				<tr>
+				<tr {{ 'class="table-warning"' if not cert.is_valid else ''}}>
 					<td>{{ cert.not_valid_before }}</td>
 					<td>{{ cert.not_valid_after }}</td>
-					<td>{{ cert.fingerprint().hex() }}</td>
+					<td>{{ cert.serial_number_hex }}</td>
+					<td>
+						<a title="{{ gettext('Download') }}" href="{{ url_for('.get_client_cert', service_name=service.name, serial_number=cert.serial_number_hex) }}"><i class="fas fa-file-download"></i></a>
+						&nbsp;
+						{% if cert.is_valid %}
+							<a title="{{ gettext('Revoke')}}" href="{{ url_for('.revoke_client_cert', service_name=service.name, serial_number=cert.serial_number_hex) }}" onclick="client_cert.revoke_certificate(this.href, '{{ cert.serial_number_hex }}'); return false;"><i class="fas fa-ban"></i></a>
+						{% endif %}
+					</td>
+				</tr>
 				{% endfor %}
 		</table>
-		<a class="btn btn-default" href="{{ url_for('frontend.client_cert_new', service_name=service.name) }}">
+		<a class="btn btn-primary" href="{{ url_for('frontend.client_cert_new', service_name=service.name) }}">
 			New Certificate
 		</a>
 	</div>
@@ -45,7 +54,7 @@
 
 {% block script_js %}
 
-client_certs.init_list();
+client_cert.init_list();
 
 
 {% endblock %}

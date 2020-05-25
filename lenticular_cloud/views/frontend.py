@@ -126,12 +126,26 @@ def client_cert():
     return render_template('frontend/client_cert.html.j2', services=current_app.lenticular_services, client_certs=client_certs)
 
 
-@frontend_views.route('/client_cert/<service_name>/<fingerprint>')
+@frontend_views.route('/client_cert/<service_name>/<serial_number>')
 @login_required
-def get_client_cert(service_name, fingerprint):
+def get_client_cert(service_name, serial_number):
     service = current_app.lenticular_services[service_name]
-    current_app.pki.get_client_cert(current_user, service, fingerprint)
-    pass
+    cert = current_app.pki.get_client_cert(
+            current_user, service, serial_number)
+    return jsonify({
+        'data': {
+            'pem': cert.pem()}
+        })
+
+
+@frontend_views.route('/client_cert/<service_name>/<serial_number>', methods=['DELETE'])
+@login_required
+def revoke_client_cert(service_name, serial_number):
+    service = current_app.lenticular_services[service_name]
+    cert = current_app.pki.get_client_cert(
+            current_user, service, serial_number)
+    current_app.pki.revoke_certificate(cert)
+    return jsonify({})
 
 
 @frontend_views.route(
@@ -160,7 +174,8 @@ def client_cert_new(service_name):
                 'errors': form.errors
             })
 
-    return render_template('frontend/client_cert_new.html.j2',
+    return render_template(
+            'frontend/client_cert_new.html.j2',
             service=service,
             form=form)
 
@@ -172,7 +187,7 @@ def totp():
     return render_template('frontend/totp.html.j2', delete_form=delete_form)
 
 
-@frontend_views.route('/totp/new', methods=['GET','POST'])
+@frontend_views.route('/totp/new', methods=['GET', 'POST'])
 @login_required
 def totp_new():
     form = TOTPForm()

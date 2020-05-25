@@ -11,6 +11,8 @@ import os
 import string
 import re
 import datetime
+from dateutil import tz
+from operator import attrgetter
 import logging
 
 from .model import Service, User, Certificate
@@ -52,6 +54,7 @@ class Pki(object):
 
         ca_private_key = self._ensure_private_key(ca_name)
         ca_cert = self._ensure_ca_cert(ca_name, ca_private_key)
+        self.update_crl(ca_name)
 
         pki_path = self._pki_path / ca_name
         if not pki_path.exists():
@@ -62,15 +65,39 @@ class Pki(object):
     def get_client_certs(self, user: User, service: Service):
         pki_path = self._pki_path / service.name
         certs = []
+        crl = self._load_ca_crl(service.name)
         for cert_path in pki_path.glob(f'{user.username}*.crt.pem'):
-            print(cert_path)
             with cert_path.open('rb') as cert_fd:
                 cert_data = x509.load_pem_x509_certificate(
                     cert_fd.read(),
                     backend=default_backend())
-                cert = Certificate(user.username, service.name, cert_data)
+                revoked = crl.get_revoked_certificate_by_serial_number(
+                        cert_data.serial_number) is not None
+                cert = Certificate(
+                        user.username, service.name, cert_data, revoked)
                 certs.append(cert)
-        return certs
+
+        return sorted(certs, key=attrgetter('not_valid_before'), reverse=True)
+
+    def get_crl(self, service: Service):
+        return self._load_ca_crl(service.name)
+
+    def get_client_cert(self, user: User, service: Service, serial_number: str) -> Certificate:
+        pki_path = self._pki_path / service.name
+        cert_path  = pki_path / f'{user.username}-{serial_number}.crt.pem'
+        crl = self._load_ca_crl(service.name)
+        with cert_path.open('rb') as cert_fd:
+            cert_data = x509.load_pem_x509_certificate(
+                cert_fd.read(),
+                backend=default_backend())
+            revoked = crl.get_revoked_certificate_by_serial_number(
+                    cert_data.serial_number) is None
+            cert = Certificate(user.username, service.name, cert_data, revoked)
+            return cert
+
+    def revoke_certificate(self, cert: Certificate):
+        ca_private_key = self._ensure_private_key(cert.ca_name)
+        self._revoke_cert(ca_private_key, cert)
 
     def signing_publickey(self, user: User, service: Service, publickey: str, valid_time=DAY*365):
         _public_key = serialization.load_pem_public_key(
@@ -81,7 +108,7 @@ class Pki(object):
         username = str(user.username)
         config = service.pki_config #TODO use this config
         domain = self._domain
-        not_valid_before = datetime.datetime.now()
+        not_valid_before = datetime.datetime.utcnow()
 
         ca_public_key = ca_private_key.public_key()
         end_entity_cert_builder = x509.CertificateBuilder().\
@@ -125,6 +152,15 @@ class Pki(object):
                 x509.SubjectKeyIdentifier.from_public_key(_public_key),
                 critical=False).\
             add_extension(
+                x509.CRLDistributionPoints([
+                    x509.DistributionPoint(
+                        full_name=[x509.UniformResourceIdentifier(f'http://crl.{self._domain}/{ca_name}.crl')],
+                        relative_name=None,
+                        crl_issuer=None,
+                        reasons=None)
+                    ]),
+                critical=False).\
+            add_extension(
                 x509.AuthorityInformationAccess([
                     x509.AccessDescription(
                         access_method=x509.AuthorityInformationAccessOID.CA_ISSUERS,
@@ -142,9 +178,9 @@ class Pki(object):
                 backend=default_backend()
             )
 
-        fingerprint =end_entity_cert.fingerprint(hashes.SHA256()).hex()
+        serial_number = f'{end_entity_cert.serial_number:X}'
         end_entity_cert_filename = self._pki_path / ca_name / \
-            f'{safe_filename(username)}-{fingerprint}.crt.pem'
+            f'{safe_filename(username)}-{serial_number}.crt.pem'
         # save cert
         with end_entity_cert_filename.open("wb") as end_entity_cert_file:
             end_entity_cert_file.write(
@@ -224,3 +260,65 @@ class Pki(object):
                     ca_cert.public_bytes(encoding=serialization.Encoding.PEM))
         assert isinstance(ca_cert, x509.Certificate)
         return ca_cert
+
+    def _revoke_cert(self, ca_private_key, cert):
+        crl = self._load_ca_crl(cert.ca_name)
+        builder = self._builder_crl(cert.ca_name, crl)
+        revoked_certificate = x509.RevokedCertificateBuilder().serial_number(
+                    cert.raw.serial_number
+                ).revocation_date(
+                    datetime.datetime.now(tz.tzlocal())
+                ).build(default_backend())
+        builder = builder.add_revoked_certificate(revoked_certificate)
+        crl = self._crl_save(cert.ca_name, ca_private_key, builder)
+        foobar = crl.get_revoked_certificate_by_serial_number(cert.raw.serial_number)
+
+    def _get_path_crl(self, ca_name):
+        return self._pki_path / f'{ca_name}.crl.pem'
+
+    def _crl_save(self, ca_name, private_key, builder):
+        crl = builder.sign(
+                private_key=private_key,
+                algorithm=hashes.SHA256(),
+                backend=default_backend()
+            )
+        ca_crl_filename = self._get_path_crl(ca_name)
+        with open(ca_crl_filename, "wb") as ca_crl_file:
+            ca_crl_file.write(
+                crl.public_bytes(encoding=serialization.Encoding.PEM))
+        return crl
+
+    def _builder_crl(self, ca_name, old_crl=None):
+            builder = x509.CertificateRevocationListBuilder()
+            iname = x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, f'Lenticular Cloud CA - {ca_name}'),
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME,
+                    'Lenticluar Cloud'),
+                x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME,
+                    ca_name),
+            ])
+
+            builder = builder.issuer_name(iname)
+            builder = builder.last_update(datetime.datetime.now(tz.tzlocal()))
+            builder = builder.next_update(datetime.datetime.now(tz.tzlocal()) + DAY)
+            if old_crl is not None:
+                for revoked_certificate in old_crl:
+                    builder = builder.add_revoked_certificate(revoked_certificate)
+
+            return builder
+
+    def update_crl(self, ca_name):
+        ca_private_key = self._ensure_private_key(ca_name)
+        crl = self._load_ca_crl(ca_name)
+        builder = self._builder_crl(ca_name, crl)
+        return self._crl_save(ca_name, ca_private_key, builder)
+
+    def _load_ca_crl(self, ca_name):
+        ca_crl_filename = self._get_path_crl(ca_name)
+        if ca_crl_filename.exists():
+            with ca_crl_filename.open("rb") as ca_crl_file:
+                crl = x509.load_pem_x509_crl(
+                    ca_crl_file.read(),
+                    backend=default_backend())
+                return crl
+

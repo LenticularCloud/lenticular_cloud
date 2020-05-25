@@ -9,6 +9,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from collections.abc import MutableSequence
 from datetime import datetime
+from dateutil import tz
 import pyotp
 import json
 
@@ -137,10 +138,13 @@ class Service(object):
 
 class Certificate(object):
 
-    def __init__(self, cn, ca_name, cert_data):
+    def __init__(self, cn, ca_name: str, cert_data, revoked=False):
         self._cn = cn
         self._ca_name = ca_name
         self._cert_data = cert_data
+        self._revoked = revoked
+        self._cert_data.not_valid_after.replace(tzinfo=tz.tzutc())
+        self._cert_data.not_valid_before.replace(tzinfo=tz.tzutc())
 
     @property
     def cn(self):
@@ -151,18 +155,34 @@ class Certificate(object):
         return self._ca_name
 
     @property
-    def not_valid_before(self):
-        return self._cert_data.not_valid_before
+    def not_valid_before(self) -> datetime:
+        return self._cert_data.not_valid_before.replace(tzinfo=tz.tzutc()).astimezone(tz.tzlocal()).replace(tzinfo=None)
 
     @property
-    def not_valid_after(self):
-        return self._cert_data.not_valid_after
+    def not_valid_after(self) -> datetime:
+        return self._cert_data.not_valid_after.replace(tzinfo=tz.tzutc()).astimezone(tz.tzlocal()).replace(tzinfo=None)
 
-    def fingerprint(self, algorithm=hashes.SHA256()):
+    @property
+    def serial_number(self) -> int:
+        return self._cert_data.serial_number
+
+    @property
+    def serial_number_hex(self) -> str:
+        return f'{self._cert_data.serial_number:X}'
+
+    def fingerprint(self, algorithm=hashes.SHA256()) -> bytes:
         return self._cert_data.fingerprint(algorithm)
 
-    def pem(self):
+    @property
+    def is_valid(self) -> bool:
+        return self.not_valid_after > datetime.now() and not self._revoked
+
+    def pem(self) -> str:
         return self._cert_data.public_bytes(encoding=serialization.Encoding.PEM).decode()
+
+    @property
+    def raw(self):
+        return self._cert_data
 
     def __str__(self):
         return f'Certificate(cn={self._cn}, ca_name={self._ca_name}, not_valid_before={self.not_valid_before}, not_valid_after={self.not_valid_after})'
