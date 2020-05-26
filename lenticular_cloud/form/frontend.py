@@ -6,7 +6,7 @@ from wtforms import StringField, SubmitField, TextField, \
         SelectField, Form as NoCsrfForm, HiddenField
 from wtforms.widgets.html5 import NumberInput, DateInput
 from wtforms.validators import DataRequired, NumberRange, \
-        Optional, NoneOf, Length
+        Optional, NoneOf, Length, EqualTo
 
 
 class ClientCertForm(FlaskForm):
@@ -33,6 +33,12 @@ class TOTPForm(FlaskForm):
 class TOTPDeleteForm(FlaskForm):
     submit = SubmitField(gettext('Delete'))
 
+
+class PasswordChangeForm(FlaskForm):
+    old_password = PasswordField(gettext('Old Password'), validators=[DataRequired()])
+    password = PasswordField(gettext('New Password'), validators=[DataRequired()])
+    password_repeat = PasswordField(gettext('Repeat Password'), validators=[DataRequired(),EqualTo('password')])
+    submit = SubmitField(gettext('Change Password'))
 
 class OidcAuthenticationConfirm(FlaskForm):
     submit = SubmitField(gettext('Continue'))

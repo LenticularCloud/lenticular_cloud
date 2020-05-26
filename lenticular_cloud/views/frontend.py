@@ -27,8 +27,7 @@ from flask_dance.consumer import OAuth2ConsumerBlueprint
 
 from ..model import User, SecurityUser, Totp
 from ..model_db import OAuth, db, User as DbUser
-from ..form.login import LoginForm
-from ..form.frontend import ClientCertForm, TOTPForm, TOTPDeleteForm
+from ..form.frontend import ClientCertForm, TOTPForm, TOTPDeleteForm, PasswordChangeForm
 from ..auth_providers import AUTH_PROVIDER_LIST
 
 
@@ -218,3 +217,42 @@ def totp_delete(totp_name):
 
     return jsonify({
             'status': 'ok'})
+
+
+
+@frontend_views.route('/password_change')
+@login_required
+def password_change():
+
+    form = PasswordChangeForm()
+    return render_template('frontend/password_change.html.j2', form=form)
+
+
+@frontend_views.route('/password_change', methods=['POST'])
+@login_required
+def password_change_post():
+    form = PasswordChangeForm()
+    if form.validate():
+        return jsonify({})
+    return jsonify({'errors': form.errors})
+
+
+@frontend_views.route('/oauth2_token')
+@login_required
+def oauth2_tokens():
+
+    subject = current_app.oauth.session.get('/userinfo').json()['sub']
+    consent_sessions = current_app.hydra_api.list_subject_consent_sessions(
+                                subject)
+
+    return render_template('frontend/oauth2_tokens.html.j2', consent_sessions=consent_sessions)
+
+@frontend_views.route('/oauth2_token/<client_id>', methods=['DELETE'])
+@login_required
+def oauth2_token_revoke(client_id: str):
+    subject = current_app.oauth.session.get('/userinfo').json()['sub']
+    current_app.hydra_api.revoke_consent_sessions(
+                                subject,
+                                client=client_id)
+
+    return jsonify({})

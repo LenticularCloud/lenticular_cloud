@@ -1,5 +1,5 @@
 from flask import current_app
-from .form.login import PasswordForm, TotpForm, Fido2Form
+from .form.auth import PasswordForm, TotpForm, Fido2Form
 from ldap3 import Server, Connection
 from ldap3.core.exceptions import LDAPException
 

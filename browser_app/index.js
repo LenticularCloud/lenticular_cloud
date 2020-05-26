@@ -77,6 +77,27 @@ window.fido2 = {
 
 	}
 }
+window.password_change= {
+	init: function(){
+		var form = $('form');
+		SimpleFormSubmit.submitForm(form.action, form)
+			.then(response =>{
+			});
+
+	}
+}
+window.oauth2_token = {
+	revoke: function(href, id){
+		var dialog = new ConfirmDialog(`Are you sure to revoke all tokens from client "${id}"?`);
+		dialog.show().then(()=>{
+			fetch(href, {
+				method: 'DELETE'
+			});
+		});
+		return false;
+	}
+}
+
 
 
 window.client_cert = {

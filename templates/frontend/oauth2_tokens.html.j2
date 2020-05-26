@@ -1,0 +1,26 @@
+{% extends 'frontend/base.html.j2' %}
+
+{% block title %}{{ gettext('Oauth2 tokens') }}{% endblock %}
+
+{% block content %}
+
+
+<table class="table">
+	<thead>
+		<th>{{ gettext('Client ID') }}</th>
+		<th>{{ gettext('Remember me') }}</th>
+		<th>{{ gettext('Created at') }}
+		<th>{{ gettext('Action') }}
+	</thead>
+	{% for consent_session in consent_sessions %}
+	<tr>
+		<td>{{ consent_session.consent_request.client.client_id }}</td>
+		<td>{{ consent_session.remember }}</td>
+		<td>{{ consent_session.handled_at }}</td>
+		<td>
+		<a title="{{ gettext('Revoke')}}" href="{{ url_for('.oauth2_token_revoke', client_id=consent_session.consent_request.client.client_id) }}" onclick="oauth2_token.revoke(this.href, '{{ consent_session.consent_request.client.client_id }}'); return false;"><i class="fas fa-ban"></i></a>
+		</td>
+	</tr>
+	{% endfor %}
+
+{% endblock %}

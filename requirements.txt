@@ -4,6 +4,7 @@ flask_babel
 flask_wtf
 flask_login
 flask_sqlalchemy
+flask_dancer
 
 ldap3
 ldap3_orm

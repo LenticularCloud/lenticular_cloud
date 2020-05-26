@@ -1,0 +1,14 @@
+{% extends 'auth/base.html.j2' %}
+
+{% block title %}{{ gettext('Consent') }}{% endblock %}
+
+{% block content %}
+
+	<p>
+	The application "{{ client.client_id }}" requested the following scopes: {{ requested_scope }}
+	</p>
+	<p> Allow this app to access that data?</p>
+
+	{{ render_form(form) }}
+
+{% endblock %}

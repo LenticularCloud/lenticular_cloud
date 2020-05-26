@@ -8,6 +8,27 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+<div class='messages-box'>
+</div>
+<template id='confirm-dialog-template'>
+	<div class="modal-dialog">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h5 class="modal-title"></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			</div>
+
+			<div class="modal-body">
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger close" data-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-primary btn-ok process">Process</button>
+			</div>
+		</div>
+	</div>
+</template>
 {% block body %}{% endblock %}
 <script type="application/javascript" src="/static/main.js?v={{ GIT_HASH }}" ></script>
 <script type="application/javascript" >

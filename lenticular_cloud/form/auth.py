@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextField, \
         TextAreaField, PasswordField, IntegerField, FloatField, \
         DateTimeField, DateField, FormField, BooleanField, \
-        SelectField, Form as NoCsrfForm
+        SelectField, Form as NoCsrfForm, SelectMultipleField
 from wtforms.widgets.html5 import NumberInput, DateInput
 from wtforms.validators import DataRequired, NumberRange, Optional, NoneOf, Length
 from datetime import datetime
@@ -27,3 +27,11 @@ class TotpForm(FlaskForm):
 class Fido2Form(FlaskForm):
     fido2 = TextField(gettext('Fido2'), default="Javascript Required")
     submit = SubmitField(gettext('Authorize'))
+
+
+class ConsentForm(FlaskForm):
+#   scopes = SelectMultipleField(gettext('scopes'))
+#   audiences = SelectMultipleField(gettext('audiences'))
+    remember = BooleanField(gettext('remember me'))
+    submit = SubmitField()
+
