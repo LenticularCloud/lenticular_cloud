@@ -13,9 +13,10 @@ import logging
 from urllib.parse import urlparse
 from base64 import b64decode, b64encode
 import http
+import crypt
 
-from ..model import db, User, SecurityUser
-from ..form.auth import ConsentForm, LoginForm
+from ..model import db, User, SecurityUser, UserSignUp
+from ..form.auth import ConsentForm, LoginForm, RegistrationForm
 from ..auth_providers import AUTH_PROVIDER_LIST
 
 
@@ -118,3 +119,16 @@ def logout():
     return redirect(resp.redirect_to)
 
 
+
+@auth_views.route("/sign_up", methods=["GET", "POST"])
+def sign_up():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = UserSignUp()
+        user.username = form.data['username']
+        user.password = crypt.crypt(form.data['password'])
+        user.alternative_email = form.data['alternative_email']
+        db.session.add(user)
+        db.session.commit()
+
+    return render_template('auth/sign_up.html.j2', form=form)
