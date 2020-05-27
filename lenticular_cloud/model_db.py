@@ -1,5 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy, orm
+from datetime import datetime
 import uuid
+import pyotp
 
 db = SQLAlchemy()  # type: SQLAlchemy
 
@@ -8,39 +10,26 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 
-class OAuth(db.Model):
-    token = db.Column(db.Text, primary_key=True)
-    provider = db.Column(db.Text)
-    provider_username = db.Column(db.Text)
-
-
 class User(db.Model):
-    id = db.Column(db.String(length=36), primary_key=True, default=generate_uuid)
-    username = db.Column(db.String, unique=True)
+    id = db.Column(
+            db.String(length=36), primary_key=True, default=generate_uuid)
+    username = db.Column(
+            db.String, unique=True)
+
+    totps = db.relationship('Totp', back_populates='user')
 
 
-class Client(db.Model):
-    key = db.Column(db.Text, primary_key=True)
-    value = db.Column(db.Text)
+class Totp(object):
+    id = db.Column(db.Integer, primary_key=True)
+    secret = db.Column(db.String, nullable=False)
+    name = db.Column(db.String, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
 
+    user_id = db.Column(
+            db.Integer,
+            db.ForeignKey(User.id), nullable=False)
+    user = db.relationship(User)
 
-class AuthzCode(db.Model):
-    key = db.Column(db.Text, primary_key=True)
-    value = db.Column(db.Text)
-
-
-class AccessToken(db.Model):
-    key = db.Column(db.Text, primary_key=True)
-    value = db.Column(db.Text)
-
-
-class RefreshToken(db.Model):
-    key = db.Column(db.Text, primary_key=True)
-    value = db.Column(db.Text)
-
-
-class SubjectIdentifier(db.Model):
-    key = db.Column(db.Text, primary_key=True)
-    value = db.Column(db.Text)
-
-
+    def verify(self, token: str):
+        totp = pyotp.TOTP(self._secret)
+        return totp.verify(token)

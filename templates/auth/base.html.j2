@@ -18,18 +18,6 @@
 		{% endfor %}
 	</div>
 	<div class="row">
-		{% if current_user.is_authenticated %}
-		<nav class="col-md-2 d-none d-md-block bg-light sidebar fixed-top">
-			<div class="sidebar-sticky active">
-				{#<a href="/"><img alt="logo" class="container-fluid" src="/static/images/dog_main_small.png"></a>#}
-				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.index') }}">{{ gettext('Account') }}</a></li>
-				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.client_cert') }}">{{ gettext('Client Cert') }}</a></li>
-				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.totp') }}">{{ gettext('2FA - TOTP') }}</a></li>
-				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.logout') }}">{{ gettext('Logout') }}</a></li>
-			</div>
-		</nav>
-		{% endif %}
-
 		<main class="col-md-9 ml-sm-auto col-lg-10 px-4" role="main">
 			<h1>{% block title %}{% endblock %}</h1>
 			<div class="card">

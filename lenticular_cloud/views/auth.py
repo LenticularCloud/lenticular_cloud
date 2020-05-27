@@ -14,8 +14,7 @@ from urllib.parse import urlparse
 from base64 import b64decode, b64encode
 import http
 
-from ..model import User, SecurityUser
-from ..model_db import db, User as DbUser
+from ..model import db, User, SecurityUser
 from ..form.auth import ConsentForm, LoginForm
 from ..auth_providers import AUTH_PROVIDER_LIST
 
@@ -29,7 +28,7 @@ def consent():
     # DUMMPY ONLY
 
     form = ConsentForm()
-    remember_for = 60*60*24*7  # remember for 7 days
+    remember_for = 60*60*24*30  # remember for 7 days
 
     consent_request = current_app.hydra_api.get_consent_request(
                                 request.args['consent_challenge'])
@@ -42,7 +41,7 @@ def consent():
                 'grant_scope': requested_scope,
                 'grant_access_token_audience': requested_audiences,
                 'remember': form.data['remember'],
-#                'remember_for': remember_for,
+                'remember_for': remember_for,
             })
         return redirect(resp.redirect_to)
     return render_template(
@@ -65,7 +64,7 @@ def login():
         return redirect(resp.redirect_to)
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query().by_username(form.data['name'])
+        user = User.query_().by_username(form.data['name'])
         if user:
             session['username'] = str(user.username)
         else:
@@ -83,7 +82,7 @@ def login_auth():
     if 'username' not in session:
         return redirect(url_for('auth.login'))
     auth_forms = {}
-    user = User.query().by_username(session['username'])
+    user = User.query_().by_username(session['username'])
     for auth_provider in AUTH_PROVIDER_LIST:
         form = auth_provider.get_form()
         if auth_provider.get_name() not in session['auth_providers'] and\
@@ -95,31 +94,18 @@ def login_auth():
 
     if len(session['auth_providers']) >= 2:
         remember_me = True
-        db_user = DbUser.query.filter(DbUser.username == session['username']).one_or_none()
-        if db_user is None:
-            db_user = DbUser(username=session['username'])
-            db.session.add(db_user)
-            db.session.commit()
+#       if db_user is None:
+#           db_user = User(username=session['username'])
+#           db.session.add(db_user)
+#           db.session.commit()
 
-        subject = db_user.id
+        subject = user.id
 
         resp = current_app.hydra_api.accept_login_request(
             login_challenge, body={
                 'subject': subject,
                 'remember': remember_me})
         return redirect(resp.redirect_to)
-
-        login_user(SecurityUser(session['username']))
-        # TODO use this var
-        _next = None
-        try:
-            _next_url = urlparse(b64decode(request.args.get('next')).decode())
-            _host_url = urlparse(request.url)
-            if _next_url.scheme == _host_url.scheme and _next_url.netloc == _host_url.netloc :
-                _next = _next_url.geturl()
-        except TypeError:
-            _next = None
-        return redirect(_next or url_for('frontend.index'))
     return render_template('auth/login_auth.html.j2', forms=auth_forms)
 
 
@@ -128,7 +114,7 @@ def logout():
     logout_challenge = request.args.get('logout_challenge')
     logout_request = current_app.hydra_api.get_logout_request(logout_challenge)
     resp = current_app.hydra_api.accept_logout_request(logout_challenge)
-    logout_user()
+    # TODO confirm
     return redirect(resp.redirect_to)
 
 

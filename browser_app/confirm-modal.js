@@ -3,10 +3,29 @@
 const $ = document.querySelector.bind(document)
 const _ = document.getElementById
 
-export class ConfirmDialog {
+export class Dialog {
+	template(){
+		return `
+		<div class="modal-dialog">
+			<div class="modal-content">
 
-	constructor(message) {
-		this._div = document.getElementById('confirm-dialog-template').content.querySelector('div').cloneNode(true);
+				<div class="modal-header">
+					<h5 class="modal-title"></h5>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				</div>
+
+				<div class="modal-body">
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary close" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>`;
+	}
+
+	constructor(title, message) {
+		this._div = (new DOMParser().parseFromString(this.template(), 'text/html')).body.firstChild;
 		this._div.querySelector('.modal-body').innerHTML = message;
 	}
 
@@ -18,21 +37,16 @@ export class ConfirmDialog {
 		});
 
 		this._div.querySelectorAll('.close').forEach(function (o){
-			o.onclick=self.cancel.bind(self);
+			o.onclick=self.close.bind(self);
 		});
-
-		this._div.querySelector('.process').onclick = () => {
-			self._close();
-			self._resolve();
-		};
 
 		$('.messages-box').appendChild(this._div);
 		return this._promise
 	}
 
-	cancel() {
+	close() {
 		this._close()
-		this._reject('canceled by user');
+		this._resolve();
 	}
 
 	_close() {
@@ -43,3 +57,38 @@ export class ConfirmDialog {
 
 
 
+export class ConfirmDialog extends Dialog {
+	template(){
+		return `
+		<div class="modal-dialog">
+			<div class="modal-content">
+
+				<div class="modal-header">
+					<h5 class="modal-title"></h5>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				</div>
+
+				<div class="modal-body">
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-danger close" data-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-primary btn-ok process">Process</button>
+				</div>
+			</div>
+		</div>`;
+	}
+
+	show(){
+		this._div.querySelector('.process').onclick = () => {
+			self._close();
+			self._resolve();
+		};
+		return super.show()
+	}
+
+	close() {
+		this._close()
+		this._reject('canceled by user');
+	}
+}

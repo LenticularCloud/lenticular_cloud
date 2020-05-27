@@ -11,7 +11,6 @@ import logging
 import requests
 
 from ..model import User
-from ..model_db import User as DbUser
 from ..auth_providers import LdapAuthProvider
 
 
@@ -19,11 +18,15 @@ api_views = Blueprint('api', __name__, url_prefix='/api')
 
 @api_views.route('/userinfo', methods=['GET', 'POST'])
 def userinfo():
+    if 'authorization' not in request.headers:
+        return 'not token found', 400
     token = request.headers['authorization'].replace('Bearer ', '')
     token_info = current_app.hydra_api.introspect_o_auth2_token(token=token)
+    if not token_info.active:
+        return 'token not valid', 403
 
-    user_db = DbUser.query.get(token_info.sub)
-    user = User.query().by_username(user_db.username)
+    user_db = User.query.get(token_info.sub)
+    user = User.query_().by_username(user_db.username)
 
     public_url = current_app.config.get('HYDRA_PUBLIC_URL')
     r = requests.get(
@@ -50,5 +53,6 @@ def user_list():
     if 'lc_i_userlist' not in token_info.scope.split(' '):
         return '', 403
 
-    return jsonify([{'username': str(user.username), 'email': str(user.email)}
-            for user in User.query().all()])
+    return jsonify([
+            {'username': str(user.username), 'email': str(user.email)}
+            for user in User.query_().all()])

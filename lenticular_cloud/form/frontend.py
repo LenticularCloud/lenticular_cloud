@@ -35,9 +35,9 @@ class TOTPDeleteForm(FlaskForm):
 
 
 class PasswordChangeForm(FlaskForm):
-    old_password = PasswordField(gettext('Old Password'), validators=[DataRequired()])
-    password = PasswordField(gettext('New Password'), validators=[DataRequired()])
-    password_repeat = PasswordField(gettext('Repeat Password'), validators=[DataRequired(),EqualTo('password')])
+    password_old = PasswordField(gettext('Old Password'), validators=[DataRequired()])
+    password_new = PasswordField(gettext('New Password'), validators=[DataRequired()])
+    password_repeat = PasswordField(gettext('Repeat Password'), validators=[DataRequired(),EqualTo('password_new')])
     submit = SubmitField(gettext('Change Password'))
 
 class OidcAuthenticationConfirm(FlaskForm):

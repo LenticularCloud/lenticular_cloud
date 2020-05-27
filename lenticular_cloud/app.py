@@ -40,7 +40,7 @@ def init_app(name=None):
     model.ldap_conn = app.ldap_conn
     model.base_dn = app.config['LDAP_BASE_DN']
 
-    from .model_db import db
+    from .model import db
     db.init_app(app)
     with app.app_context():
         db.create_all()

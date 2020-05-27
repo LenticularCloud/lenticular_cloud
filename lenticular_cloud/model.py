@@ -1,8 +1,9 @@
 from flask import current_app
 from ldap3_orm import AttrDef, EntryBase as _EntryBase, ObjectDef, EntryType
 from ldap3_orm import Reader
-from ldap3 import Entry
+from ldap3 import Entry, HASHED_SALTED_SHA256
 from ldap3.utils.conv import escape_filter_chars
+from ldap3.utils.hashed import hashed
 from flask_login import UserMixin
 from ldap3.core.exceptions import LDAPSessionTerminatedByServerError
 from cryptography.hazmat.primitives import hashes
@@ -12,9 +13,20 @@ from datetime import datetime
 from dateutil import tz
 import pyotp
 import json
+import logging
+import crypt
+from flask_sqlalchemy import SQLAlchemy, orm
+from datetime import datetime
+import uuid
+import pyotp
 
+
+logger = logging.getLogger(__name__)
 ldap_conn = None  # type: Connection
 base_dn = ''
+
+db = SQLAlchemy()  # type: SQLAlchemy
+
 
 
 class SecurityUser(UserMixin):
@@ -35,16 +47,18 @@ class LambdaStr:
         return self.lam()
 
 
-class EntryBase(object):
+class EntryBase(db.Model):
+    __abstract__ = True # for sqlalchemy
+
     _type = None  # will get replaced by the local type
     _query_object = None  # will get replaced by the local type
     _base_dn = LambdaStr(lambda: base_dn)
 
-    def __init__(self, ldap_object=None, **kwargs):
-        if ldap_object is None:
-            self._ldap_object = self.get_type()(**kwargs)
-        else:
-            self._ldap_object = ldap_object
+#   def __init__(self, ldap_object=None, **kwargs):
+#       if ldap_object is None:
+#           self._ldap_object = self.get_type()(**kwargs)
+#       else:
+#           self._ldap_object = ldap_object
 
     def __str__(self):
         return str(self._ldap_object)
@@ -64,14 +78,17 @@ class EntryBase(object):
         return cls._type
 
     def commit(self):
+        self._ldap_object.entry_commit_changes()
+
+    def add(self):
         print(self._ldap_object.entry_attributes_as_dict)
         ret = ldap_conn.add(
                 self.dn, self.object_classes, self._ldap_object.entry_attributes_as_dict)
-        print(ret)
+        logger.debug(ret)
         pass
 
     @classmethod
-    def query(cls):
+    def query_(cls):
         if cls._query_object is None:
             cls._query_object = cls._query(cls)
         return cls._query_object
@@ -188,77 +205,26 @@ class Certificate(object):
         return f'Certificate(cn={self._cn}, ca_name={self._ca_name}, not_valid_before={self.not_valid_before}, not_valid_after={self.not_valid_after})'
 
 
-class Totp(object):
-
-    def __init__(self, name, secret, created_at=datetime.now()):
-        self._secret = secret
-        self._name = name
-        self._created_at = created_at
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def created_at(self):
-        return self._created_at
-
-    def verify(self, token: str):
-        totp = pyotp.TOTP(self._secret)
-        return totp.verify(token)
-
-    def to_dict(self):
-        return {
-                'secret': self._secret,
-                'name': self._name,
-                'created_at': int(self._created_at.timestamp())}
-
-    @staticmethod
-    def from_dict(data):
-        return Totp(
-                name=data['name'],
-                secret=data['secret'],
-                created_at=datetime.fromtimestamp(data['created_at']))
-
-
-class TotpList(MutableSequence):
-    def __init__(self, ldap_attr):
-        super().__init__()
-        self._ldap_attr = ldap_attr
-
-    def __getitem__(self, ii):
-        return Totp.from_dict(json.loads(self._ldap_attr[ii]))
-
-    def __setitem__(self, ii, val: Totp):
-        self._ldap_attr[ii] = json.dumps(val.to_dict()).encode()
-
-    def __len__(self):
-        return len(self._ldap_attr)
-
-    def __delitem__(self, ii):
-        del self._ldap_attr[ii]
-
-    def delete(self, totp_name):
-        for i in range(len(self)):
-            if self[i].name == totp_name:
-                self._ldap_attr.delete(self._ldap_attr[i])
-
-    def insert(self, ii, val):
-        self.append(val)
-
-    def append(self, val):
-        self._ldap_attr.add(json.dumps(val.to_dict()).encode())
+def generate_uuid():
+    return str(uuid.uuid4())
 
 
 class User(EntryBase):
+    id = db.Column(
+            db.String(length=36), primary_key=True, default=generate_uuid)
+    username = db.Column(
+            db.String, unique=True)
+
+    totps = db.relationship('Totp', back_populates='user')
+
 
     dn = "uid={uid},{base_dn}"
     base_dn = "ou=users,{_base_dn}"
     object_classes = ["top", "inetOrgPerson", "LenticularUser"]
 
-    def __init__(self, ldap_object=None, **kwargs):
-        super().__init__(ldap_object, **kwargs)
-        self._totp_list = TotpList(ldap_object.totpSecret)
+    def __init__(self,**kwargs):
+        self._ldap_object = None
+        super(db.Model).__init__(**kwargs)
 
     @property
     def is_authenticated(self):
@@ -269,23 +235,10 @@ class User(EntryBase):
 
     def make_writeable(self):
         self._ldap_object = self._ldap_object.entry_writable()
-        self._totp_list = TotpList(self._ldap_object.totpSecret)
 
     @property
     def entry_dn(self):
         return self._ldap_object.entry_dn
-
-    @property
-    def username(self):
-        return self._ldap_object.uid
-
-    @username.setter
-    def username(self, value):
-        self._ldap_object.uid = value
-
-    @property
-    def userPassword(self):
-        return self._ldap_object.userPassword
 
     @property
     def fullname(self):
@@ -315,14 +268,24 @@ class User(EntryBase):
     def gpg_public_key(self):
         return self._ldap_object.gpgPublicKey
 
-    @property
-    def totps(self):
-        return self._totp_list
+    def change_password(self, password_new: str):
+        self.make_writeable()
+        password_hashed = crypt.crypt(password_new)
+        self._ldap_object.userPassword = ('{CRYPT}' + password_hashed).encode()
+        self.commit()
 
     class _query(EntryBase._query):
 
         def _mapping(self, ldap_object):
-            return User(ldap_object=ldap_object)
+            user = User.query.filter(User.username == str(ldap_object.uid)).first()
+            if user is None:
+                # migration time
+                user = User()
+                user.username = str(ldap_object.uid)
+                db.session.add(user)
+                db.session.commit()
+            user._ldap_object = ldap_object
+            return user
 
         def by_username(self, username) -> 'User':
             result = self._query('(uid={username:s})'.format(username=escape_filter_chars(username)))
@@ -333,7 +296,23 @@ class User(EntryBase):
 
 
 
+class Totp(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    secret = db.Column(db.String, nullable=False)
+    name = db.Column(db.String, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+
+    user_id = db.Column(
+            db.String(length=36),
+            db.ForeignKey(User.id), nullable=False)
+    user = db.relationship(User)
+
+    def verify(self, token: str):
+        totp = pyotp.TOTP(self.secret)
+        return totp.verify(token)
+
 class Group(EntryBase):
+    __abstract__ = True # for sqlalchemy, disable for now
     dn = "cn={cn},{base_dn}"
     base_dn = "ou=Users,{_base_dn}"
     object_classes = ["top"]

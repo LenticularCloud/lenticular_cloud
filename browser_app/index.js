@@ -1,7 +1,7 @@
 import 'jquery';
 import 'bootstrap';
 import 'jquery-form'
-import {ConfirmDialog} from './confirm-modal.js';
+import {ConfirmDialog, Dialog} from './confirm-modal.js';
 
 jQuery = window.$ = window.jQuery = require('jquery');
 var forge = require('node-forge');
@@ -39,6 +39,7 @@ function randBase32() {
 }
 
 window.ConfirmDialog = ConfirmDialog;
+window.Dialog = Dialog;
 
 window.$(document).ready(function () {
 	$('#sidebarCollapse').onclick = function () {
@@ -58,7 +59,7 @@ window.totp = {
 			input_secret.value = secret;
 		}
 
-		form.querySelector('#name').on('change',window.totp.generate_qrcode);
+		form.querySelector('#name').onchange=window.totp.generate_qrcode;
 		window.totp.generate_qrcode();
 	},
 	generate_qrcode: function(){
@@ -68,7 +69,13 @@ window.totp = {
 		var issuer = 'Lenticular%20Cloud';
 		var svg_container = $('#svg-container')
 		var svg = new QRCode(`otpauth://totp/${issuer}:${name}?secret=${secret}&issuer=${issuer}`).svg();
-		svg_container.html(svg);
+		var svg_xml =new DOMParser().parseFromString(svg,'text/xml')
+		if(svg_container.childNodes.length > 0) {
+			svg_container.childNodes[0].replaceWith(svg_xml.childNodes[0])
+		} else {
+			svg_container.appendChild(svg_xml.childNodes[0]);
+		}
+		//	.innerHtml=svg;
 	}
 }
 
@@ -80,15 +87,30 @@ window.fido2 = {
 window.password_change= {
 	init: function(){
 		var form = $('form');
-		SimpleFormSubmit.submitForm(form.action, form)
-			.then(response =>{
-			});
+		form.onsubmit = function () {
+			SimpleFormSubmit.submitForm(form.action, form)
+				.then(response =>{
+					response.json().then(function(data) {
+						if (data.errors) {
+							var msg ='<ul>';
+							for( var field in data.errors) {
+								msg += `<li>${field}: ${data.errors[field]}</li>`;
+							}
+							msg += '</ul>';
+							new Dialog('Password change Error', `Error Happend: ${msg}`).show()
+						} else {
+							new Dialog('Password changed', 'Password changed successfully!').show();
+						}
+					});
+				});
+			return false;
+		}
 
 	}
 }
 window.oauth2_token = {
 	revoke: function(href, id){
-		var dialog = new ConfirmDialog(`Are you sure to revoke all tokens from client "${id}"?`);
+		var dialog = new ConfirmDialog('Revoke client tokens', `Are you sure to revoke all tokens from client "${id}"?`);
 		dialog.show().then(()=>{
 			fetch(href, {
 				method: 'DELETE'
@@ -151,7 +173,7 @@ window.client_cert = {
 		});
 	},
 	revoke_certificate: function(href, id){
-		var dialog = new ConfirmDialog(`Are you sure to revoke the certificate with the fingerprint ${id}?`);
+		var dialog = new ConfirmDialog('Revoke client certificate', `Are you sure to revoke the certificate with the fingerprint ${id}?`);
 		dialog.show().then(()=>{
 			fetch(href, {
 				method: 'DELETE'

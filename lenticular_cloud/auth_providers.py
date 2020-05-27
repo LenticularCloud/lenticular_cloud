@@ -1,9 +1,14 @@
 from flask import current_app
 from .form.auth import PasswordForm, TotpForm, Fido2Form
-from ldap3 import Server, Connection
+from ldap3 import Server, Connection, HASHED_SALTED_SHA256
 from ldap3.core.exceptions import LDAPException
+from .model import User
+import logging
 
-import pyotp
+
+logger = logging.getLogger(__name__)
+
+
 
 class AuthProvider:
 
@@ -31,8 +36,9 @@ class LdapAuthProvider(AuthProvider):
         return PasswordForm(prefix='password')
 
     @staticmethod
-    def check_auth(user, form):
-        return LdapAuthProvider.check_auth_internal(user, form.data['password'])
+    def check_auth(user: User, form):
+        return LdapAuthProvider.check_auth_internal(
+                user, form.data['password'])
 
     @staticmethod
     def check_auth_internal(user, password):
