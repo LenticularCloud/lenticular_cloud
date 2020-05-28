@@ -60,6 +60,7 @@ window.totp = {
 		}
 
 		form.querySelector('#name').onchange=window.totp.generate_qrcode;
+		form.querySelector('#name').onkeyup=window.totp.generate_qrcode;
 		window.totp.generate_qrcode();
 	},
 	generate_qrcode: function(){
