@@ -8,7 +8,7 @@ from flask.templating import render_template
 from flask_babel import gettext
 
 from flask import request, url_for
-from flask_login import login_required, login_user, logout_user
+from flask_login import login_required, login_user, logout_user, current_user
 import logging
 from urllib.parse import urlparse
 from base64 import b64decode, b64encode
@@ -36,9 +36,16 @@ def consent():
 
     requested_scope = consent_request.requested_scope
     requested_audiences = consent_request.requested_access_token_audience
-    user = User.query.get(consent_request.subject)
 
     if form.validate_on_submit() or consent_request.skip:
+        token_data = {
+            'preferred_username': str(current_user.username),
+            'email': str(current_user.email),
+            'email_verified': True,
+        }
+        id_token_data = {}
+        if 'openid' in requested_scope:
+            id_token_data = token_data
         resp = current_app.hydra_api.accept_consent_request(
             consent_request.challenge, body={
                 'grant_scope': requested_scope,
@@ -46,11 +53,9 @@ def consent():
                 'remember': form.data['remember'],
                 'remember_for': remember_for,
                 'session': {
-                    'access_token': {},
-                    'id_token': {
-                        'preferred_username': user.username
-                        }
-                    }
+                    'access_token': token_data,
+                    'id_token': id_token_data
+                }
             })
         return redirect(resp.redirect_to)
     return render_template(
