@@ -48,7 +48,7 @@ def consent():
                 'session': {
                     'access_token': {},
                     'id_token': {
-                        'preferd_username': user.username
+                        'preferred_username': user.username
                         }
                     }
             })
