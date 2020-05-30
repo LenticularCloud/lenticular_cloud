@@ -38,9 +38,10 @@ def consent():
     requested_audiences = consent_request.requested_access_token_audience
 
     if form.validate_on_submit() or consent_request.skip:
+        user = User.query.get(consent_request.subject)
         token_data = {
-            'preferred_username': str(current_user.username),
-            'email': str(current_user.email),
+            'preferred_username': str(user.username),
+            'email': str(user.email),
             'email_verified': True,
         }
         id_token_data = {}

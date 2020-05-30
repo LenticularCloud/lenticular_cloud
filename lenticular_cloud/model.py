@@ -254,6 +254,8 @@ class User(EntryBase):
 
     @property
     def email(self):
+        domain = current_app.config['DOMAIN']
+        return f'{self.username}@{domain}'
         return self._ldap_object.mail
 
     @property
