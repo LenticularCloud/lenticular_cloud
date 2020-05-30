@@ -80,6 +80,7 @@ export class ConfirmDialog extends Dialog {
 	}
 
 	show(){
+		var self = this;
 		this._div.querySelector('.process').onclick = () => {
 			self._close();
 			self._resolve();
