@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 def before_request():
     try:
         resp = current_app.oauth.session.get('/userinfo')
-        if not current_user.is_authenticated:
+        if not current_user.is_authenticated or resp.status_code is not 200:
             return redirect(url_for('oauth.login'))
     except TokenExpiredError:
         return redirect(url_for('oauth.login'))

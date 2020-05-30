@@ -33,8 +33,10 @@ def consent():
 
     consent_request = current_app.hydra_api.get_consent_request(
                                 request.args['consent_challenge'])
+
     requested_scope = consent_request.requested_scope
     requested_audiences = consent_request.requested_access_token_audience
+    user = User.query.get(consent_request.subject)
 
     if form.validate_on_submit() or consent_request.skip:
         resp = current_app.hydra_api.accept_consent_request(
@@ -43,6 +45,12 @@ def consent():
                 'grant_access_token_audience': requested_audiences,
                 'remember': form.data['remember'],
                 'remember_for': remember_for,
+                'session': {
+                    'access_token': {},
+                    'id_token': {
+                        'preferd_username': user.username
+                        }
+                    }
             })
         return redirect(resp.redirect_to)
     return render_template(
@@ -105,7 +113,8 @@ def login_auth():
         resp = current_app.hydra_api.accept_login_request(
             login_challenge, body={
                 'subject': subject,
-                'remember': remember_me})
+                'remember': remember_me,
+            })
         return redirect(resp.redirect_to)
     return render_template('auth/login_auth.html.j2', forms=auth_forms)
 
