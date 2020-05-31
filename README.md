@@ -9,21 +9,17 @@ Simple user Manager in LDAP
 Features
 --------
 
+* frontend for hydra
 * Web Platform to mange users
-* OpenId / OAuth
 * client certs
 * ldap backend, can be used by other services
 
 Auth Methods:
 -------------
- * U2F
+ * U2F (TODO)
  * TOTP
  * Password
  * WebAuth (TODO)
-
-
-TODO
-----
 
 
 
@@ -31,8 +27,8 @@ TODO
 Tested Services
 ---------------
 
-* GitTea (OAuth2)
-* Seafile (OAtuh2)
-* ~~Postfix~~/Dovecot (~~Oauth2~~/client cert/password)
+* GitTea (OIDC)
+* Seafile (OIDC)
+* ~~Postfix~~/Dovecot (~~OIDC~~/client cert/password)
 * prosody (client cert/~~password~~)
 
