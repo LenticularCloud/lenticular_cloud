@@ -54,12 +54,13 @@ def init_app(name=None):
     hydra_client = hydra.ApiClient(hydra_config)
     app.hydra_api = hydra.AdminApi(hydra_client)
 
-    from .views import auth_views, frontend_views, init_login_manager, api_views, pki_views
+    from .views import auth_views, frontend_views, init_login_manager, api_views, pki_views, admin_views
     init_login_manager(app)
     app.register_blueprint(auth_views)
     app.register_blueprint(frontend_views)
     app.register_blueprint(api_views)
     app.register_blueprint(pki_views)
+    app.register_blueprint(admin_views)
 
     @app.before_request
     def befor_request():

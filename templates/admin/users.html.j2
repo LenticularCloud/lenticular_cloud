@@ -1,0 +1,26 @@
+{% extends 'admin/base.html.j2' %}
+
+{% block title %}{{ gettext('users') }}{% endblock %}
+
+{% block content %}
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>username</th>
+			<th>created_at</th>
+			<th>modified_at<th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for user in users %}
+		<tr>
+			<td>{{ user.username }}</td>
+			<td>{{ user.created_at }}</td>
+			<td>{{ user.modified_at }}</td>
+			<td></td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endblock%}

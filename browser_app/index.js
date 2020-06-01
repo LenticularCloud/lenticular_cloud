@@ -47,6 +47,54 @@ window.$(document).ready(function () {
 	};
 });
 
+window.admin = {
+	registration: {
+		delete: function(href, registration_id, username) {
+			var dialog = new ConfirmDialog('Reject user registration', `Are you sure to reject the registration request from "${username}"?`);
+			dialog.show().then(()=>{
+				fetch(href, {
+					method: 'DELETE'
+				});
+			});
+			return false;
+		},
+		accept: function(href, registration_id, username) {
+			var dialog = new ConfirmDialog('Accept user registration', `Are you sure to accept the registration request from "${username}"?`);
+			dialog.show().then(()=>{
+				fetch(href, {
+					method: 'PUT'
+				});
+			});
+			return false;
+
+		}
+
+	}
+};
+
+window.auth = {
+	sign_up: {
+		submit: function(form) {
+			SimpleFormSubmit.submitForm(form.action, form)
+				.then(response =>{
+					response.json().then(function(data) {
+						if (data.errors) {
+							var msg ='<ul>';
+							for( var field in data.errors) {
+								msg += `<li>${field}: ${data.errors[field]}</li>`;
+							}
+							msg += '</ul>';
+							new Dialog('Registration Error', `Error Happend: ${msg}`).show()
+						} else {
+							new Dialog('Registration successfully', 'Wait until an administrator has aproved your account').show();
+						}
+					});
+				});
+			return false;
+		}
+	}
+};
+
 window.totp = {
 	init_list: function(){
 	},

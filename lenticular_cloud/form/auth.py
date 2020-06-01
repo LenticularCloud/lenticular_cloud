@@ -6,7 +6,7 @@ from wtforms import StringField, SubmitField, TextField, \
         SelectField, Form as NoCsrfForm, SelectMultipleField
 from wtforms.fields.html5 import EmailField
 from wtforms.widgets.html5 import NumberInput, DateInput
-from wtforms.validators import DataRequired, NumberRange, Optional, NoneOf, Length
+from wtforms.validators import DataRequired, NumberRange, Optional, NoneOf, Length, Regexp
 from datetime import datetime
 
 
@@ -33,12 +33,18 @@ class Fido2Form(FlaskForm):
 class ConsentForm(FlaskForm):
 #   scopes = SelectMultipleField(gettext('scopes'))
 #   audiences = SelectMultipleField(gettext('audiences'))
-    remember = BooleanField(gettext('remember me'))
+    remember = BooleanField(gettext('remember'))
     submit = SubmitField()
 
 
 class RegistrationForm(FlaskForm):
-    username = StringField(gettext('Username'), validators=[DataRequired()])
-    password = PasswordField(gettext('Password'), validators=[DataRequired()])
-    alternative_email = EmailField(gettext('Alternative Email'))
+    username = StringField(gettext('Username'), validators=[
+        DataRequired(),
+        Regexp('^[a-zA-Z0-9-.]+$', message=gettext('Only `a-z`, `A-Z`, `0-9`, `-.` is allowed for username'))
+        ])
+    password = PasswordField(gettext('Password'), validators=[
+        DataRequired(),
+        Length(min=6)
+        ])
+    alternative_email = EmailField(gettext('Alternative Email'), render_kw={"placeholder": "Optional"})
     submit = SubmitField()

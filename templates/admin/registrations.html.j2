@@ -1,0 +1,28 @@
+{% extends 'admin/base.html.j2' %}
+
+{% block title %}{{ gettext('registrations') }}{% endblock %}
+
+{% block content %}
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>username</th>
+			<th>created_at</th>
+			<th>action<th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for user in users %}
+		<tr>
+			<td>{{ user.username }}</td>
+			<td>{{ user.created_at }}</td>
+			<td>
+				<a title="{{ gettext('Reject')}}" href="{{ url_for('.registration_delete', registration_id=user.id) }}" onclick="admin.registration.delete(this.href, '{{ user.username }}'); return false;"><i class="fas fa-ban"></i></a>
+				<a title="{{ gettext('Reject')}}" href="{{ url_for('.registration_accept', registration_id=user.id) }}" onclick="admin.registration.accept(this.href, '{{ user.username }}'); return false;"><i class="fas fa-check"></i></a>
+			</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endblock%}

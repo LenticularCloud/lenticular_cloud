@@ -5,7 +5,7 @@
 
 {% block content %}
 
-{{ render_form(form) }}
+{{ render_form(form, onsubmit="return auth.sign_up.submit(this)", action_url=url_for('auth.sign_up_submit')) }}
 
 {% endblock %}
 

@@ -3,13 +3,6 @@
 
 {% block body %}
 
-<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-	<div class="col-xs-1"><button id="sidebarCollapse" class="btn btn-primary d-xs-block d-md-none" ><i class="fa fa-bars fa-2x"></i></button></div>
-	<div class="col-xs-11"><a class="navbar-brand col-xs-11 col-sm-3 col-md-2 mr-0" href="/">Lenticular Cloud</a></div>
-</nav>
-
-
-<div style="height: 40px"></div>
 <div class="container-fluid">
 	<div class="row">
 		{% for message in get_flashed_messages() %}

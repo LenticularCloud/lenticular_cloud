@@ -10,26 +10,27 @@
 <body>
 <div class='messages-box'>
 </div>
-<template id='confirm-dialog-template'>
-	<div class="modal-dialog">
-		<div class="modal-content">
 
-			<div class="modal-header">
-				<h5 class="modal-title"></h5>
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-			</div>
+<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+	{% if current_user.is_authenticated %}
+		<a class="nav-link" href="{{ url_for('frontend.logout') }}">{{ gettext('Logout') }}</a>
+		Hallo {{ current_user.username }}
+	{% endif %}
+	<div class="col-xs-1"><button id="sidebarCollapse" class="btn btn-primary d-xs-block d-md-none" ><i class="fa fa-bars fa-2x"></i></button></div>
+	<div class="col-xs-11"><a class="navbar-brand col-xs-11 col-sm-3 col-md-2 mr-0" href="/">Lenticular Cloud</a></div>
+</nav>
 
-			<div class="modal-body">
-			</div>
 
-			<div class="modal-footer">
-				<button type="button" class="btn btn-danger close" data-dismiss="modal">Cancel</button>
-				<button type="button" class="btn btn-primary btn-ok process">Process</button>
-			</div>
-		</div>
-	</div>
-</template>
+<div style="height: 40px"></div>
+
 {% block body %}{% endblock %}
+<div class='container'>
+	<div class="mt-5 row justify-content-center">
+		<footer>
+			<span class="text-muted">Render Time: {{ g.request_time() }}</span> | <span class="text-muted">{{ gettext('All right reserved. &copy;') + '2020' }}</span>
+		</footer>
+	</div>
+</div>
 <script type="application/javascript" src="/static/main.js?v={{ GIT_HASH }}" ></script>
 <script type="application/javascript" >
 {% block script_js %}{% endblock %}

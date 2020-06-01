@@ -7,13 +7,15 @@ from flask import current_app, session
 from flask.templating import render_template
 from flask_babel import gettext
 
-from flask import request, url_for
+from flask import request, url_for, jsonify
 from flask_login import login_required, login_user, logout_user, current_user
 import logging
 from urllib.parse import urlparse
 from base64 import b64decode, b64encode
 import http
 import crypt
+import ory_hydra_client
+from datetime import datetime
 
 from ..model import db, User, SecurityUser, UserSignUp
 from ..form.auth import ConsentForm, LoginForm, RegistrationForm
@@ -31,8 +33,11 @@ def consent():
     form = ConsentForm()
     remember_for = 60*60*24*30  # remember for 7 days
 
-    consent_request = current_app.hydra_api.get_consent_request(
-                                request.args['consent_challenge'])
+    try:
+        consent_request = current_app.hydra_api.get_consent_request(
+                                    request.args['consent_challenge'])
+    except ory_hydra_client.exceptions.ApiException:
+        return redirect(url_for('frontend.index'))
 
     requested_scope = consent_request.requested_scope
     requested_audiences = consent_request.requested_access_token_audience
@@ -40,9 +45,11 @@ def consent():
     if form.validate_on_submit() or consent_request.skip:
         user = User.query.get(consent_request.subject)
         token_data = {
+            'name': str(user.username),
             'preferred_username': str(user.username),
             'email': str(user.email),
             'email_verified': True,
+            'groups': [group.name for group in user.groups]
         }
         id_token_data = {}
         if 'openid' in requested_scope:
@@ -70,7 +77,10 @@ def consent():
 @auth_views.route('/login', methods=['GET', 'POST'])
 def login():
     login_challenge = request.args.get('login_challenge')
-    login_request = current_app.hydra_api.get_login_request(login_challenge)
+    try:
+        login_request = current_app.hydra_api.get_login_request(login_challenge)
+    except ory_hydra_client.exceptions.ApiValueError:
+        return redirect(url_for('frontend.index'))
 
     if login_request.skip:
         resp = current_app.hydra_api.accept_login_request(
@@ -93,7 +103,11 @@ def login():
 @auth_views.route('/login/auth', methods=['GET', 'POST'])
 def login_auth():
     login_challenge = request.args.get('login_challenge')
-    login_request = current_app.hydra_api.get_login_request(login_challenge)
+    try:
+        login_request = current_app.hydra_api.get_login_request(login_challenge)
+    except ory_hydra_client.exceptions.ApiValueError:
+        return redirect(url_for('frontend.index'))
+
     if 'username' not in session:
         return redirect(url_for('auth.login'))
     auth_forms = {}
@@ -115,7 +129,8 @@ def login_auth():
 #           db.session.commit()
 
         subject = user.id
-
+        user.last_login = datetime.now()
+        db.session.commit()
         resp = current_app.hydra_api.accept_login_request(
             login_challenge, body={
                 'subject': subject,
@@ -135,8 +150,13 @@ def logout():
 
 
 
-@auth_views.route("/sign_up", methods=["GET", "POST"])
+@auth_views.route("/sign_up", methods=["GET"])
 def sign_up():
+    form = RegistrationForm()
+    return render_template('auth/sign_up.html.j2', form=form)
+
+@auth_views.route("/sign_up", methods=["POST"])
+def sign_up_submit():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = UserSignUp()
@@ -145,5 +165,8 @@ def sign_up():
         user.alternative_email = form.data['alternative_email']
         db.session.add(user)
         db.session.commit()
-
-    return render_template('auth/sign_up.html.j2', form=form)
+        return jsonify({})
+    return jsonify({
+            'status': 'error',
+            'errors': form.errors
+        })

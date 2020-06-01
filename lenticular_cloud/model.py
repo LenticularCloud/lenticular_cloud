@@ -28,6 +28,14 @@ base_dn = ''
 db = SQLAlchemy()  # type: SQLAlchemy
 
 
+class UserSignUp(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String, nullable=False)
+    password = db.Column(db.String, nullable=False)
+    alternative_email = db.Column(db.String)
+    created_at = db.Column(db.DateTime, nullable=False,
+                           default=datetime.now)
+
 
 class SecurityUser(UserMixin):
 
@@ -51,7 +59,7 @@ class EntryBase(db.Model):
     __abstract__ = True # for sqlalchemy
 
     _type = None  # will get replaced by the local type
-    _query_object = None  # will get replaced by the local type
+    _ldap_query_object = None  # will get replaced by the local type
     _base_dn = LambdaStr(lambda: base_dn)
 
 #   def __init__(self, ldap_object=None, **kwargs):
@@ -60,39 +68,45 @@ class EntryBase(db.Model):
 #       else:
 #           self._ldap_object = ldap_object
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self._ldap_object)
 
     @classmethod
-    def get_object_def(cls):
+    def get_object_def(cls) -> ObjectDef:
         return ObjectDef(cls.object_classes, ldap_conn)
 
     @classmethod
-    def get_base(cls):
+    def get_entry_type(cls) -> EntryType:
+        return EntryType(cls.get_dn(), cls.object_classes, ldap_conn)
+
+    @classmethod
+    def get_base(cls) -> str:
         return cls.base_dn.format(_base_dn=base_dn)
+
+    @classmethod
+    def get_dn(cls) -> str:
+        return cls.dn.replace('{base_dn}', cls.get_base())
 
     @classmethod
     def get_type(cls):
         if cls._type is None:
-            cls._type = EntryType(cls.dn.replace('{base_dn}',cls.get_base()), cls.object_classes, ldap_conn)
+            cls._type = EntryType(cls.get_dn(), cls.object_classes, ldap_conn)
         return cls._type
 
-    def commit(self):
+    def ldap_commit(self):
         self._ldap_object.entry_commit_changes()
 
-    def add(self):
-        print(self._ldap_object.entry_attributes_as_dict)
+    def ldap_add(self):
         ret = ldap_conn.add(
-                self.dn, self.object_classes, self._ldap_object.entry_attributes_as_dict)
-        logger.debug(ret)
-        pass
+                self.entry_dn, self.object_classes, self._ldap_object.entry_attributes_as_dict)
+        if not ret:
+            raise Exception('ldap error')
 
     @classmethod
     def query_(cls):
-        if cls._query_object is None:
-            cls._query_object = cls._query(cls)
-        return cls._query_object
-
+        if cls._ldap_query_object is None:
+            cls._ldap_query_object = cls._query(cls)
+        return cls._ldap_query_object
 
     class _query(object):
         def __init__(self, clazz):
@@ -112,8 +126,6 @@ class EntryBase(db.Model):
 
         def all(self):
             return self._query(None)
-
-
 
 
 class Service(object):
@@ -213,16 +225,20 @@ class User(EntryBase):
     id = db.Column(
             db.String(length=36), primary_key=True, default=generate_uuid)
     username = db.Column(
-            db.String, unique=True)
+            db.String, unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False,
+                            default=datetime.now)
+    modified_at = db.Column(db.DateTime, nullable=False,
+                            default=datetime.now, onupdate=datetime.now)
+    last_login = db.Column(db.DateTime, nullable=True)
 
     totps = db.relationship('Totp', back_populates='user')
-
 
     dn = "uid={uid},{base_dn}"
     base_dn = "ou=users,{_base_dn}"
     object_classes = ["top", "inetOrgPerson", "LenticularUser"]
 
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         self._ldap_object = None
         super(db.Model).__init__(**kwargs)
 
@@ -235,6 +251,13 @@ class User(EntryBase):
 
     def make_writeable(self):
         self._ldap_object = self._ldap_object.entry_writable()
+
+    @property
+    def groups(self):
+        if self.username == 'tuxcoder':
+            return [Group(name='admin')]
+        else:
+            return []
 
     @property
     def entry_dn(self):
@@ -274,7 +297,7 @@ class User(EntryBase):
         self.make_writeable()
         password_hashed = crypt.crypt(password_new)
         self._ldap_object.userPassword = ('{CRYPT}' + password_hashed).encode()
-        self.commit()
+        self.ldap_commit()
 
     class _query(EntryBase._query):
 
@@ -295,6 +318,21 @@ class User(EntryBase):
                 return result[0]
             else:
                 return None
+
+    @staticmethod
+    def new(user_data: UserSignUp):
+        user = User()
+        user.username = user_data.username.lower()
+        domain = current_app.config['DOMAIN']
+        ldap_object = User.get_entry_type()(
+                uid=user_data.username.lower(),
+                sn=user_data.username,
+                cn=user_data.username,
+                userPassword='{CRYPT}' + user_data.password,
+                mail=f'{user_data.username}@{domain}')
+        user._ldap_object = ldap_object
+        user.ldap_add()
+        return user
 
 
 
@@ -321,9 +359,6 @@ class Group(EntryBase):
 
     fullname = AttrDef("cn")
 
-
-class UserSignUp(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, nullable=False)
-    password = db.Column(db.String, nullable=False)
-    alternative_email = db.Column(db.String)
+    name = db.Column(db.String(), nullable=False, unique=True)
+
