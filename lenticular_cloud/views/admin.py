@@ -5,6 +5,7 @@ from flask import jsonify
 from flask_login import current_user, logout_user
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from ..model import db, User, UserSignUp
+from .frontend import redirect_login
 
 
 admin_views = Blueprint('admin', __name__, url_prefix='/admin')
@@ -15,13 +16,11 @@ def before_request():
         resp = current_app.oauth.session.get('/userinfo')
         data = resp.json()
         if not current_user.is_authenticated or resp.status_code is not 200:
-            logout_user()
-            return redirect(url_for('oauth.login'))
+            return redirect_login()
         if 'admin' not in data['groups']:
             return 'Not an admin', 403
     except TokenExpiredError:
-        logout_user()
-        return redirect(url_for('oauth.login'))
+        return redirect_login()
 
 
 admin_views.before_request(before_request)

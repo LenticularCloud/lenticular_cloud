@@ -1,9 +1,9 @@
 
 from urllib.parse import urlencode, parse_qs
 
-from flask import Blueprint, redirect
+from flask import Blueprint, redirect, request
 from flask import current_app
-from flask import jsonify
+from flask import jsonify, session
 from flask import render_template, url_for, flash
 from flask_login import login_user, logout_user, current_user
 from werkzeug.utils import redirect
@@ -11,6 +11,7 @@ import logging
 from datetime import timedelta
 from base64 import b64decode
 from flask_dance.consumer import oauth_authorized
+from flask_dance.consumer.base import oauth_before_login
 from flask_dance.consumer import OAuth2ConsumerBlueprint
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 
@@ -22,16 +23,18 @@ from ..auth_providers import LdapAuthProvider
 frontend_views = Blueprint('frontend', __name__, url_prefix='')
 logger = logging.getLogger(__name__)
 
+def redirect_login():
+    logout_user()
+    session['next_url'] = request.path
+    return redirect(url_for('oauth.login', next_url=request.path))
 
 def before_request():
     try:
         resp = current_app.oauth.session.get('/userinfo')
         if not current_user.is_authenticated or resp.status_code is not 200:
-            logout_user()
-            return redirect(url_for('oauth.login'))
+            return redirect_login()
     except TokenExpiredError:
-        logout_user()
-        return redirect(url_for('oauth.login'))
+        return redirect_login()
 
 
 frontend_views.before_request(before_request)
@@ -48,7 +51,7 @@ def init_login_manager(app):
 
     @app.login_manager.unauthorized_handler
     def unauthorized():
-        return redirect(url_for('oauth.login'))
+        redirect_login()
 
     base_url = app.config['HYDRA_PUBLIC_URL']
     example_blueprint = OAuth2ConsumerBlueprint(
@@ -64,7 +67,7 @@ def init_login_manager(app):
     app.oauth = example_blueprint
 
     @oauth_authorized.connect_via(app.oauth)
-    def github_logged_in(blueprint, token):
+    def oauth2_logged_in(blueprint, token):
         if not token:
             flash("Failed to log in.", category="error")
             return False
@@ -72,7 +75,7 @@ def init_login_manager(app):
 
         resp = blueprint.session.get("/userinfo")
         if not resp.ok:
-            msg = "Failed to fetch user info from GitHub."
+            msg = "Failed to fetch user info from hydra."
             flash(msg, category="error")
             return False
 
@@ -90,15 +93,20 @@ def init_login_manager(app):
         # trying to incorrectly save it for us.
         return True
 
-    @frontend_views.route('/logout')
-    def logout():
-        logout_user()
-        return redirect(
-            f'{current_app.config["HYDRA_PUBLIC_URL"]}/oauth2/sessions/logout')
+
+@frontend_views.route('/logout')
+def logout():
+    logout_user()
+    return redirect(
+        f'{current_app.config["HYDRA_PUBLIC_URL"]}/oauth2/sessions/logout')
 
 
 @frontend_views.route('/', methods=['GET'])
 def index():
+    if 'next_url' in session:
+        next_url = session['next_url']
+        del session['next_url']
+        return redirect(next_url)
     return render_template('frontend/index.html.j2')
 
 

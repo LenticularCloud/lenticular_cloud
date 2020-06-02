@@ -49,7 +49,7 @@ window.$(document).ready(function () {
 
 window.admin = {
 	registration: {
-		delete: function(href, registration_id, username) {
+		delete: function(href, username) {
 			var dialog = new ConfirmDialog('Reject user registration', `Are you sure to reject the registration request from "${username}"?`);
 			dialog.show().then(()=>{
 				fetch(href, {
@@ -58,7 +58,7 @@ window.admin = {
 			});
 			return false;
 		},
-		accept: function(href, registration_id, username) {
+		accept: function(href, username) {
 			var dialog = new ConfirmDialog('Accept user registration', `Are you sure to accept the registration request from "${username}"?`);
 			dialog.show().then(()=>{
 				fetch(href, {
@@ -197,26 +197,36 @@ window.client_cert = {
 			SimpleFormSubmit.submitForm(form_sign_key.action, form_sign_key)
 				.then(response => {
 					response.json().then( response => {
-						// get certificate
-						var data = response.data;
-						var certs = [
-							pki.certificateFromPem(data.cert),
-							pki.certificateFromPem(data.ca_cert)
-						];
-						var password = form.querySelector('#cert-password').value;
-						var p12Asn1;
-						if (password == '') {
-							p12Asn1 = pkcs12.toPkcs12Asn1(keypair.privateKey, certs, null, {algorithm: '3des'}); // without password
+						if (data.errors) {
+							var msg ='<ul>';
+							for( var field in data.errors) {
+								msg += `<li>${field}: ${data.errors[field]}</li>`;
+							}
+							msg += '</ul>';
+							new Dialog('Password change Error', `Error Happend: ${msg}`).show()
 						} else {
-							p12Asn1 = pkcs12.toPkcs12Asn1(keypair.privateKey, certs, password, {algorithm: '3des'}); // without password
+							// get certificate
+							var data = response.data;
+							var certs = [
+								pki.certificateFromPem(data.cert),
+								pki.certificateFromPem(data.ca_cert)
+							];
+							var password = form.querySelector('#cert-password').value;
+							var p12Asn1;
+							if (password == '') {
+								p12Asn1 = pkcs12.toPkcs12Asn1(keypair.privateKey, certs, null, {algorithm: '3des'}); // without password
+							} else {
+								p12Asn1 = pkcs12.toPkcs12Asn1(keypair.privateKey, certs, password, {algorithm: '3des'}); // without password
+							}
+							var p12Der = asn1.toDer(p12Asn1).getBytes();
+							var p12b64 = util.encode64(p12Der);
+
+
+							var button = $('#save-button');
+							button.href= "data:application/x-pkcs12;base64," + p12b64
+							button.style['display'] ='block';
+							//new Dialog('Password changed', 'Password changed successfully!').show();
 						}
-						var p12Der = asn1.toDer(p12Asn1).getBytes();
-						var p12b64 = util.encode64(p12Der);
-
-
-						var button = $('#save-button');
-						button.href= "data:application/x-pkcs12;base64," + p12b64
-						button.style['display'] ='block';
 					});
 				});
 		});
