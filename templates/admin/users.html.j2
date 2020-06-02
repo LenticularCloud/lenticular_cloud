@@ -9,7 +9,9 @@
 		<tr>
 			<th>username</th>
 			<th>created_at</th>
-			<th>modified_at<th>
+			<th>modified_at</th>
+			<th>last_login</th>
+			<th>action</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -18,7 +20,8 @@
 			<td>{{ user.username }}</td>
 			<td>{{ user.created_at }}</td>
 			<td>{{ user.modified_at }}</td>
-			<td></td>
+			<td>{{ user.last_login }}</td>
+			<td> </td>
 		</tr>
 		{% endfor %}
 	</tbody>
