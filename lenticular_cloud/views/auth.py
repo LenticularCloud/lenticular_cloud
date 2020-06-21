@@ -40,11 +40,11 @@ def consent():
         consent_request = current_app.hydra_api.get_consent_request(
                                     request.args['consent_challenge'])
     except ory_hydra_client.exceptions.ApiValueError:
-        logger.info(f' ory exception {e}')
-        #return redirect(url_for('frontend.index'))
-    except ory_hydra_client.exceptions.ApiException as e:
-        logger.fatal(f'ory exception {e}',e)
-        raise e
+        logger.info('ory exception - could not fetch user data ApiValueError')
+        return redirect(url_for('frontend.index'))
+    except ory_hydra_client.exceptions.ApiException:
+        logger.exception('ory exception - could not fetch user data')
+        return redirect(url_for('frontend.index'))
 
     requested_scope = consent_request.requested_scope
     requested_audiences = consent_request.requested_access_token_audience
