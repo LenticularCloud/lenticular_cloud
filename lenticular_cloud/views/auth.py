@@ -16,11 +16,14 @@ import http
 import crypt
 import ory_hydra_client
 from datetime import datetime
+import logging
 
 from ..model import db, User, SecurityUser, UserSignUp
 from ..form.auth import ConsentForm, LoginForm, RegistrationForm
 from ..auth_providers import AUTH_PROVIDER_LIST
 
+
+logger = logging.getLogger(__name__)
 
 auth_views = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -36,8 +39,12 @@ def consent():
     try:
         consent_request = current_app.hydra_api.get_consent_request(
                                     request.args['consent_challenge'])
-    except ory_hydra_client.exceptions.ApiException:
-        return redirect(url_for('frontend.index'))
+    except ory_hydra_client.exceptions.ApiValueError:
+        logger.info(f' ory exception {e}')
+        #return redirect(url_for('frontend.index'))
+    except ory_hydra_client.exceptions.ApiException as e:
+        logger.fatal(f'ory exception {e}',e)
+        raise e
 
     requested_scope = consent_request.requested_scope
     requested_audiences = consent_request.requested_access_token_audience

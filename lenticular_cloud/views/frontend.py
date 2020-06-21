@@ -32,6 +32,7 @@ def before_request():
     try:
         resp = current_app.oauth.session.get('/userinfo')
         if not current_user.is_authenticated or resp.status_code is not 200:
+            logger.info('user not logged in redirect')
             return redirect_login()
     except TokenExpiredError:
         return redirect_login()
