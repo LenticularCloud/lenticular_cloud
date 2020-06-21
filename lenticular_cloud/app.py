@@ -50,7 +50,10 @@ def init_app(name=None):
     app.login_manager = LoginManager(app)
 
     #init hydra admin api
-    hydra_config = hydra.Configuration(app.config['HYDRA_ADMIN_URL'])
+    hydra_config = hydra.Configuration(
+                        app.config['HYDRA_ADMIN_URL'],
+                        username=app.config['HYDRA_ADMIN_USER'],
+                        password=app.config['HYDRA_ADMIN_PASSWORD'])
     hydra_client = hydra.ApiClient(hydra_config)
     app.hydra_api = hydra.AdminApi(hydra_client)
 
