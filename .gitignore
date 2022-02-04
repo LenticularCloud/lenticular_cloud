@@ -7,3 +7,6 @@ node_modules
 /data
 /https.crt
 /https.key
+*.egg-info
+/.tox
+/dist
