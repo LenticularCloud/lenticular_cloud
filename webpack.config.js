@@ -1,6 +1,6 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack')
 
@@ -63,7 +63,7 @@ module.exports = {
 			new TerserPlugin({
 				include: /\.js$/
 			}),
-			new OptimizeCSSAssetsPlugin({
+			new CssMinimizerPlugin({
 				include: /\.css$/
 			})
 		]
@@ -74,5 +74,11 @@ module.exports = {
 			jQuery: "jquery"
 		}),
 		new MiniCssExtractPlugin(),
-	]
+	],
+  // workaround for qrcode-svg
+  "resolve": {
+    "fallback": {
+      "fs": false,
+    }
+  }
 };

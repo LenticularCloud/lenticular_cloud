@@ -1,7 +1,7 @@
 
 build-browser-app:
 	npm install
-	nodejs ./node_modules/webpack-cli/bin/cli.js
+	node ./node_modules/webpack-cli/bin/cli.js
 
 
 server_keys: https.crt https.key
