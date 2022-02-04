@@ -4,7 +4,6 @@ from flask import current_app, session
 from flask import jsonify
 from flask.helpers import make_response
 from flask.templating import render_template
-from oic.oic.message import TokenErrorResponse, UserInfoErrorResponse, EndSessionRequest
 
 from flask import Blueprint, render_template, request, url_for
 import logging

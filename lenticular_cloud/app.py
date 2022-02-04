@@ -1,12 +1,12 @@
 from flask.app import Flask
 from flask import g, redirect, request
 from flask.helpers import url_for
-from jwkest.jwk import RSAKey, rsa_load
 from flask_babel import Babel
 from flask_login import LoginManager
 import time
 import subprocess
 import ory_hydra_client as hydra
+import ory_hydra_client.api.admin_api as hydra_admin_api
 
 from ldap3 import Connection, Server, ALL
 
@@ -55,7 +55,7 @@ def init_app(name=None):
                         username=app.config['HYDRA_ADMIN_USER'],
                         password=app.config['HYDRA_ADMIN_PASSWORD'])
     hydra_client = hydra.ApiClient(hydra_config)
-    app.hydra_api = hydra.AdminApi(hydra_client)
+    app.hydra_api = hydra_admin_api.AdminApi(hydra_client)
 
     from .views import auth_views, frontend_views, init_login_manager, api_views, pki_views, admin_views
     init_login_manager(app)
