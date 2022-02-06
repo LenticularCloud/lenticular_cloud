@@ -31,7 +31,7 @@ def redirect_login():
 def before_request():
     try:
         resp = current_app.oauth.session.get('/userinfo')
-        if not current_user.is_authenticated or resp.status_code is not 200:
+        if not current_user.is_authenticated or resp.status_code != 200:
             logger.info('user not logged in redirect')
             return redirect_login()
     except TokenExpiredError:
@@ -72,7 +72,7 @@ def init_login_manager(app):
         if not token:
             flash("Failed to log in.", category="error")
             return False
-        print(f'debug ---------------{token}')
+        #print(f'debug ---------------{token}')
 
         resp = blueprint.session.get("/userinfo")
         if not resp.ok:

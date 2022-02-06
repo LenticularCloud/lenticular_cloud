@@ -1,6 +1,7 @@
 from flask import g, request, Flask
 from flask_login import current_user
 from typing import Optional
+from lenticular_cloud.model import db, User
 
 LANGUAGES = {
     'en': 'English',

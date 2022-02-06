@@ -7,6 +7,7 @@ import time
 import subprocess
 import ory_hydra_client as hydra
 import ory_hydra_client.api.admin_api as hydra_admin_api
+import os
 
 from ldap3 import Connection, Server, ALL
 
@@ -26,11 +27,12 @@ def init_oauth2(app):
 
 
 
-def init_app(name=None):
-    name = name or __name__
-    app = Flask(name)
+def create_app():
+    name = "lenticular_cloud"
+    app = Flask(name, template_folder='template')
     app.config.from_pyfile('application.cfg')
-    app.config.from_pyfile('production.cfg')
+    active_cfg = os.getenv('CONFIG_FILE', 'production.cfg')
+    app.config.from_pyfile(active_cfg)
 
     app.jinja_env.globals['GIT_HASH'] = get_git_hash()
 

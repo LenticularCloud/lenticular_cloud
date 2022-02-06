@@ -1,7 +1,7 @@
 from flask import current_app
 from ldap3_orm import AttrDef, EntryBase as _EntryBase, ObjectDef, EntryType
 from ldap3_orm import Reader
-from ldap3 import Entry, HASHED_SALTED_SHA256
+from ldap3 import Connection, Entry, HASHED_SALTED_SHA256
 from ldap3.utils.conv import escape_filter_chars
 from ldap3.utils.hashed import hashed
 from flask_login import UserMixin
@@ -19,6 +19,7 @@ from flask_sqlalchemy import SQLAlchemy, orm
 from datetime import datetime
 import uuid
 import pyotp
+from typing import Optional
 
 
 logger = logging.getLogger(__name__)
@@ -226,6 +227,8 @@ class User(EntryBase):
             db.String(length=36), primary_key=True, default=generate_uuid)
     username = db.Column(
             db.String, unique=True, nullable=False)
+    alternative_email = db.Column(
+            db.String, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False,
                             default=datetime.now)
     modified_at = db.Column(db.DateTime, nullable=False,
@@ -236,7 +239,7 @@ class User(EntryBase):
 
     dn = "uid={uid},{base_dn}"
     base_dn = "ou=users,{_base_dn}"
-    object_classes = ["top", "inetOrgPerson", "LenticularUser"]
+    object_classes = ["inetOrgPerson"] #, "LenticularUser"]
 
     def __init__(self, **kwargs):
         self._ldap_object = None
@@ -247,57 +250,34 @@ class User(EntryBase):
         return True  # TODO
 
     def get(self, key):
-        print(f'getitem: {key}')
+        print(f'getitem: {key}') # TODO
 
     def make_writeable(self):
         self._ldap_object = self._ldap_object.entry_writable()
 
     @property
-    def groups(self):
+    def groups(self) -> list[str]:
         if self.username == 'tuxcoder':
             return [Group(name='admin')]
         else:
             return []
 
     @property
-    def entry_dn(self):
+    def entry_dn(self) -> str:
         return self._ldap_object.entry_dn
 
     @property
-    def fullname(self):
-        return self._ldap_object.fullname
-
-    @property
-    def givenname(self):
-        return self._ldap_object.givenname
-
-    @property
-    def surname(self):
-        return self._ldap_object.surname
-
-    @property
-    def email(self):
+    def email(self) -> str:
         domain = current_app.config['DOMAIN']
         return f'{self.username}@{domain}'
         return self._ldap_object.mail
 
-    @property
-    def alternative_email(self):
-        return self._ldap_object.altMail
-
-    @property
-    def auth_role(self):
-        return self._ldap_object.authRole
-
-    @property
-    def gpg_public_key(self):
-        return self._ldap_object.gpgPublicKey
-
-    def change_password(self, password_new: str):
+    def change_password(self, password_new: str) -> bool:
         self.make_writeable()
         password_hashed = crypt.crypt(password_new)
         self._ldap_object.userPassword = ('{CRYPT}' + password_hashed).encode()
         self.ldap_commit()
+        return True
 
     class _query(EntryBase._query):
 
@@ -312,7 +292,7 @@ class User(EntryBase):
             user._ldap_object = ldap_object
             return user
 
-        def by_username(self, username) -> 'User':
+        def by_username(self, username) -> Optional['User']:
             result = self._query('(uid={username:s})'.format(username=escape_filter_chars(username)))
             if len(result) > 0:
                 return result[0]

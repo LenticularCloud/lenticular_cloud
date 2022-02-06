@@ -17,5 +17,4 @@ requests_oauthlib
 blinker
 ory-hydra-client
 
-flask-debug
 

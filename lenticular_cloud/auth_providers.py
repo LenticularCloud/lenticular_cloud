@@ -70,7 +70,7 @@ class TotpAuthProvider(AuthProvider):
     def check_auth(user, form):
         data = form.data['totp']
         if data is not None:
-            print(f'data totp: {data}')
+            #print(f'data totp: {data}')
             if len(user.totps) == 0:  # migration, TODO remove
                 return True
             for totp in user.totps:
@@ -84,5 +84,5 @@ AUTH_PROVIDER_LIST = [
     TotpAuthProvider
 ]
 
-print(LdapAuthProvider.get_name())
+#print(LdapAuthProvider.get_name())
 

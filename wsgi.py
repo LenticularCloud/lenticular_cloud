@@ -1,9 +1,8 @@
 import logging
 
-from lenticular_cloud.app import init_app
+from lenticular_cloud.app import create_app
 
-name = 'oidc_provider'
-app = init_app(name)
+app = create_app()
 logging.basicConfig(level=logging.DEBUG)
 
 

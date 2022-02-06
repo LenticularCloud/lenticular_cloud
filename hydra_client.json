@@ -1,0 +1,13 @@
+{
+  "client_id": "identiy_provider",
+  "client_secret": "",
+  "redirect_uris": [
+    "{domain}/oauth/authorized"
+  ],
+  "response_types": [
+    "code", "id_token"
+  ],
+  "scope": "openid profile manage",
+  "grant_types": ["authorization_code", "refresh_token"],
+  "token_endpoint_auth_method": "client_secret_basic"
+}

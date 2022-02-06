@@ -1,6 +1,6 @@
 /venv
 /tmp
-/production.cfg
+/lenticular_cloud/production.cfg
 /pki
 signing_key.pem
 node_modules

@@ -15,9 +15,9 @@ def before_request():
     try:
         resp = current_app.oauth.session.get('/userinfo')
         data = resp.json()
-        if not current_user.is_authenticated or resp.status_code is not 200:
+        if not current_user.is_authenticated or resp.status_code != 200:
             return redirect_login()
-        if 'admin' not in data['groups']:
+        if 'groups' not in data or 'admin' not in data['groups']:
             return 'Not an admin', 403
     except TokenExpiredError:
         return redirect_login()

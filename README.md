@@ -32,3 +32,9 @@ Tested Services
 * ~~Postfix~~/Dovecot (~~OIDC~~/client cert/password)
 * prosody (client cert/~~password~~)
 
+
+
+Oauth2 Settings:
+----------------
+
+callback url: `${domain}/

@@ -86,7 +86,8 @@ def login():
     login_challenge = request.args.get('login_challenge')
     try:
         login_request = current_app.hydra_api.get_login_request(login_challenge)
-    except ory_hydra_client.exceptions.ApiException:
+    except ory_hydra_client.exceptions.ApiException as e:
+        logger.exception("could not fetch login request")
         return redirect(url_for('frontend.index'))
 
     if login_request.skip:
