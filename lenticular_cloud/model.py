@@ -19,7 +19,7 @@ from flask_sqlalchemy import SQLAlchemy, orm
 from datetime import datetime
 import uuid
 import pyotp
-from typing import Optional
+from typing import Optional, Callable
 
 
 logger = logging.getLogger(__name__)
@@ -49,10 +49,10 @@ class SecurityUser(UserMixin):
 
 class LambdaStr:
 
-    def __init__(self, lam):
+    def __init__(self, lam: Callable[[],str]):
         self.lam = lam
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.lam()
 
 
@@ -68,6 +68,8 @@ class EntryBase(db.Model):
 #           self._ldap_object = self.get_type()(**kwargs)
 #       else:
 #           self._ldap_object = ldap_object
+    dn = ''
+    base_dn = ''
 
     def __str__(self) -> str:
         return str(self._ldap_object)

@@ -17,6 +17,7 @@ import crypt
 import ory_hydra_client
 from datetime import datetime
 import logging
+import json
 
 from ..model import db, User, SecurityUser, UserSignUp
 from ..form.auth import ConsentForm, LoginForm, RegistrationForm
@@ -34,7 +35,7 @@ def consent():
     # DUMMPY ONLY
 
     form = ConsentForm()
-    remember_for = 60*60*24*30  # remember for 7 days
+    remember_for = 60*60*24*30  # remember for 30 days
 
     try:
         consent_request = current_app.hydra_api.get_consent_request(
@@ -46,8 +47,8 @@ def consent():
         logger.exception('ory exception - could not fetch user data')
         return redirect(url_for('frontend.index'))
 
-    requested_scope = consent_request.requested_scope
-    requested_audiences = consent_request.requested_access_token_audience
+    requested_scope = json.loads(consent_request.requested_scope.to_str().replace("'", '"'))
+    requested_audiences = json.loads(consent_request.requested_access_token_audience.to_str().replace("'", '"'))
 
     if form.validate_on_submit() or consent_request.skip:
         user = User.query.get(consent_request.subject)
@@ -151,11 +152,17 @@ def login_auth():
 @auth_views.route("/logout")
 def logout():
     logout_challenge = request.args.get('logout_challenge')
-    logout_request = current_app.hydra_api.get_logout_request(logout_challenge)
-    resp = current_app.hydra_api.accept_logout_request(logout_challenge)
     # TODO confirm
+    resp = current_app.hydra_api.accept_logout_request(logout_challenge)
     return redirect(resp.redirect_to)
 
+
+@auth_views.route("/error", methods=["GET"])
+def auth_error():
+    error = request.args.get('error')
+    error_description = request.args.get('error_description')
+
+    return render_template('auth/error.html.j2', error=error, error_description=error_description)
 
 
 @auth_views.route("/sign_up", methods=["GET"])
