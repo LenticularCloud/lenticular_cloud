@@ -1,9 +1,15 @@
 import argparse
 from .model import db, User, UserSignUp
 from .app import create_app
+from werkzeug.middleware.proxy_fix import ProxyFix
+
+import logging
+import os
 
 
 def entry_point():
+    logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
+
     parser = argparse.ArgumentParser(description='lenticular_cloud cli')
     subparsers = parser.add_subparsers()
 
@@ -13,6 +19,9 @@ def entry_point():
     parser_signup = subparsers.add_parser('signup')
     parser_signup.add_argument('--signup_id', type=int)
     parser_signup.set_defaults(func=cli_signup)
+
+    parser_run = subparsers.add_parser('run')
+    parser_run.set_defaults(func=cli_run)
 
     '''
     parser_upcoming = subparsers.add_parser('upcoming')
@@ -33,6 +42,8 @@ def entry_point():
         parser.print_help()
         return
     app = create_app()
+    if args.func == cli_run:
+        cli_run(app,args)
     with app.app_context():
         args.func(args)
 
@@ -55,6 +66,11 @@ def cli_signup(args):
         # list
         print(UserSignUp.query.all())
 
+
+def cli_run(app, args):
+    logging.basicConfig(level=logging.DEBUG)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
+    app.run(debug=True, host='127.0.0.1', port=5000)
 
 if __name__ == "__main__":
     entry_point()
