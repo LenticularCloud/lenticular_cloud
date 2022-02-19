@@ -1,11 +1,12 @@
 
+from authlib.integrations.flask_client import OAuth
 from urllib.parse import urlencode, parse_qs
 
 import flask
-from flask import Blueprint, redirect
-from flask import current_app, session
+from flask import Blueprint, redirect, flash, current_app, session
 from flask.templating import render_template
 from flask_babel import gettext
+from flask.typing import ResponseReturnValue
 
 from flask import request, url_for, jsonify
 from flask_login import login_required, login_user, logout_user, current_user
@@ -14,14 +15,17 @@ from urllib.parse import urlparse
 from base64 import b64decode, b64encode
 import http
 import crypt
-import ory_hydra_client
 from datetime import datetime
 import logging
 import json
+from ory_hydra_client.api.admin import get_consent_request, accept_consent_request, accept_login_request, get_login_request, accept_login_request, accept_logout_request, get_login_request
+from ory_hydra_client.models import AcceptLoginRequest, AcceptConsentRequest, ConsentRequestSession, GenericError, ConsentRequestSessionAccessToken, ConsentRequestSessionIdToken
+from typing import Optional
 
 from ..model import db, User, SecurityUser, UserSignUp
 from ..form.auth import ConsentForm, LoginForm, RegistrationForm
 from ..auth_providers import AUTH_PROVIDER_LIST
+from ..hydra import hydra_service
 
 
 logger = logging.getLogger(__name__)
@@ -29,26 +33,31 @@ logger = logging.getLogger(__name__)
 auth_views = Blueprint('auth', __name__, url_prefix='/auth')
 
 
+
 @auth_views.route('/consent', methods=['GET', 'POST'])
-def consent():
+def consent() -> ResponseReturnValue:
     """Always grant consent."""
     # DUMMPY ONLY
 
     form = ConsentForm()
     remember_for = 60*60*24*30  # remember for 30 days
 
-    try:
-        consent_request = current_app.hydra_api.get_consent_request(
-                                    request.args['consent_challenge'])
-    except ory_hydra_client.exceptions.ApiValueError:
-        logger.info('ory exception - could not fetch user data ApiValueError')
-        return redirect(url_for('frontend.index'))
-    except ory_hydra_client.exceptions.ApiException:
-        logger.exception('ory exception - could not fetch user data')
-        return redirect(url_for('frontend.index'))
+    #try:
+    consent_request = get_consent_request.sync(consent_challenge=request.args['consent_challenge'],_client=hydra_service.hydra_client)
 
-    requested_scope = consent_request.requested_scope["value"]
-    requested_audiences = consent_request.requested_access_token_audience["value"]
+    if consent_request is None or isinstance( consent_request, GenericError):
+       return redirect(url_for('frontend.index'))
+
+
+#   except ory_hydra_client.exceptions.ApiValueError:
+#       logger.info('ory exception - could not fetch user data ApiValueError')
+#       return redirect(url_for('frontend.index'))
+#   except ory_hydra_client.exceptions.ApiException:
+#       logger.exception('ory exception - could not fetch user data')
+#       return redirect(url_for('frontend.index'))
+
+    requested_scope = consent_request.requested_scope
+    requested_audiences = consent_request.requested_access_token_audience
 
     if form.validate_on_submit() or consent_request.skip:
         user = User.query.get(consent_request.subject)
@@ -60,19 +69,25 @@ def consent():
             'groups': [group.name for group in user.groups]
         }
         id_token_data = {}
-        if 'openid' in requested_scope:
+        if isinstance(requested_scope, list) and 'openid' in requested_scope:
             id_token_data = token_data
-        resp = current_app.hydra_api.accept_consent_request(
-            consent_request.challenge, body={
-                'grant_scope': requested_scope,
-                'grant_access_token_audience': requested_audiences,
-                'remember': form.data['remember'],
-                'remember_for': remember_for,
-                'session': {
-                    'access_token': token_data,
-                    'id_token': id_token_data
-                }
-            })
+        access_token=ConsentRequestSessionAccessToken.from_dict(token_data)
+        id_token=ConsentRequestSessionIdToken.from_dict(id_token_data)
+        body = AcceptConsentRequest(
+                grant_scope= requested_scope,
+                grant_access_token_audience= requested_audiences,
+                remember= form.data['remember'],
+                remember_for= remember_for,
+                session= ConsentRequestSession(
+                    access_token= access_token,
+                    id_token= id_token
+                )
+        )
+        resp = accept_consent_request.sync(_client=hydra_service.hydra_client,
+            json_body=body,
+            consent_challenge=consent_request.challenge)
+        if resp is None or isinstance( resp, GenericError):
+            return 'internal error, could not forward request', 503
         return redirect(resp.redirect_to)
     return render_template(
             'auth/consent.html.j2',
@@ -83,18 +98,22 @@ def consent():
 
 
 @auth_views.route('/login', methods=['GET', 'POST'])
-def login():
+def login() -> ResponseReturnValue:
     login_challenge = request.args.get('login_challenge')
-    try:
-        login_request = current_app.hydra_api.get_login_request(login_challenge)
-    except ory_hydra_client.exceptions.ApiException as e:
+    if login_challenge is None:
+        return 'login_challenge missing', 400
+    login_request = get_login_request.sync(_client=hydra_service.hydra_client, login_challenge=login_challenge)
+    if login_request is None or isinstance( login_request, GenericError):
         logger.exception("could not fetch login request")
         return redirect(url_for('frontend.index'))
 
     if login_request.skip:
-        resp = current_app.hydra_api.accept_login_request(
-            login_challenge,
-            body={'subject': login_request.subject})
+        resp = accept_login_request.sync(_client=hydra_service.hydra_client,
+            login_challenge=login_challenge,
+            json_body=AcceptLoginRequest(subject=login_request.subject))
+        if resp is None or isinstance( resp, GenericError):
+            return 'internal error, could not forward request', 503
+
         return redirect(resp.redirect_to)
     form = LoginForm()
     if form.validate_on_submit():
@@ -110,11 +129,12 @@ def login():
 
 
 @auth_views.route('/login/auth', methods=['GET', 'POST'])
-def login_auth():
+def login_auth() -> ResponseReturnValue:
     login_challenge = request.args.get('login_challenge')
-    try:
-        login_request = current_app.hydra_api.get_login_request(login_challenge)
-    except ory_hydra_client.exceptions.ApiValueError:
+    if login_challenge is None:
+        return 'missing login_challenge, bad request', 400
+    login_request = get_login_request.sync(_client=hydra_service.hydra_client, login_challenge=login_challenge)
+    if login_request is None:
         return redirect(url_for('frontend.index'))
 
     if 'username' not in session:
@@ -140,25 +160,31 @@ def login_auth():
         subject = user.id
         user.last_login = datetime.now()
         db.session.commit()
-        resp = current_app.hydra_api.accept_login_request(
-            login_challenge, body={
-                'subject': subject,
-                'remember': remember_me,
-            })
+        resp = accept_login_request.sync(_client=hydra_service.hydra_client,
+            login_challenge=login_challenge, json_body=AcceptLoginRequest(
+                subject=subject,
+                remember=remember_me,
+            ))
+        if resp is None or isinstance( resp, GenericError):
+            return 'internal error, could not forward request', 503
         return redirect(resp.redirect_to)
     return render_template('auth/login_auth.html.j2', forms=auth_forms)
 
 
 @auth_views.route("/logout")
-def logout():
+def logout() -> ResponseReturnValue:
     logout_challenge = request.args.get('logout_challenge')
+    if logout_challenge is None:
+        return 'invalid request, logout_challenge not set', 400
     # TODO confirm
-    resp = current_app.hydra_api.accept_logout_request(logout_challenge)
+    resp = accept_logout_request.sync(_client=hydra_service.hydra_client, logout_challenge=logout_challenge)
+    if resp is None or isinstance( resp, GenericError):
+        return 'internal error, could not forward request', 503
     return redirect(resp.redirect_to)
 
 
 @auth_views.route("/error", methods=["GET"])
-def auth_error():
+def auth_error() -> ResponseReturnValue:
     error = request.args.get('error')
     error_description = request.args.get('error_description')
 

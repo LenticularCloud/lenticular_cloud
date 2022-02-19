@@ -5,6 +5,7 @@ from ..model import db
 
 class FieldList(WTFFieldList):
     def __init__(self, *args, **kwargs):
+        self.modify = kwargs.pop("modify", True)
         super().__init__(*args, **kwargs)
 
     def get_template(self) -> Field:
@@ -16,7 +17,6 @@ class FieldList(WTFFieldList):
 class ModelFieldList(FieldList):
     def __init__(self, *args, **kwargs):
         self.model = kwargs.pop("model", None)
-        self.modify = kwargs.pop("modify", True)
         super(ModelFieldList, self).__init__(*args, **kwargs)
         if not self.model:
             raise ValueError("ModelFieldList requires model to be set")

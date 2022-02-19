@@ -44,6 +44,7 @@ def entry_point():
     app = create_app()
     if args.func == cli_run:
         cli_run(app,args)
+        return
     with app.app_context():
         args.func(args)
 

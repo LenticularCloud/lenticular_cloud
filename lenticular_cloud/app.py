@@ -1,18 +1,18 @@
 from flask.app import Flask
 from flask import g, redirect, request
 from flask.helpers import url_for
-from flask_babel import Babel
 from flask_login import LoginManager
 import time
 import subprocess
-import ory_hydra_client as hydra
-import ory_hydra_client.api.admin_api as hydra_admin_api
+from ory_hydra_client import Client
 import os
 
 from ldap3 import Connection, Server, ALL
 
 from . import model
 from .pki import Pki
+from .hydra import hydra_service
+from .translations import init_babel
 
 
 def get_git_hash():
@@ -22,12 +22,7 @@ def get_git_hash():
         return ''
 
 
-def init_oauth2(app):
-    pass
-
-
-
-def create_app():
+def create_app() -> Flask:
     name = "lenticular_cloud"
     app = Flask(name, template_folder='template')
     app.config.from_pyfile('application.cfg')
@@ -47,34 +42,30 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-    app.babel = Babel(app)
-    init_oauth2(app)
+    init_babel(app)
     app.login_manager = LoginManager(app)
 
     #init hydra admin api
-    hydra_config = hydra.Configuration(
-                        host=app.config['HYDRA_ADMIN_URL'],
-                        username=app.config['HYDRA_ADMIN_USER'],
-                        password=app.config['HYDRA_ADMIN_PASSWORD'])
-    hydra_client = hydra.ApiClient(hydra_config)
-    app.hydra_api = hydra_admin_api.AdminApi(hydra_client)
+#    hydra_config = hydra.Configuration(
+#                        host=app.config['HYDRA_ADMIN_URL'],
+#                        username=app.config['HYDRA_ADMIN_USER'],
+#                        password=app.config['HYDRA_ADMIN_PASSWORD'])
+    hydra_service.set_hydra_client(Client(base_url=app.config['HYDRA_ADMIN_URL']))
 
-    from .views import auth_views, frontend_views, init_login_manager, api_views, pki_views, admin_views
+    from .views import auth_views, frontend_views, init_login_manager, api_views, pki_views, admin_views, oauth2_views
     init_login_manager(app)
+    #oauth2.init_app(app)
     app.register_blueprint(auth_views)
     app.register_blueprint(frontend_views)
     app.register_blueprint(api_views)
     app.register_blueprint(pki_views)
     app.register_blueprint(admin_views)
+    app.register_blueprint(oauth2_views)
 
     @app.before_request
     def befor_request():
         request_start_time = time.time()
         g.request_time = lambda: "%.5fs" % (time.time() - request_start_time)
-
-    from .translations import init_babel
-
-    init_babel(app)
 
     app.lenticular_services = {}
     for service_name, service_config in app.config['LENTICULAR_CLOUD_SERVICES'].items():

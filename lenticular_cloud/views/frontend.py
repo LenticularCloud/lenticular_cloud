@@ -1,109 +1,58 @@
 
+from authlib.integrations.base_client.errors import MissingTokenError, InvalidTokenError
 from urllib.parse import urlencode, parse_qs
-
 from flask import Blueprint, redirect, request
 from flask import current_app
 from flask import jsonify, session
-from flask import render_template, url_for, flash
+from flask import render_template, url_for
 from flask_login import login_user, logout_user, current_user
 from werkzeug.utils import redirect
 import logging
 from datetime import timedelta
 from base64 import b64decode
-from flask_dance.consumer import oauth_authorized
-from flask_dance.consumer.base import oauth_before_login
-from flask_dance.consumer import OAuth2ConsumerBlueprint
+from flask.typing import ResponseReturnValue 
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
+from ory_hydra_client.api.admin import list_subject_consent_sessions, revoke_consent_sessions
+from ory_hydra_client.models import GenericError
+from typing import Optional
 
 from ..model import db, User, SecurityUser, Totp
 from ..form.frontend import ClientCertForm, TOTPForm, \
     TOTPDeleteForm, PasswordChangeForm
 from ..auth_providers import LdapAuthProvider
+from .oauth2 import redirect_login, oauth2
+from ..hydra import hydra_service
 
 frontend_views = Blueprint('frontend', __name__, url_prefix='')
 logger = logging.getLogger(__name__)
 
-def redirect_login():
-    logout_user()
-    session['next_url'] = request.path
-    return redirect(url_for('oauth.login', next_url=request.path))
 
-def before_request():
+def before_request() -> Optional[ResponseReturnValue]:
     try:
-        resp = current_app.oauth.session.get('/userinfo')
+        resp = oauth2.custom.get('/userinfo')
         if not current_user.is_authenticated or resp.status_code != 200:
             logger.info('user not logged in redirect')
             return redirect_login()
-    except TokenExpiredError:
+    except MissingTokenError:
         return redirect_login()
+    except InvalidTokenError:
+        return redirect_login()
+
+    return None
 
 
 frontend_views.before_request(before_request)
 
 
-def init_login_manager(app):
-    @app.login_manager.user_loader
-    def user_loader(username):
-        return User.query_().by_username(username)
-
-    @app.login_manager.request_loader
-    def request_loader(_request):
-        pass
-
-    @app.login_manager.unauthorized_handler
-    def unauthorized():
-        redirect_login()
-
-    base_url = app.config['HYDRA_PUBLIC_URL']
-    example_blueprint = OAuth2ConsumerBlueprint(
-        "oauth", __name__,
-        client_id=app.config['OAUTH_ID'],
-        client_secret=app.config['OAUTH_SECRET'],
-        base_url=base_url,
-        token_url=f"{base_url}/oauth2/token",
-        authorization_url=f"{base_url}/oauth2/auth",
-        scope=['openid', 'profile', 'manage']
-    )
-    app.register_blueprint(example_blueprint, url_prefix="/")
-    app.oauth = example_blueprint
-
-    @oauth_authorized.connect_via(app.oauth)
-    def oauth2_logged_in(blueprint, token):
-        if not token:
-            flash("Failed to log in.", category="error")
-            return False
-        #print(f'debug ---------------{token}')
-
-        resp = blueprint.session.get("/userinfo")
-        if not resp.ok:
-            msg = "Failed to fetch user info from hydra."
-            flash(msg, category="error")
-            return False
-
-        oauth_info = resp.json()
-
-        db_user = User.query.get(str(oauth_info["sub"]))
-
-        login_user(SecurityUser(db_user.username))
-        #flash("Successfully signed in with GitHub.")
-
-        # Since we're manually creating the OAuth model in the database,
-        # we should return False so that Flask-Dance knows that
-        # it doesn't have to do it. If we don't return False, the OAuth token
-        # could be saved twice, or Flask-Dance could throw an error when
-        # trying to incorrectly save it for us.
-        return True
-
-
 @frontend_views.route('/logout')
-def logout():
+def logout() -> ResponseReturnValue:
     logout_user()
     return redirect(
         f'{current_app.config["HYDRA_PUBLIC_URL"]}/oauth2/sessions/logout')
 
 
 @frontend_views.route('/', methods=['GET'])
-def index():
+def index() -> ResponseReturnValue:
     if 'next_url' in session:
         next_url = session['next_url']
         del session['next_url']
@@ -112,7 +61,7 @@ def index():
 
 
 @frontend_views.route('/client_cert')
-def client_cert():
+def client_cert() -> ResponseReturnValue:
     client_certs = {}
     for service in current_app.lenticular_services.values():
         client_certs[str(service.name)] = \
@@ -125,7 +74,7 @@ def client_cert():
 
 
 @frontend_views.route('/client_cert/<service_name>/<serial_number>')
-def get_client_cert(service_name, serial_number):
+def get_client_cert(service_name, serial_number) -> ResponseReturnValue:
     service = current_app.lenticular_services[service_name]
     cert = current_app.pki.get_client_cert(
             current_user, service, serial_number)
@@ -137,7 +86,7 @@ def get_client_cert(service_name, serial_number):
 
 @frontend_views.route(
         '/client_cert/<service_name>/<serial_number>', methods=['DELETE'])
-def revoke_client_cert(service_name, serial_number):
+def revoke_client_cert(service_name, serial_number) -> ResponseReturnValue:
     service = current_app.lenticular_services[service_name]
     cert = current_app.pki.get_client_cert(
             current_user, service, serial_number)
@@ -148,7 +97,7 @@ def revoke_client_cert(service_name, serial_number):
 @frontend_views.route(
         '/client_cert/<service_name>/new',
         methods=['GET', 'POST'])
-def client_cert_new(service_name):
+def client_cert_new(service_name) -> ResponseReturnValue:
     service = current_app.lenticular_services[service_name]
     form = ClientCertForm()
     if form.validate_on_submit():
@@ -177,13 +126,13 @@ def client_cert_new(service_name):
 
 
 @frontend_views.route('/totp')
-def totp():
+def totp() -> ResponseReturnValue:
     delete_form = TOTPDeleteForm()
     return render_template('frontend/totp.html.j2', delete_form=delete_form)
 
 
 @frontend_views.route('/totp/new', methods=['GET', 'POST'])
-def totp_new():
+def totp_new() -> ResponseReturnValue:
     form = TOTPForm()
 
     if form.validate_on_submit():
@@ -203,7 +152,7 @@ def totp_new():
 
 
 @frontend_views.route('/totp/<totp_name>/delete', methods=['GET', 'POST'])
-def totp_delete(totp_name):
+def totp_delete(totp_name) -> ResponseReturnValue:
     totp = Totp.query.filter(Totp.name == totp_name).first()
     db.session.delete(totp)
     db.session.commit()
@@ -213,13 +162,13 @@ def totp_delete(totp_name):
 
 
 @frontend_views.route('/password_change')
-def password_change():
+def password_change() -> ResponseReturnValue:
     form = PasswordChangeForm()
     return render_template('frontend/password_change.html.j2', form=form)
 
 
 @frontend_views.route('/password_change', methods=['POST'])
-def password_change_post():
+def password_change_post() -> ResponseReturnValue:
     form = PasswordChangeForm()
     if form.validate():
         password_old = str(form.data['password_old'])
@@ -230,7 +179,6 @@ def password_change_post():
                     {'errors': {'password_old': 'Old Password is invalid'}})
         resp = current_user.change_password(password_new)
         if resp:
-            print(current_user)
             return jsonify({})
         else:
             return jsonify({'errors': {'internal': 'internal server errror'}})
@@ -238,23 +186,22 @@ def password_change_post():
 
 
 @frontend_views.route('/oauth2_token')
-def oauth2_tokens():
+def oauth2_tokens() -> ResponseReturnValue:
 
-    subject = current_app.oauth.session.get('/userinfo').json()['sub']
-    consent_sessions = current_app.hydra_api.list_subject_consent_sessions(
-                                subject)
-
-    print(consent_sessions)
+    subject = oauth2.custom.get('/userinfo').json()['sub']
+    consent_sessions = list_subject_consent_sessions.sync(subject=subject, _client=hydra_service.hydra_client)
+    if consent_sessions is None or isinstance( consent_sessions, GenericError):
+       return 'internal error, could not fetch sessions', 500
     return render_template(
             'frontend/oauth2_tokens.html.j2',
             consent_sessions=consent_sessions)
 
 
 @frontend_views.route('/oauth2_token/<client_id>', methods=['DELETE'])
-def oauth2_token_revoke(client_id: str):
-    subject = current_app.oauth.session.get('/userinfo').json()['sub']
-    current_app.hydra_api.revoke_consent_sessions(
-                                subject,
+def oauth2_token_revoke(client_id: str) -> ResponseReturnValue:
+    subject = oauth2.session.get('/userinfo').json()['sub']
+    revoke_consent_sessions.sync( _client=hydra_service.hydra_client,
+                                subject=subject,
                                 client=client_id)
 
     return jsonify({})

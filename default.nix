@@ -4,8 +4,6 @@
   ...}:
 let 
 
-  nixpkgs_unstable = import <nixpkgs_unstable> {};
-
   urlobject = with python.pkgs; buildPythonPackage rec {
     pname = "URLObject";
     version = "2.4.3";
@@ -16,9 +14,20 @@ let
     doCheck = true;
     propagatedBuildInputs = [
     ];
-
   };
 
+  python_attrs = with python.pkgs; buildPythonPackage rec {
+    pname = "attrs";
+    version = "21.4.0";
+    src = fetchPypi {
+      inherit pname version;
+      sha256 = "626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd";
+    };
+    #doCheck = true;
+    doCheck = false;
+    propagatedBuildInputs = [
+    ];
+  };
 
   flask-dance = with python.pkgs; buildPythonPackage rec {
     pname = "Flask-Dance";
@@ -37,6 +46,7 @@ let
     ];
     checkInputs = [
       pytest
+      nose
       pytest-mock
       responses
       freezegun
@@ -89,7 +99,7 @@ let
     propagatedBuildInputs = [
       urllib3
       python-dateutil
-      nixpkgs_unstable.python39Packages.attrs
+      python_attrs
       httpx
     ];
   };
@@ -110,6 +120,7 @@ in
       cryptography
       blinker
       ory-hydra-client
+      authlib
 
       gunicorn
 
@@ -127,6 +138,8 @@ in
     pytest-mypy
     flask_testing
     tox
+
+    nose
     mypy
   ];
 }

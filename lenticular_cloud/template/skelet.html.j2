@@ -34,6 +34,26 @@
 <script type="application/javascript" src="/static/main.js?v={{ GIT_HASH }}" ></script>
 <script type="application/javascript" >
 {% block script_js %}{% endblock %}
+window.fieldlist = {
+	add: function(linkTag) {
+
+		var templateTag = linkTag.parentNode.querySelector('template');
+		var name = templateTag.dataset['fieldlistName'];
+		var template = templateTag.content.cloneNode(true);
+		var id = templateTag.dataset['fieldlistNextId']++;
+		for(let tag of template.querySelectorAll('[name], [id]')){
+			tag.name = tag.name.replace(/^custom-/, name+'-'+id+'-')
+			tag.id = tag.id.replace(/^custom-/, name+'-'+id+'-')
+		};
+		templateTag.parentNode.querySelector('ul').appendChild(template);
+
+		return false;
+	},
+	remove: function(base) {
+		base.parentElement.remove()
+		return false;
+	}
+};
 </script>
 </body>
 </html>

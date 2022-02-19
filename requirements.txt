@@ -15,6 +15,6 @@ cryptography
 requests
 requests_oauthlib
 blinker
-ory-hydra-client
 
+./libs/ory-hydra-client
 
