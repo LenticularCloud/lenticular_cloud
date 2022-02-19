@@ -47,8 +47,8 @@ def consent():
         logger.exception('ory exception - could not fetch user data')
         return redirect(url_for('frontend.index'))
 
-    requested_scope = json.loads(consent_request.requested_scope.to_str().replace("'", '"'))
-    requested_audiences = json.loads(consent_request.requested_access_token_audience.to_str().replace("'", '"'))
+    requested_scope = consent_request.requested_scope["value"]
+    requested_audiences = consent_request.requested_access_token_audience["value"]
 
     if form.validate_on_submit() or consent_request.skip:
         user = User.query.get(consent_request.subject)

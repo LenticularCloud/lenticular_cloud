@@ -3,6 +3,9 @@
   python ? pkgs.python39,
   ...}:
 let 
+
+  nixpkgs_unstable = import <nixpkgs_unstable> {};
+
   urlobject = with python.pkgs; buildPythonPackage rec {
     pname = "URLObject";
     version = "2.4.3";
@@ -65,7 +68,7 @@ let
 
   };
   u2flib-server = {};
-  ory-hydra-client = with python.pkgs; buildPythonPackage rec {
+  ory-hydra-client-old = with python.pkgs; buildPythonPackage rec {
     pname = "ory-hydra-client";
     version = "1.10.6";
     src = fetchPypi {
@@ -77,7 +80,18 @@ let
       urllib3
       python-dateutil
     ];
-
+  };
+  ory-hydra-client = with python.pkgs; buildPythonPackage rec {
+    pname = "ory-hydra-client";
+    version = "1.9.2";
+    src = ./libs/ory-hydra-client; 
+#    doCheck = false;
+    propagatedBuildInputs = [
+      urllib3
+      python-dateutil
+      nixpkgs_unstable.python39Packages.attrs
+      httpx
+    ];
   };
 in
 {

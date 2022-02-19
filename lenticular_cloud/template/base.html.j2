@@ -63,6 +63,54 @@
     {% endfor %}
 {%- endmacro %}
 
+{# Renders range field
+    Params:
+        field - WTForm field (there are no check, but you should put here only BooleanField.
+        kwargs - pass any arguments you want in order to put them into the html attributes.
+        There are few exceptions: for - for_, class - class_, class__ - class_
+
+    Example usage:
+        {{ macros.render_range_field(form.answere) }}
+ #}
+{% macro render_range_field(field) -%}
+    <div class="form-group {% if field.errors %}has-error{% endif %} {{ 'row' if horizontal }} {{ kwargs.pop('class_', '') }}">
+	<label for="{{ field.id }}" class="control-label {{ 'col-sm-2 col-form-label' if horizontal }}">{{ field.label.text }}</label>
+	<div class="{{ 'col-sm-10' if horizontal }}">
+		<div class="row">
+		<div class="col-10">
+			{{ field(class_='form-control', oninput='this.parentElement.nextElementSibling.children[0].value = this.value', **kwargs) }}
+		</div>
+		<div class="col-2">
+			<input onchange="this.parentElement.previousElementSibling.children[0].value = this.value" type="number" class="form-control" max="{{ field.widget.max }}" min="{{ field.widget.min }}" step="{{field.widget.step}}" value="{{ field.data }}" />
+		</div>
+		</div>
+	</div>
+        {% if field.errors %}
+            {% for e in field.errors %}
+                <p class="alert alert-danger">{{ e }}</p>
+            {% endfor %}
+        {% endif %}
+    </div>
+{%- endmacro %}
+
+
+{% macro render_password_field(field, label_visible=true, horizontal=false) -%}
+
+    <div class="form-group {% if field.errors %}has-error{% endif %} {{ 'row' if horizontal }} {{ kwargs.pop('class_', '') }}">
+	<label for="{{ field.id }}" class="control-label {{ 'col-sm-2 col-form-label' if horizontal }}">{{ field.label.text }}</label>
+	<div class="{{ 'col-sm-10' if horizontal }}">
+        	{{ field(class_='form-control', **kwargs) }}
+		<i onclick="togglePasswordVisibility(this)" class="far fa-eye toggle-password"></i>
+	</div>
+        {% if field.errors %}
+            {% for e in field.errors %}
+                <p class="alert alert-danger">{{ e }}</p>
+            {% endfor %}
+        {% endif %}
+    </div>
+{%- endmacro %}
+
+
 {# Renders submit field
     Params:
         field - WTForm field (there are no check, but you should put here only BooleanField.
@@ -91,24 +139,30 @@
 </fieldset>
 {%- endmacro %}
 
-{% macro render_list_field(field) -%}
+{% macro render_list_field(field, horizontal) -%}
 <fieldset>
 	<legend>{{ field.label.text }}</legend>
-	<template id='{{field.name}}-template'>
+	{% if field.modify %}
+		<template id='{{field.name}}-template' data-fieldlist-name="{{ field.name }}" data-fieldlist-next-id="{{ field | length }}">
 		<li class="list-group-item">
 			{{ _render_form(field.get_template(), horizontal=true) }}
-			<a class="btn btn-danger" onclick="fieldlist.remove(this)">Remove</a>
+			<a class="btn btn-danger" onclick="fieldlist.remove(this)">{{ ('Remove') }}</a>
 		</li>
 	</template>
+	{% endif %}
 	<ul class="list-group">
 	{% for _field in field %}
 		<li class="list-group-item">
 		{{ _render_field(_field) }}
-		<a class="btn btn-danger" onclick="fieldlist.remove(this)">Remove</a>
+		{% if field.modify %}
+		<a class="btn btn-danger" onclick="fieldlist.remove(this)">{{ ('Remove') }}</a>
+		{% endif %}
 		</li>
 	{% endfor %}
 	</ul>
-	<a class="btn btn-success" onclick="fieldlist.add('{{ field.name }}')">Add</a>
+	{% if field.modify %}
+	<a class="btn btn-success" onclick="fieldlist.add(this)">{{ ('Add') }}</a>
+	{% endif %}
 </fieldset>
 {%- endmacro %}
 {% macro _render_field(f) %}
@@ -116,6 +170,10 @@
         {{ render_checkbox_field(f, **kwargs) }}
     {% elif f.type == 'RadioField' %}
         {{ render_radio_field(f, **kwargs) }}
+    {% elif f.type == 'PasswordField' %}
+        {{ render_password_field(f, **kwargs) }}
+    {% elif f.type == 'DecimalRangeField' %}
+        {{ render_range_field(f, **kwargs) }}
     {% elif f.type == 'SubmitField' %}
         {{ render_submit_field(f, **kwargs) }}
     {% elif f.type == 'FormField' %}
@@ -153,11 +211,14 @@
         action_text - text of submit button
         class_ - sets a class for form
     #}
-{% macro render_form(form, action_url='', class_='', method='post', onsubmit='') -%}
+{% macro render_form(form, action_url='', action_text='Submit', class_='', btn_class='btn btn-primary', method='post') -%}
 
-<form method="{{ method }}" {% if action_url %}action="{{ action_url }}" {% endif %}role="form" class="{{ class_ }}" {% if onsubmit %}onsubmit="{{ onsubmit }}"{% endif %}>
+	<form method="{{ method }}" {% if action_url %}action="{{ action_url }}" {% endif %}role="form" class="{{ class_ }}">
         <input name="form" type="hidden" value="{{ form.__class__.__name__ }}">
         {{ _render_form(form) }}
+        {% if not form.submit %}
+        <button type="submit" class="{{ btn_class }}">{{ action_text }} </button>
+        {% endif %}
     </form>
 {%- endmacro %}
 
