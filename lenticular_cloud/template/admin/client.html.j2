@@ -1,0 +1,14 @@
+{% extends 'admin/base.html.j2' %}
+
+{% block title %}{{ gettext('client') }}{% endblock %}
+
+{% block content %}
+
+  <p>
+  created at: {{ client.created_at }}<br />
+  update at: {{ client.updated_at }}
+  </p>
+
+  {{ render_form(form) }}
+
+{% endblock%}

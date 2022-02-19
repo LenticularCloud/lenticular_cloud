@@ -1,0 +1,39 @@
+{% extends 'admin/base.html.j2' %}
+
+{% block title %}{{ gettext('clients') }}{% endblock %}
+
+{% block content %}
+
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>id</th>
+			<th>name</th>
+			<th>created_at</th>
+			<th>modified_at</th>
+			<th>contact</th>
+			<th>client_uri</th>
+			<th>audience</th>
+			<th>action</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for client in clients %}
+		<tr>
+			<td>{{ client['client_id'] }}</td>
+			<td>{{ client['client_name'] }}</td>
+			<td>{{ client['created_at'] }}</td>
+			<td>{{ client['updated_at'] }}</td>
+			<td>{{ client['contacts'] }}</td>
+			<td>{{ client['client_uri'] }}</td>
+			<td>{{ client['audience'] }}</td>
+
+      <td>
+        <a title="{{ gettext('Edit')}}" href="{{ url_for('.client', client_id=client['client_id']) }}" ><i class="fas fa-edit"></i></a>
+      </td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endblock%}

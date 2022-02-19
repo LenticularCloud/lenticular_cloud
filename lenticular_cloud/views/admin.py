@@ -4,11 +4,17 @@ from flask import current_app, session
 from flask import jsonify
 from flask_login import current_user, logout_user
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
+import ory_hydra_client
+from ory_hydra_client.model.o_auth2_client import OAuth2Client
+import logging
+
 from ..model import db, User, UserSignUp
 from .frontend import redirect_login
+from ..form.admin import OAuth2ClientForm
 
 
 admin_views = Blueprint('admin', __name__, url_prefix='/admin')
+logger = logging.getLogger(__name__)
 
 
 def before_request():
@@ -63,3 +69,52 @@ def registration_accept(registration_id):
     db.session.delete(user_data)
     db.session.commit()
     return jsonify({})
+
+
+@admin_views.route('/clients')
+def clients():
+    clients = current_app.hydra_api.list_o_auth2_clients()
+    return render_template('admin/clients.html.j2', clients=clients)
+
+@admin_views.route('/client/<client_id>', methods=['GET', 'POST'])
+def client(client_id: str):
+    
+    try:
+        client = current_app.hydra_api.get_o_auth2_client(client_id)
+    except ory_hydra_client.ApiException as e:
+        logger.error(f"oauth2 client not found with id: '{client_id}'")
+        return 'client not found', 404
+
+    form = OAuth2ClientForm(obj=client)
+    if form.validate_on_submit():
+        form.populate_obj(client)
+ 
+        try:
+            client = current_app.hydra_api.update_o_auth2_client(client_id, client)
+        except ory_hydra_client.ApiException as e:
+            logger.error(f"oauth2 client update failed: '{client_id}'")
+            return 'client update failed', 500
+
+
+        
+    return render_template('admin/client.html.j2', client=client, form=form)
+
+
+@admin_views.route('/client_new', methods=['GET','POST'])
+def client_new():
+    
+    client = OAuth2Client()
+
+    form = OAuth2ClientForm()
+    if form.validate_on_submit():
+        form.populate_obj(client)
+ 
+        try:
+            client = current_app.hydra_api.create_o_auth2_client(client)
+        except ory_hydra_client.ApiException as e:
+            logger.error(f"oauth2 client update failed: '{client.client_id}'")
+            return 'internal error', 500
+        return redirect(url_for('.client', client_id=client.client_id))
+
+
+    return render_template('admin/client.html.j2', client=client, form=form)

@@ -13,7 +13,7 @@ module.exports = {
 	],
 	output: {
 		filename: '[name].js',
-		path: path.resolve(__dirname, 'static'),
+		path: path.resolve(__dirname, 'lenticular_cloud/static'),
 	},
 	devtool: "source-map",
 	module: {
@@ -36,21 +36,10 @@ module.exports = {
 					'sass-loader'
 				]
 			},
-			{
-				"test": /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-				"use": {
-					"loader": "url-loader?limit=10000&mimetype=application/font-woff",
-					"options": {
-						name: '[path][name].[ext]',
-					},
-				}
-			},
-			{
-				"test": /\.(ttf|eot|svg|gif)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-				"use": [
-					"file-loader"
-				]
-			},
+      {
+        "test": /\.(svg|eot|woff|woff2|ttf)$/,
+        type: 'asset/resource',
+      },
 			{
 				test: /\.css$/,
 				use: ['style-loader', 'css-loader'],
