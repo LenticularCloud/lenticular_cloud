@@ -120,7 +120,8 @@ in
       cryptography
       blinker
       ory-hydra-client
-      authlib
+      authlib # as oauth client lib
+      flask_migrate # db migrations
 
       gunicorn
 

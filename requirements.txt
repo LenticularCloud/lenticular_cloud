@@ -15,6 +15,7 @@ cryptography
 requests
 requests_oauthlib
 blinker
+flask_migrate
 
 ./libs/ory-hydra-client
 

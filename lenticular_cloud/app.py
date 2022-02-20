@@ -1,7 +1,6 @@
 from flask.app import Flask
 from flask import g, redirect, request
 from flask.helpers import url_for
-from flask_login import LoginManager
 import time
 import subprocess
 from ory_hydra_client import Client
@@ -37,13 +36,13 @@ def create_app() -> Flask:
     model.ldap_conn = app.ldap_conn
     model.base_dn = app.config['LDAP_BASE_DN']
 
-    from .model import db
+    from .model import db, migrate
     db.init_app(app)
-    with app.app_context():
-        db.create_all()
+    migrate.init_app(app, db)
+#    with app.app_context():
+#        db.create_all()
 
     init_babel(app)
-    app.login_manager = LoginManager(app)
 
     #init hydra admin api
 #    hydra_config = hydra.Configuration(
