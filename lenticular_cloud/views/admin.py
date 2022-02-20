@@ -37,12 +37,12 @@ admin_views.before_request(before_request)
 
 
 @admin_views.route('/', methods=['GET', 'POST'])
-def index() -> ResponseReturnValue:
+async def index() -> ResponseReturnValue:
     return render_template('admin/index.html.j2')
 
 
 @admin_views.route('/user', methods=['GET'])
-def users():
+async def users():
     users = User.query.all()
     return render_template('admin/users.html.j2', users=users)
 
@@ -76,14 +76,14 @@ def registration_accept(registration_id) -> ResponseReturnValue:
 
 
 @admin_views.route('/clients')
-def clients() -> ResponseReturnValue:
-    clients = list_o_auth_2_clients.sync(_client=hydra_service.hydra_client)
+async def clients() -> ResponseReturnValue:
+    clients = await list_o_auth_2_clients.asyncio(_client=hydra_service.hydra_client)
     return render_template('admin/clients.html.j2', clients=clients)
 
 @admin_views.route('/client/<client_id>', methods=['GET', 'POST'])
-def client(client_id: str) -> ResponseReturnValue:
+async def client(client_id: str) -> ResponseReturnValue:
     
-    client = get_o_auth_2_client.sync(client_id, _client=hydra_service.hydra_client)
+    client = await get_o_auth_2_client.asyncio(client_id, _client=hydra_service.hydra_client)
     if client is None or isinstance( client, GenericError):
         logger.error(f"oauth2 client not found with id: '{client_id}'")
         return 'client not found', 404
@@ -92,7 +92,7 @@ def client(client_id: str) -> ResponseReturnValue:
     if form.validate_on_submit():
         form.populate_obj(client)
  
-        client = update_o_auth_2_client.sync(id=client_id ,json_body=client, _client=hydra_service.hydra_client)
+        client = await update_o_auth_2_client.asyncio(id=client_id ,json_body=client, _client=hydra_service.hydra_client)
         if client is None or isinstance(client, GenericError):
             logger.error(f"oauth2 client update failed: '{client_id}'")
             return 'client update failed', 500
@@ -103,7 +103,7 @@ def client(client_id: str) -> ResponseReturnValue:
 
 
 @admin_views.route('/client_new', methods=['GET','POST'])
-def client_new() -> ResponseReturnValue:
+async def client_new() -> ResponseReturnValue:
     
     client = OAuth2Client()
 
@@ -111,7 +111,7 @@ def client_new() -> ResponseReturnValue:
     if form.validate_on_submit():
         form.populate_obj(client)
  
-        resp_client = create_o_auth_2_client.sync(json_body=client, _client=hydra_service.hydra_client)
+        resp_client = await create_o_auth_2_client.asyncio(json_body=client, _client=hydra_service.hydra_client)
         if resp_client is None:
             logger.error(f"oauth2 client update failed: '{client.client_id}'")
             return 'internal error', 500

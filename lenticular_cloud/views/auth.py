@@ -35,7 +35,7 @@ auth_views = Blueprint('auth', __name__, url_prefix='/auth')
 
 
 @auth_views.route('/consent', methods=['GET', 'POST'])
-def consent() -> ResponseReturnValue:
+async def consent() -> ResponseReturnValue:
     """Always grant consent."""
     # DUMMPY ONLY
 
@@ -43,7 +43,7 @@ def consent() -> ResponseReturnValue:
     remember_for = 60*60*24*30  # remember for 30 days
 
     #try:
-    consent_request = get_consent_request.sync(consent_challenge=request.args['consent_challenge'],_client=hydra_service.hydra_client)
+    consent_request = await get_consent_request.asyncio(consent_challenge=request.args['consent_challenge'],_client=hydra_service.hydra_client)
 
     if consent_request is None or isinstance( consent_request, GenericError):
        return redirect(url_for('frontend.index'))
@@ -83,7 +83,7 @@ def consent() -> ResponseReturnValue:
                     id_token= id_token
                 )
         )
-        resp = accept_consent_request.sync(_client=hydra_service.hydra_client,
+        resp = await accept_consent_request.asyncio(_client=hydra_service.hydra_client,
             json_body=body,
             consent_challenge=consent_request.challenge)
         if resp is None or isinstance( resp, GenericError):
@@ -98,17 +98,17 @@ def consent() -> ResponseReturnValue:
 
 
 @auth_views.route('/login', methods=['GET', 'POST'])
-def login() -> ResponseReturnValue:
+async def login() -> ResponseReturnValue:
     login_challenge = request.args.get('login_challenge')
     if login_challenge is None:
         return 'login_challenge missing', 400
-    login_request = get_login_request.sync(_client=hydra_service.hydra_client, login_challenge=login_challenge)
+    login_request = await get_login_request.asyncio(_client=hydra_service.hydra_client, login_challenge=login_challenge)
     if login_request is None or isinstance( login_request, GenericError):
         logger.exception("could not fetch login request")
         return redirect(url_for('frontend.index'))
 
     if login_request.skip:
-        resp = accept_login_request.sync(_client=hydra_service.hydra_client,
+        resp = await accept_login_request.asyncio(_client=hydra_service.hydra_client,
             login_challenge=login_challenge,
             json_body=AcceptLoginRequest(subject=login_request.subject))
         if resp is None or isinstance( resp, GenericError):
@@ -129,11 +129,11 @@ def login() -> ResponseReturnValue:
 
 
 @auth_views.route('/login/auth', methods=['GET', 'POST'])
-def login_auth() -> ResponseReturnValue:
+async def login_auth() -> ResponseReturnValue:
     login_challenge = request.args.get('login_challenge')
     if login_challenge is None:
         return 'missing login_challenge, bad request', 400
-    login_request = get_login_request.sync(_client=hydra_service.hydra_client, login_challenge=login_challenge)
+    login_request = await get_login_request.asyncio(_client=hydra_service.hydra_client, login_challenge=login_challenge)
     if login_request is None:
         return redirect(url_for('frontend.index'))
 
@@ -160,7 +160,7 @@ def login_auth() -> ResponseReturnValue:
         subject = user.id
         user.last_login = datetime.now()
         db.session.commit()
-        resp = accept_login_request.sync(_client=hydra_service.hydra_client,
+        resp = await accept_login_request.asyncio(_client=hydra_service.hydra_client,
             login_challenge=login_challenge, json_body=AcceptLoginRequest(
                 subject=subject,
                 remember=remember_me,
@@ -172,12 +172,12 @@ def login_auth() -> ResponseReturnValue:
 
 
 @auth_views.route("/logout")
-def logout() -> ResponseReturnValue:
+async def logout() -> ResponseReturnValue:
     logout_challenge = request.args.get('logout_challenge')
     if logout_challenge is None:
         return 'invalid request, logout_challenge not set', 400
     # TODO confirm
-    resp = accept_logout_request.sync(_client=hydra_service.hydra_client, logout_challenge=logout_challenge)
+    resp = await accept_logout_request.asyncio(_client=hydra_service.hydra_client, logout_challenge=logout_challenge)
     if resp is None or isinstance( resp, GenericError):
         return 'internal error, could not forward request', 503
     return redirect(resp.redirect_to)
