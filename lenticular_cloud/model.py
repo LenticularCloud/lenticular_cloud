@@ -16,6 +16,7 @@ import json
 import logging
 import crypt
 from flask_sqlalchemy import SQLAlchemy, orm
+from flask_migrate import Migrate
 from datetime import datetime
 import uuid
 import pyotp
@@ -27,7 +28,7 @@ ldap_conn = None  # type: Connection
 base_dn = ''
 
 db = SQLAlchemy()  # type: SQLAlchemy
-
+migrate = Migrate()
 
 class UserSignUp(db.Model):
     id = db.Column(db.Integer, primary_key=True)
