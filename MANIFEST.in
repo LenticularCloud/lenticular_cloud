@@ -1,4 +1,5 @@
 recursive-include lenticular_cloud/template *
 recursive-include lenticular_cloud/static **
+recursive-include lenticular_cloud/migrations **
 include lenticular_cloud/*.cfg
 

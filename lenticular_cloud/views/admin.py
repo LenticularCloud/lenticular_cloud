@@ -5,6 +5,7 @@ from flask import jsonify
 from flask.typing import ResponseReturnValue
 from flask_login import current_user, logout_user
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
+from authlib.integrations.base_client.errors import InvalidTokenError
 from ory_hydra_client.api.admin import list_o_auth_2_clients, get_o_auth_2_client, update_o_auth_2_client, create_o_auth_2_client 
 from ory_hydra_client.models import OAuth2Client, GenericError
 from typing import Optional
@@ -28,7 +29,7 @@ def before_request() -> Optional[ResponseReturnValue]:
             return redirect_login()
         if 'groups' not in data or 'admin' not in data['groups']:
             return 'Not an admin', 403
-    except MissingTokenError:
+    except (MissingTokenError, InvalidTokenError):
         return redirect_login()
     return None
 

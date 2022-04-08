@@ -175,7 +175,7 @@ def webauthn_list_route() -> ResponseReturnValue:
     """list registered credentials for current user"""
 
     creds = WebauthnCredential.query.all()
-    return render_template('webauthn_list.html', creds=creds, button_form=ButtonForm())
+    return render_template('frontend/webauthn_list.html', creds=creds, button_form=ButtonForm())
 
 
 @frontend_views.route('/webauthn/delete/<webauthn_id>', methods=['POST'])
@@ -207,19 +207,15 @@ def random_string(length=32) -> str:
 def webauthn_pkcco_route() -> ResponseReturnValue:
     """get publicKeyCredentialCreationOptions"""
 
-    form = ButtonForm()
-    if form.validate_on_submit():
-        user = User.query.get(current_user.id)
-        user_handle = random_string()
-        exclude_credentials = webauthn_credentials(user)
-        pkcco, state = webauthn.register_begin(
-            {'id': user_handle.encode('utf-8'), 'name': user.username, 'displayName': user.username},
-            exclude_credentials)
-        session['webauthn_register_user_handle'] = user_handle
-        session['webauthn_register_state'] = state
-        return Response(b64encode(cbor.encode(pkcco)).decode('utf-8'), mimetype='text/plain')
-
-    return '', HTTPStatus.BAD_REQUEST
+    user = User.query.get(current_user.id)
+    user_handle = random_string()
+    exclude_credentials = webauthn_credentials(user)
+    pkcco, state = webauthn.register_begin(
+        {'id': user_handle.encode('utf-8'), 'name': user.username, 'displayName': user.username},
+        exclude_credentials)
+    session['webauthn_register_user_handle'] = user_handle
+    session['webauthn_register_state'] = state
+    return Response(b64encode(cbor.encode(pkcco)).decode('utf-8'), mimetype='text/plain')
 
 
 @frontend_views.route('/webauthn/register', methods=['GET', 'POST'])
@@ -248,7 +244,7 @@ def webauthn_register_route() -> ResponseReturnValue:
             current_app.logger.exception(e)
             flash('Error during registration.', 'error')
 
-    return render_template('webauthn_register.html', form=form)
+    return render_template('frontend/webauthn_register.html', form=form)
 
 
 @frontend_views.route('/password_change')

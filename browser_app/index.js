@@ -4,6 +4,7 @@ import 'jquery-form'
 import {ConfirmDialog, Dialog} from './confirm-modal.js';
 
 jQuery = window.$ = window.jQuery = require('jquery');
+var cbor = require('cbor-web');
 var forge = require('node-forge');
 var QRCode = require("qrcode-svg");
 var pki = require('node-forge/lib/pki');
@@ -15,6 +16,8 @@ import SimpleFormSubmit from "simple-form-submit";
 const $ = document.querySelector.bind(document);
 const $$ = document.querySelectorAll.bind(document);
 
+
+window.CBOR = cbor;
 
 /*
 Convert  an ArrayBuffer into a string

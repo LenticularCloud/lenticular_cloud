@@ -9,7 +9,7 @@ from typing import Optional
 from ..model import User, SecurityUser
 
 def fetch_token(name: str) -> Optional[dict]:
-    token = session['token']
+    token = session.get('token', None)
     if isinstance(token, dict):
         return token
     return None

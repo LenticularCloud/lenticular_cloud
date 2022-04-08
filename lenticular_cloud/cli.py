@@ -3,6 +3,7 @@ from .model import db, User, UserSignUp
 from .app import create_app
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_migrate import upgrade
+from pathlib import Path
 
 import logging
 import os
@@ -78,7 +79,9 @@ def cli_run(app, args):
     app.run(debug=True, host='127.0.0.1', port=5000)
 
 def cli_db_upgrade(args):
-    upgrade()
+    app = create_app()
+    migration_dir = Path(app.root_path) / 'migrations'
+    upgrade( str(migration_dir) )
 
 
 if __name__ == "__main__":

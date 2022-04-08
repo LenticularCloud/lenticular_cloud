@@ -340,7 +340,7 @@ class WebauthnCredential(db.Model):  # pylint: disable=too-few-public-methods
     """Webauthn credential model"""
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.String(length=36), db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     user_handle = db.Column(db.String(64), nullable=False)
     credential_data = db.Column(db.LargeBinary, nullable=False)
     name = db.Column(db.String(250))

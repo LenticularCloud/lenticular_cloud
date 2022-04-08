@@ -64,6 +64,7 @@ async def consent() -> ResponseReturnValue:
         token_data = {
             'name': str(user.username),
             'preferred_username': str(user.username),
+            'username': str(user.username),
             'email': str(user.email),
             'email_verified': True,
             'groups': [group.name for group in user.groups]

@@ -10,6 +10,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "*",
     "bootstrap": "^4.6.1",
+    "cbor-web": "*",
     "css-loader": "*",
     "css-minimizer-webpack-plugin": "*",
     "file-loader": "*",

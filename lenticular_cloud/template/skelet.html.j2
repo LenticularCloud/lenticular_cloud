@@ -33,7 +33,9 @@
 </div>
 <script type="application/javascript" src="/static/main.js?v={{ GIT_HASH }}" ></script>
 <script type="application/javascript" >
-{% block script_js %}{% endblock %}
+  {% block script_js %}
+  // depricated
+{% endblock %}
 window.fieldlist = {
 	add: function(linkTag) {
 
@@ -55,6 +57,7 @@ window.fieldlist = {
 	}
 };
 </script>
+{% block script %}{% endblock %}
 </body>
 </html>
 
