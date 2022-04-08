@@ -6,7 +6,7 @@ from wtforms import StringField, SubmitField, TextField, \
         SelectField, Form as NoCsrfForm, HiddenField
 from wtforms.widgets.html5 import NumberInput, DateInput
 from wtforms.validators import DataRequired, NumberRange, \
-        Optional, NoneOf, Length, EqualTo
+        Optional, NoneOf, Length, EqualTo, InputRequired
 
 
 class ClientCertForm(FlaskForm):
@@ -33,6 +33,13 @@ class TOTPForm(FlaskForm):
 class TOTPDeleteForm(FlaskForm):
     submit = SubmitField(gettext('Delete'))
 
+
+class WebauthnRegisterForm(FlaskForm):
+    """webauthn register token form"""
+
+    attestation = HiddenField('Attestation', [InputRequired()])
+    name = StringField('Name', [Length(max=250)])
+    submit = SubmitField('Register', render_kw={'disabled': True})
 
 class PasswordChangeForm(FlaskForm):
     password_old = PasswordField(gettext('Old Password'), validators=[DataRequired()])

@@ -1,6 +1,12 @@
+from flask_wtf import FlaskForm
 from wtforms import SelectField, FieldList as WTFFieldList, Form
 from wtforms.fields import Field
 from ..model import db
+
+
+
+class ButtonForm(FlaskForm):
+    """only button form"""
 
 
 class FieldList(WTFFieldList):

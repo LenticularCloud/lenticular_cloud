@@ -1,2 +1,3 @@
 flask-debug
 types-python-dateutil
+types-ldap3

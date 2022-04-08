@@ -239,6 +239,7 @@ class User(EntryBase):
     last_login = db.Column(db.DateTime, nullable=True)
 
     totps = db.relationship('Totp', back_populates='user')
+    webauthn_credentials = db.relationship('WebauthnCredential', back_populates='user', cascade='delete,delete-orphan', passive_deletes=True)
 
     dn = "uid={uid},{base_dn}"
     base_dn = "ou=users,{_base_dn}"
@@ -297,7 +298,7 @@ class User(EntryBase):
 
         def by_username(self, username) -> Optional['User']:
             result = self._query('(uid={username:s})'.format(username=escape_filter_chars(username)))
-            if len(result) > 0:
+            if len(result) > 0 and isinstance(result[0], User):
                 return result[0]
             else:
                 return None
@@ -333,6 +334,20 @@ class Totp(db.Model):
     def verify(self, token: str):
         totp = pyotp.TOTP(self.secret)
         return totp.verify(token)
+
+
+class WebauthnCredential(db.Model):  # pylint: disable=too-few-public-methods
+    """Webauthn credential model"""
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    user_handle = db.Column(db.String(64), nullable=False)
+    credential_data = db.Column(db.LargeBinary, nullable=False)
+    name = db.Column(db.String(250))
+    registered = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', back_populates='webauthn_credentials')
+
 
 class Group(EntryBase):
     __abstract__ = True # for sqlalchemy, disable for now

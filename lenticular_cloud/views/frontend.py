@@ -1,11 +1,15 @@
 
 from authlib.integrations.base_client.errors import MissingTokenError, InvalidTokenError
-from urllib.parse import urlencode, parse_qs
-from flask import Blueprint, redirect, request
+from base64 import b64encode, b64decode
+from fido2 import cbor
+from fido2.client import ClientData
+from fido2.ctap2 import AttestationObject, AttestedCredentialData, AuthenticatorData
+from flask import Blueprint, Response, redirect, request
 from flask import current_app
-from flask import jsonify, session
+from flask import jsonify, session, flash
 from flask import render_template, url_for
 from flask_login import login_user, logout_user, current_user
+from http import HTTPStatus
 from werkzeug.utils import redirect
 import logging
 from datetime import timedelta
@@ -14,12 +18,17 @@ from flask.typing import ResponseReturnValue
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from ory_hydra_client.api.admin import list_subject_consent_sessions, revoke_consent_sessions
 from ory_hydra_client.models import GenericError
+from urllib.parse import urlencode, parse_qs
+from random import SystemRandom
+import string
 from typing import Optional
 
-from ..model import db, User, SecurityUser, Totp
+from ..model import db, User, SecurityUser, Totp, WebauthnCredential
 from ..form.frontend import ClientCertForm, TOTPForm, \
-    TOTPDeleteForm, PasswordChangeForm
+    TOTPDeleteForm, PasswordChangeForm, WebauthnRegisterForm
+from ..form.base import  ButtonForm
 from ..auth_providers import LdapAuthProvider
+from .auth import webauthn
 from .oauth2 import redirect_login, oauth2
 from ..hydra import hydra_service
 
@@ -161,6 +170,87 @@ def totp_delete(totp_name) -> ResponseReturnValue:
             'status': 'ok'})
 
 
+@frontend_views.route('/webauthn/list', methods=['GET'])
+def webauthn_list_route() -> ResponseReturnValue:
+    """list registered credentials for current user"""
+
+    creds = WebauthnCredential.query.all()
+    return render_template('webauthn_list.html', creds=creds, button_form=ButtonForm())
+
+
+@frontend_views.route('/webauthn/delete/<webauthn_id>', methods=['POST'])
+def webauthn_delete_route(webauthn_id: str) -> ResponseReturnValue:
+    """delete registered credential"""
+
+    form = ButtonForm()
+    if form.validate_on_submit():
+        cred = WebauthnCredential.query.filter(WebauthnCredential.id == webauthn_id).one()
+        db.session.delete(cred)
+        db.session.commit()
+        return redirect(url_for('app.webauthn_list_route'))
+
+    return '', HTTPStatus.BAD_REQUEST
+
+
+
+def webauthn_credentials(user: User) -> list[AttestedCredentialData]:
+    """get and decode all credentials for given user"""
+    return [AttestedCredentialData.create(**cbor.decode(cred.credential_data)) for cred in user.webauthn_credentials]
+
+
+def random_string(length=32) -> str:
+    """generates random string"""
+    return ''.join([SystemRandom().choice(string.ascii_letters + string.digits) for i in range(length)])
+
+
+@frontend_views.route('/webauthn/pkcco', methods=['POST'])
+def webauthn_pkcco_route() -> ResponseReturnValue:
+    """get publicKeyCredentialCreationOptions"""
+
+    form = ButtonForm()
+    if form.validate_on_submit():
+        user = User.query.get(current_user.id)
+        user_handle = random_string()
+        exclude_credentials = webauthn_credentials(user)
+        pkcco, state = webauthn.register_begin(
+            {'id': user_handle.encode('utf-8'), 'name': user.username, 'displayName': user.username},
+            exclude_credentials)
+        session['webauthn_register_user_handle'] = user_handle
+        session['webauthn_register_state'] = state
+        return Response(b64encode(cbor.encode(pkcco)).decode('utf-8'), mimetype='text/plain')
+
+    return '', HTTPStatus.BAD_REQUEST
+
+
+@frontend_views.route('/webauthn/register', methods=['GET', 'POST'])
+def webauthn_register_route() -> ResponseReturnValue:
+    """register credential for current user"""
+
+    user = User.query.get(current_user.id)
+    form = WebauthnRegisterForm()
+    if form.validate_on_submit():
+        try:
+            attestation = cbor.decode(b64decode(form.attestation.data))
+            auth_data = webauthn.register_complete(
+                session.pop('webauthn_register_state'),
+                ClientData(attestation['clientDataJSON']),
+                AttestationObject(attestation['attestationObject']))
+
+            db.session.add(WebauthnCredential(
+                user_id=user.id,
+                user_handle=session.pop('webauthn_register_user_handle'),
+                credential_data=cbor.encode(auth_data.credential_data.__dict__),
+                name=form.name.data))
+            db.session.commit()
+
+            return redirect(url_for('app.webauthn_list_route'))
+        except (KeyError, ValueError) as e:
+            current_app.logger.exception(e)
+            flash('Error during registration.', 'error')
+
+    return render_template('webauthn_register.html', form=form)
+
+
 @frontend_views.route('/password_change')
 def password_change() -> ResponseReturnValue:
     form = PasswordChangeForm()
@@ -186,10 +276,10 @@ def password_change_post() -> ResponseReturnValue:
 
 
 @frontend_views.route('/oauth2_token')
-def oauth2_tokens() -> ResponseReturnValue:
+async def oauth2_tokens() -> ResponseReturnValue:
 
     subject = oauth2.custom.get('/userinfo').json()['sub']
-    consent_sessions = list_subject_consent_sessions.sync(subject=subject, _client=hydra_service.hydra_client)
+    consent_sessions = await list_subject_consent_sessions.asyncio(subject=subject, _client=hydra_service.hydra_client)
     if consent_sessions is None or isinstance( consent_sessions, GenericError):
        return 'internal error, could not fetch sessions', 500
     return render_template(
@@ -198,9 +288,9 @@ def oauth2_tokens() -> ResponseReturnValue:
 
 
 @frontend_views.route('/oauth2_token/<client_id>', methods=['DELETE'])
-def oauth2_token_revoke(client_id: str) -> ResponseReturnValue:
+async def oauth2_token_revoke(client_id: str) -> ResponseReturnValue:
     subject = oauth2.session.get('/userinfo').json()['sub']
-    revoke_consent_sessions.sync( _client=hydra_service.hydra_client,
+    await revoke_consent_sessions.asyncio( _client=hydra_service.hydra_client,
                                 subject=subject,
                                 client=client_id)
 

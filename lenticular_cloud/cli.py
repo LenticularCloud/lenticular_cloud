@@ -2,6 +2,7 @@ import argparse
 from .model import db, User, UserSignUp
 from .app import create_app
 from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_migrate import upgrade
 
 import logging
 import os
@@ -22,6 +23,9 @@ def entry_point():
 
     parser_run = subparsers.add_parser('run')
     parser_run.set_defaults(func=cli_run)
+
+    parser_db_upgrade = subparsers.add_parser('db_upgrade')
+    parser_db_upgrade.set_defaults(func=cli_db_upgrade)
 
     '''
     parser_upcoming = subparsers.add_parser('upcoming')
@@ -72,6 +76,10 @@ def cli_run(app, args):
     logging.basicConfig(level=logging.DEBUG)
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
     app.run(debug=True, host='127.0.0.1', port=5000)
+
+def cli_db_upgrade(args):
+    upgrade()
+
 
 if __name__ == "__main__":
     entry_point()

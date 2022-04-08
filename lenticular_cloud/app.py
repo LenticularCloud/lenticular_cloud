@@ -32,7 +32,7 @@ def create_app() -> Flask:
 
     #app.ldap_orm = Connection(app.config['LDAP_URL'], app.config['LDAP_BIND_DN'], app.config['LDAP_BIND_PW'], auto_bind=True)
     server = Server(app.config['LDAP_URL'], get_info=ALL)
-    app.ldap_conn = Connection(server, app.config['LDAP_BIND_DN'], app.config['LDAP_BIND_PW'], auto_bind=True)
+    app.ldap_conn = Connection(server, app.config['LDAP_BIND_DN'], app.config['LDAP_BIND_PW'], auto_bind="DEFAULT")
     model.ldap_conn = app.ldap_conn
     model.base_dn = app.config['LDAP_BASE_DN']
 

@@ -3,10 +3,11 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextField, \
         TextAreaField, PasswordField, IntegerField, FloatField, \
         DateTimeField, DateField, FormField, BooleanField, \
-        SelectField, Form as NoCsrfForm, SelectMultipleField
+        SelectField, Form as NoCsrfForm, SelectMultipleField, \
+        HiddenField
 from wtforms.fields.html5 import EmailField
 from wtforms.widgets.html5 import NumberInput, DateInput
-from wtforms.validators import DataRequired, NumberRange, Optional, NoneOf, Length, Regexp
+from wtforms.validators import DataRequired, NumberRange, Optional, NoneOf, Length, Regexp, InputRequired
 from datetime import datetime
 
 
@@ -24,6 +25,11 @@ class TotpForm(FlaskForm):
     totp = TextField(gettext('2FA Token'))
     submit = SubmitField(gettext('Authorize'))
 
+
+class WebauthnLoginForm(FlaskForm):
+    """webauthn login form"""
+
+    assertion = HiddenField('Assertion', [InputRequired()])
 
 class Fido2Form(FlaskForm):
     fido2 = TextField(gettext('Fido2'), default="Javascript Required")

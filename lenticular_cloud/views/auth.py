@@ -1,5 +1,4 @@
 
-from authlib.integrations.flask_client import OAuth
 from urllib.parse import urlencode, parse_qs
 
 import flask
@@ -26,12 +25,13 @@ from ..model import db, User, SecurityUser, UserSignUp
 from ..form.auth import ConsentForm, LoginForm, RegistrationForm
 from ..auth_providers import AUTH_PROVIDER_LIST
 from ..hydra import hydra_service
+from ..wrapped_fido2_server import WrappedFido2Server
 
 
 logger = logging.getLogger(__name__)
 
 auth_views = Blueprint('auth', __name__, url_prefix='/auth')
-
+webauthn = WrappedFido2Server()
 
 
 @auth_views.route('/consent', methods=['GET', 'POST'])
@@ -169,6 +169,21 @@ async def login_auth() -> ResponseReturnValue:
             return 'internal error, could not forward request', 503
         return redirect(resp.redirect_to)
     return render_template('auth/login_auth.html.j2', forms=auth_forms)
+
+
+
+@auth_views.route('/webauthn/pkcro', methods=['POST'])
+def webauthn_pkcro_route():
+    """login webauthn pkcro route"""
+
+    user = User.query.filter(User.id == session.get('webauthn_login_user_id')).one_or_none()
+    form = ButtonForm()
+    if user and form.validate_on_submit():
+        pkcro, state = webauthn.authenticate_begin(webauthn_credentials(user))
+        session['webauthn_login_state'] = state
+        return Response(b64encode(cbor.encode(pkcro)).decode('utf-8'), mimetype='text/plain')
+
+    return '', HTTPStatus.BAD_REQUEST
 
 
 @auth_views.route("/logout")

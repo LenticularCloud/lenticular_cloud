@@ -121,6 +121,7 @@ in
       blinker
       ory-hydra-client
       authlib # as oauth client lib
+      fido2 # for webauthn
       flask_migrate # db migrations
 
       gunicorn
@@ -142,5 +143,6 @@ in
 
     nose
     mypy
+
   ];
 }
