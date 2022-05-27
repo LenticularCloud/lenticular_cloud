@@ -227,3 +227,15 @@ def sign_up_submit():
             'status': 'error',
             'errors': form.errors
         })
+
+
+@auth_views.route("/oob", methods=["GET"])
+def oob_token():
+
+    token_info = {
+        'code': request.args.get('code', default="", type=str),
+        'scope': request.args.get('scope', default="", type=str),
+        'state': request.args.get('state', default="", type=str),
+    }
+
+    return render_template('auth/oob.html.j2', token_info=token_info)

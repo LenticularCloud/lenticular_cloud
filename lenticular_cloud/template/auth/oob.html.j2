@@ -1,0 +1,25 @@
+{% extends 'auth/base.html.j2' %}
+
+{% block title %}{{ gettext('Out of Bound Token') }}{% endblock %}
+
+{% block content %}
+
+  <h2> Out of bound token exchange</h2>
+
+  <p>
+  Data:
+    <div>
+      <label>code</label>
+      <input disabled="disabled" value="{{ token_info["code"]|e }}" />
+    </div>
+    <div>
+      <label>scope</label>
+      <input disabled="disabled" value="{{ token_info["scope"]|e }}" />
+    </div>
+    <div>
+      <label>state</label>
+      <input disabled="disabled" value="{{ token_info["state"]|e }}" />
+    </div>
+  </p>
+
+{% endblock %}

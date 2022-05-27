@@ -19,7 +19,7 @@
 			<td>{{ user.created_at }}</td>
 			<td>
 				<a title="{{ gettext('Reject')}}" href="{{ url_for('.registration_delete', registration_id=user.id) }}" onclick="admin.registration.delete(this.href, '{{ user.username }}'); return false;"><i class="fas fa-ban"></i></a>
-				<a title="{{ gettext('Reject')}}" href="{{ url_for('.registration_accept', registration_id=user.id) }}" onclick="admin.registration.accept(this.href, '{{ user.username }}'); return false;"><i class="fas fa-check"></i></a>
+				<a title="{{ gettext('Accept')}}" href="{{ url_for('.registration_accept', registration_id=user.id) }}" onclick="admin.registration.accept(this.href, '{{ user.username }}'); return false;"><i class="fas fa-check"></i></a>
 			</td>
 		</tr>
 		{% endfor %}

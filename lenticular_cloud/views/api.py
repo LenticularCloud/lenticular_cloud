@@ -49,7 +49,6 @@ def introspect() -> ResponseReturnValue:
         return jsonify({}), 500
     token_info = resp.json()
     #token_info = introspect_o_auth_2_token.sync(_client=hydra_service, token=token)
-    logger.error(f'debug hydra: {token_info}')
 
     if not token_info['active']:
         return jsonify({'active': False})
@@ -58,4 +57,21 @@ def introspect() -> ResponseReturnValue:
     logger.error(f'debug: {token_info}')
 
     return jsonify(token_info)
+
+
+@api_views.route('email/login', methods=['POST'])
+def email_login() -> ResponseReturnValue:
+    logger.error(f'{request}')
+    logger.error(f'{request.headers}')
+    if not request.is_json:
+        return {}, 400
+    req_payload = request.get_json()
+    logger.error(f'{req_payload}')
+    password = req_payload["password"]
+    username = req_payload["username"]
+
+    if password == "123456":
+        return jsonify({})
+
+    return jsonify({}), 403
 

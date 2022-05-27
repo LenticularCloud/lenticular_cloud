@@ -66,7 +66,9 @@ window.admin = {
 			dialog.show().then(()=>{
 				fetch(href, {
 					method: 'PUT'
-				});
+				}).then(()=>{
+          location.reload();
+        });
 			});
 			return false;
 
