@@ -1,6 +1,6 @@
 {
   pkgs ? import <nixpkgs> {},
-  python ? pkgs.python39
+  python ? pkgs.python310
 }:
 let
   settings = import ./default.nix {inherit pkgs python;};

@@ -1,6 +1,6 @@
 {
   pkgs,
-  python ? pkgs.python39,
+  python ? pkgs.python310,
   nodejs ? pkgs.nodejs,
   ...}:
 let 
