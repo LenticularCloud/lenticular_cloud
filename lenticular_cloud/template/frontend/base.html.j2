@@ -18,6 +18,7 @@
 				{#<a href="/"><img alt="logo" class="container-fluid" src="/static/images/dog_main_small.png"></a>#}
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.index') }}">{{ gettext('Account') }}</a></li>
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.client_cert') }}">{{ gettext('Client Cert') }}</a></li>
+				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.app_token') }}">{{ gettext('App Tokens') }}</a></li>
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.totp') }}">{{ gettext('2FA - TOTP') }}</a></li>
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.oauth2_tokens') }}">{{ gettext('Oauth2 Tokens') }}</a></li>
 				<li class="nav-item"><a class="nav-link" href="{{ url_for('frontend.password_change') }}">{{ gettext('Password Change') }}</a></li>

@@ -1,0 +1,45 @@
+{% extends 'frontend/base.html.j2' %}
+
+{% block title %}{{ gettext('new client cert - {service_name}').format(service_name=service.name) }}{% endblock %}
+
+{% block content %}
+
+<div id="sign-key">
+	<h4>Sign Public Key</h4>
+	{{ render_form(form) }}
+</div>
+<div id="gen-key">
+	<h4>Generate new key in the browser</h4>
+	<div id="gen-key-sign" style="display: none">
+		{{ render_form(form) }}
+	</div>
+	<form id="gen-key-form">
+		<div class="form-group">
+			<label for="valid_time" class="control-label ">Key Password for .p12 (optional)</label>
+			<div class="">
+				<input class="form-control" id="cert-password" type="password" name="password"/>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="valid_time" class="control-label ">Key Size</label>
+			<div class="">
+				<select id="key-size" class="custom-select">
+					<option value="4096" selected>4096</option>
+					<option value="2048">2048</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="form-group   ">
+			<label for="valid_time" class="control-label ">valid time in days</label>
+			<div class="">
+				<input class="form-control" name="valid_time" required type="text" value="365">
+			</div>
+		</div>
+	</form>
+	<button id="generate-key" class="btn btn-primary" onclick="client_cert.generate_private_key()">Generate Key</button>
+	<a  style="display: none" id="save-button" download="lenticular_cloud_{{ service.name }}.p12" class="btn btn-primary">Save Keypair</a>
+{% endblock %}
+
+
+

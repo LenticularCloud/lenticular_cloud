@@ -133,6 +133,17 @@ def client_cert_new(service_name) -> ResponseReturnValue:
             service=service,
             form=form)
 
+@frontend_views.route('/app_token')
+def app_token() -> ResponseReturnValue:
+    return
+
+@frontend_views.route('/app_token/<service_name>/new')
+def app_token_new(service_name: str) -> ResponseReturnValue:
+    return
+
+@frontend_views.route('/app_token/<service_name>/<token_name>')
+def app_token_delete(service_name: str, token_name: str) -> ResponseReturnValue:
+    return
 
 @frontend_views.route('/totp')
 def totp() -> ResponseReturnValue:
