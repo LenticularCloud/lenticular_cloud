@@ -1,8 +1,19 @@
 {
   pkgs,
   python ? pkgs.python39,
+  nodejs ? pkgs.nodejs,
   ...}:
 let 
+  nixNodePackage = builtins.fetchGit {
+    url = "https://github.com/mkg20001/nix-node-package.git";
+    rev = "03285e212016db5f28530563b58cfcc5706ff73f";
+  };
+  makeNode = import "${nixNodePackage}/nix/default.nix" pkgs {
+    root = ./.;
+    install = false;
+    nodejs = nodejs;
+  };
+  node-env = makeNode { };
 
   urlobject = with python.pkgs; buildPythonPackage rec {
     pname = "URLObject";
@@ -31,10 +42,10 @@ let
 
   flask-dance = with python.pkgs; buildPythonPackage rec {
     pname = "Flask-Dance";
-    version = "5.1.0";
+    version = "6.0.0";
     src = fetchPypi {
       inherit pname version;
-      sha256 = "9eb5a404ef1b06a58aabbe5ac496908bda0482af1cf08e8c00188493405842fd";
+      sha256 = "15bb3c412eb789a2d904bfd0fd44aac2d94f82703a51d14123fd336136d55db0";
     };
     doCheck = false;
     propagatedBuildInputs = [
@@ -99,7 +110,8 @@ let
     propagatedBuildInputs = [
       urllib3
       python-dateutil
-      python_attrs
+      #python_attrs
+      attrs
       httpx
     ];
   };
@@ -124,6 +136,8 @@ in
       fido2 # for webauthn
       flask_migrate # db migrations
 
+      nodejs
+      #node-env
       gunicorn
 
       flask-dance
@@ -140,6 +154,8 @@ in
     pytest-mypy
     flask_testing
     tox
+
+    types-dateutil
 
     nose
     mypy
