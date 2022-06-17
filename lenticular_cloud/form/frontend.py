@@ -1,10 +1,10 @@
 from flask_babel import gettext
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, TextField, \
+from wtforms import StringField, SubmitField, \
         TextAreaField, PasswordField, IntegerField, FloatField, \
         DateTimeField, DateField, FormField, BooleanField, \
         SelectField, Form as NoCsrfForm, HiddenField
-from wtforms.widgets.html5 import NumberInput, DateInput
+from wtforms.widgets import NumberInput, DateInput
 from wtforms.validators import DataRequired, NumberRange, \
         Optional, NoneOf, Length, EqualTo, InputRequired
 
@@ -25,8 +25,8 @@ class ClientCertForm(FlaskForm):
 
 class TOTPForm(FlaskForm):
     secret = HiddenField(gettext('totp-Secret'))
-    token = TextField(gettext('totp-verify token'))
-    name = TextField(gettext('name'))
+    token = StringField(gettext('totp-verify token'))
+    name = StringField(gettext('name'))
     submit = SubmitField(gettext('Activate'))
 
 

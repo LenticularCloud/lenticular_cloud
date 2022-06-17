@@ -1,11 +1,11 @@
 from flask_babel import gettext
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, TextField, \
+from wtforms import StringField, SubmitField, \
         TextAreaField, PasswordField, IntegerField, FloatField, \
         DateTimeField, DateField, FormField, BooleanField, \
         SelectField, Form as NoCsrfForm, SelectMultipleField
 
-from wtforms.fields.html5 import URLField
+from wtforms.fields import URLField
 from wtforms.fields import FormField, SelectMultipleField
 
 from .base import FieldList

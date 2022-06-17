@@ -44,8 +44,8 @@ window.fieldlist = {
 		var template = templateTag.content.cloneNode(true);
 		var id = templateTag.dataset['fieldlistNextId']++;
 		for(let tag of template.querySelectorAll('[name], [id]')){
-			tag.name = tag.name.replace(/^custom-/, name+'-'+id+'-')
-			tag.id = tag.id.replace(/^custom-/, name+'-'+id+'-')
+			tag.name = tag.name.replace(/^custom/, `${name}-${id}`)
+			tag.id = tag.id.replace(/^custom/, `${name}-${id}`)
 		};
 		templateTag.parentNode.querySelector('ul').appendChild(template);
 
