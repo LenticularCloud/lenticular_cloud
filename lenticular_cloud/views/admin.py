@@ -11,7 +11,7 @@ from ory_hydra_client.models import OAuth2Client, GenericError
 from typing import Optional
 import logging
 
-from ..model import db, User, UserSignUp
+from ..model import db, User
 from .oauth2 import redirect_login, oauth2
 from ..form.admin import OAuth2ClientForm
 from ..hydra import hydra_service
@@ -50,28 +50,24 @@ async def users():
 
 @admin_views.route('/registrations', methods=['GET'])
 def registrations() -> ResponseReturnValue:
-    users = UserSignUp.query.all()
+    users = User.query.filter_by(enabled=False).all()
     return render_template('admin/registrations.html.j2', users=users)
 
 
 @admin_views.route('/registration/<registration_id>', methods=['DELETE'])
 def registration_delete(registration_id) -> ResponseReturnValue:
-    user_data = UserSignUp.query.get(registration_id)
-    if user_data is None:
+    user = User.query.get(registration_id)
+    if user is None:
         return jsonify({}), 404
-    db.session.delete(user_data)
+    db.session.delete(user)
     db.session.commit()
     return jsonify({})
 
 
 @admin_views.route('/registration/<registration_id>', methods=['PUT'])
 def registration_accept(registration_id) -> ResponseReturnValue:
-    user_data = UserSignUp.query.get(registration_id)
-    #create user
-    user = User.new(user_data)
-
-    db.session.add(user)
-    db.session.delete(user_data)
+    user = User.query.get(registration_id)
+    user.enabled = True
     db.session.commit()
     return jsonify({})
 

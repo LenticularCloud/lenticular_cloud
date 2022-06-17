@@ -31,6 +31,8 @@ from ..auth_providers import LdapAuthProvider
 from .auth import webauthn
 from .oauth2 import redirect_login, oauth2
 from ..hydra import hydra_service
+from ..pki import pki
+from ..lenticular_services import lenticular_services
 
 frontend_views = Blueprint('frontend', __name__, url_prefix='')
 logger = logging.getLogger(__name__)
@@ -43,8 +45,10 @@ def before_request() -> Optional[ResponseReturnValue]:
             logger.info('user not logged in redirect')
             return redirect_login()
     except MissingTokenError:
+        logger.info('MissingTokenError redirect user to login')
         return redirect_login()
     except InvalidTokenError:
+        logger.info('InvalidTokenError redirect user to login')
         return redirect_login()
 
     return None
@@ -72,20 +76,20 @@ def index() -> ResponseReturnValue:
 @frontend_views.route('/client_cert')
 def client_cert() -> ResponseReturnValue:
     client_certs = {}
-    for service in current_app.lenticular_services.values():
+    for service in lenticular_services.values():
         client_certs[str(service.name)] = \
-                current_app.pki.get_client_certs(current_user, service)
+                pki.get_client_certs(current_user, service)
 
     return render_template(
             'frontend/client_cert.html.j2',
-            services=current_app.lenticular_services,
+            services=lenticular_services,
             client_certs=client_certs)
 
 
 @frontend_views.route('/client_cert/<service_name>/<serial_number>')
 def get_client_cert(service_name, serial_number) -> ResponseReturnValue:
-    service = current_app.lenticular_services[service_name]
-    cert = current_app.pki.get_client_cert(
+    service = lenticular_services[service_name]
+    cert = pki.get_client_cert(
             current_user, service, serial_number)
     return jsonify({
         'data': {
@@ -96,10 +100,10 @@ def get_client_cert(service_name, serial_number) -> ResponseReturnValue:
 @frontend_views.route(
         '/client_cert/<service_name>/<serial_number>', methods=['DELETE'])
 def revoke_client_cert(service_name, serial_number) -> ResponseReturnValue:
-    service = current_app.lenticular_services[service_name]
-    cert = current_app.pki.get_client_cert(
+    service = lenticular_services[service_name]
+    cert = pki.get_client_cert(
             current_user, service, serial_number)
-    current_app.pki.revoke_certificate(cert)
+    pki.revoke_certificate(cert)
     return jsonify({})
 
 
@@ -107,11 +111,11 @@ def revoke_client_cert(service_name, serial_number) -> ResponseReturnValue:
         '/client_cert/<service_name>/new',
         methods=['GET', 'POST'])
 def client_cert_new(service_name) -> ResponseReturnValue:
-    service = current_app.lenticular_services[service_name]
+    service = lenticular_services[service_name]
     form = ClientCertForm()
     if form.validate_on_submit():
         valid_time = int(form.data['valid_time']) * timedelta(1, 0, 0)
-        cert = current_app.pki.signing_publickey(
+        cert = pki.signing_publickey(
                 current_user,
                 service,
                 form.data['publickey'],
@@ -120,7 +124,7 @@ def client_cert_new(service_name) -> ResponseReturnValue:
                 'status': 'ok',
                 'data': {
                     'cert': cert.pem(),
-                    'ca_cert': current_app.pki.get_ca_cert_pem(service)
+                    'ca_cert': pki.get_ca_cert_pem(service)
                 }})
     elif form.is_submitted():
         return jsonify({
@@ -252,7 +256,7 @@ def webauthn_register_route() -> ResponseReturnValue:
 
             return redirect(url_for('app.webauthn_list_route'))
         except (KeyError, ValueError) as e:
-            current_app.logger.exception(e)
+            logger.exception(e)
             flash('Error during registration.', 'error')
 
     return render_template('frontend/webauthn_register.html', form=form)

@@ -1,5 +1,5 @@
 import argparse
-from .model import db, User, UserSignUp
+from .model import db, User
 from .app import create_app
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_migrate import upgrade
@@ -19,7 +19,7 @@ def entry_point():
     parser_user.set_defaults(func=cli_user)
 
     parser_signup = subparsers.add_parser('signup')
-    parser_signup.add_argument('--signup_id', type=int)
+    parser_signup.add_argument('--signup_id', type=str)
     parser_signup.set_defaults(func=cli_signup)
 
     parser_run = subparsers.add_parser('run')
@@ -55,22 +55,25 @@ def entry_point():
 
 
 def cli_user(args):
-    print(User.query.all())
+    for user in User.query.all():
+        print(f'{user.id} - Enabled: {user.enabled} - Name:`{user.username}`')
     pass
 
 def cli_signup(args):
-    
-    print(args.signup_id)
-    if args.signup_id is not None:
-        user_data = UserSignUp.query.get(args.signup_id)
-        user = User.new(user_data)
 
-        db.session.add(user)
-        db.session.delete(user_data)
+    if args.signup_id is not None:
+        user = User.query.get(args.signup_id)
+        if user == None:
+            print("user not found")
+            return
+        user.enabled = True
+
         db.session.commit()
     else:
         # list
-        print(UserSignUp.query.all())
+        print('disabled users:')
+        for user in User.query.filter_by(enabled=False).all():
+            print(f'<Signup id={user.id}, username={user.username}>')
 
 
 def cli_run(app, args):

@@ -64,7 +64,7 @@ def email_login() -> ResponseReturnValue:
     logger.error(f'{request}')
     logger.error(f'{request.headers}')
     if not request.is_json:
-        return {}, 400
+        return jsonify({}), 400
     req_payload = request.get_json()
     logger.error(f'{req_payload}')
     password = req_payload["password"]

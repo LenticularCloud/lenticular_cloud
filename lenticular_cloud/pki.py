@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import Flask
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
@@ -39,12 +39,18 @@ def safe_filename(name):
 
 class Pki(object):
 
-    def __init__(self, pki_path: str, domain: str):
+    def __init__(self):
+        self._pki_path = Path()
+        self._domain = ""
+
+
+    def init_app(self, app: Flask) -> None:
         '''
         pki_path: str base path from the pkis
         '''
-        self._pki_path = Path(pki_path)
-        self._domain = domain
+        self._pki_path = Path(os.getcwd()) / app.config['PKI_PATH']
+        self._domain = app.config['DOMAIN']
+
 
 
     def _init_ca(self, service: Service):
@@ -322,3 +328,4 @@ class Pki(object):
                     backend=default_backend())
                 return crl
 
+pki = Pki()

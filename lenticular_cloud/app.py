@@ -3,16 +3,17 @@ from flask import g, redirect, request
 from flask.helpers import url_for
 import time
 import subprocess
+from lenticular_cloud.lenticular_services import lenticular_services
 from ory_hydra_client import Client
 import os
 
 from pathlib import Path
-from ldap3 import Connection, Server, ALL
 
-from . import model
-from .pki import Pki
+from .pki import pki
 from .hydra import hydra_service
 from .translations import init_babel
+from .model import db, migrate
+from .views import auth_views, frontend_views, init_login_manager, api_views, pki_views, admin_views, oauth2_views
 
 
 def get_git_hash():
@@ -31,13 +32,6 @@ def create_app() -> Flask:
 
     app.jinja_env.globals['GIT_HASH'] = get_git_hash()
 
-    #app.ldap_orm = Connection(app.config['LDAP_URL'], app.config['LDAP_BIND_DN'], app.config['LDAP_BIND_PW'], auto_bind=True)
-    server = Server(app.config['LDAP_URL'], get_info=ALL)
-    app.ldap_conn = Connection(server, app.config['LDAP_BIND_DN'], app.config['LDAP_BIND_PW'], auto_bind=True) # TODO auto_bind read docu
-    model.ldap_conn = app.ldap_conn
-    model.base_dn = app.config['LDAP_BASE_DN']
-
-    from .model import db, migrate
     db.init_app(app)
     migration_dir = Path(app.root_path) / 'migrations'
     migrate.init_app(app, db, directory=str(migration_dir))
@@ -53,9 +47,7 @@ def create_app() -> Flask:
 #                        password=app.config['HYDRA_ADMIN_PASSWORD'])
     hydra_service.set_hydra_client(Client(base_url=app.config['HYDRA_ADMIN_URL']))
 
-    from .views import auth_views, frontend_views, init_login_manager, api_views, pki_views, admin_views, oauth2_views
     init_login_manager(app)
-    #oauth2.init_app(app)
     app.register_blueprint(auth_views)
     app.register_blueprint(frontend_views)
     app.register_blueprint(api_views)
@@ -68,11 +60,9 @@ def create_app() -> Flask:
         request_start_time = time.time()
         g.request_time = lambda: "%.5fs" % (time.time() - request_start_time)
 
-    app.lenticular_services = {}
-    for service_name, service_config in app.config['LENTICULAR_CLOUD_SERVICES'].items():
-        app.lenticular_services[service_name] = model.Service.from_config(service_name, service_config)
+    lenticular_services.init_app(app)
 
-    app.pki = Pki(app.config['PKI_PATH'], app.config['DOMAIN'])
+    pki.init_app(app)
 
     return app
 

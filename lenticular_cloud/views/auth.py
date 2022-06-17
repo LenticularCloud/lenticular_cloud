@@ -21,7 +21,7 @@ from ory_hydra_client.api.admin import get_consent_request, accept_consent_reque
 from ory_hydra_client.models import AcceptLoginRequest, AcceptConsentRequest, ConsentRequestSession, GenericError, ConsentRequestSessionAccessToken, ConsentRequestSessionIdToken
 from typing import Optional
 
-from ..model import db, User, SecurityUser, UserSignUp
+from ..model import db, User, SecurityUser
 from ..form.auth import ConsentForm, LoginForm, RegistrationForm
 from ..auth_providers import AUTH_PROVIDER_LIST
 from ..hydra import hydra_service
@@ -118,7 +118,7 @@ async def login() -> ResponseReturnValue:
         return redirect(resp.redirect_to)
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query_().by_username(form.data['name'])
+        user = User.query.filter_by(username=form.data['name']).first()
         if user:
             session['username'] = str(user.username)
         else:
@@ -141,7 +141,7 @@ async def login_auth() -> ResponseReturnValue:
     if 'username' not in session:
         return redirect(url_for('auth.login'))
     auth_forms = {}
-    user = User.query_().by_username(session['username'])
+    user = User.query.filter_by(username=session['username']).first()
     for auth_provider in AUTH_PROVIDER_LIST:
         form = auth_provider.get_form()
         if auth_provider.get_name() not in session['auth_providers'] and\
@@ -216,9 +216,9 @@ def sign_up():
 def sign_up_submit():
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = UserSignUp()
+        user = User()
         user.username = form.data['username']
-        user.password = crypt.crypt(form.data['password'])
+        user.password_hashed = crypt.crypt(form.data['password'])
         user.alternative_email = form.data['alternative_email']
         db.session.add(user)
         db.session.commit()
