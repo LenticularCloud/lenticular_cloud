@@ -27,7 +27,7 @@ from ..model import db, User, SecurityUser, Totp, WebauthnCredential
 from ..form.frontend import ClientCertForm, TOTPForm, \
     TOTPDeleteForm, PasswordChangeForm, WebauthnRegisterForm
 from ..form.base import  ButtonForm
-from ..auth_providers import LdapAuthProvider
+from ..auth_providers import PasswordAuthProvider
 from .auth import webauthn
 from .oauth2 import redirect_login, oauth2
 from ..hydra import hydra_service
@@ -275,7 +275,7 @@ def password_change_post() -> ResponseReturnValue:
     if form.validate():
         password_old = str(form.data['password_old'])
         password_new = str(form.data['password_new'])
-        if not LdapAuthProvider.check_auth_internal(
+        if not PasswordAuthProvider.check_auth_internal(
                 current_user, password_old):
             return jsonify(
                     {'errors': {'password_old': 'Old Password is invalid'}})

@@ -147,6 +147,7 @@ async def login_auth() -> ResponseReturnValue:
         if auth_provider.get_name() not in session['auth_providers'] and\
            auth_provider.check_auth(user, form):
             session['auth_providers'].append(auth_provider.get_name())
+            session.modified = True
 
         if auth_provider.get_name() not in session['auth_providers']:
             auth_forms[auth_provider.get_name()]=form

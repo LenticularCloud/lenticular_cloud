@@ -49,7 +49,7 @@ class Service(object):
                 }
 
     @staticmethod
-    def from_config(name, config) -> Service:
+    def from_config(name, config) -> 'Service':
         """
         """
         service = Service(name)
@@ -189,7 +189,7 @@ class Totp(BaseModel):
     secret = db.Column(db.String, nullable=False)
     name = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
-    last_used = db.Column(db.DateTime, nullable=True)
+    #last_used = db.Column(db.DateTime, nullable=True)
 
     user_id = db.Column(
             db.String(length=36),

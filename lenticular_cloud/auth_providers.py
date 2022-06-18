@@ -1,7 +1,8 @@
 from flask import current_app
+from flask_wtf import FlaskForm
 from .form.auth import PasswordForm, TotpForm, Fido2Form
-from ldap3 import Server, Connection, HASHED_SALTED_SHA256
-from ldap3.core.exceptions import LDAPException
+from hmac import compare_digest as compare_hash
+import crypt
 from .model import User
 import logging
 
@@ -17,11 +18,11 @@ class AuthProvider:
         return csl.__name__
 
     @staticmethod
-    def get_form():
+    def get_form() -> FlaskForm:
         return
 
     @staticmethod
-    def check_auth(user, form) -> bool:
+    def check_auth(user: User, form) -> bool:
         '''
         checks the submited form is valid
         return true if user is allowed to auth
@@ -29,30 +30,26 @@ class AuthProvider:
         return False
 
 
-class LdapAuthProvider(AuthProvider):
+class PasswordAuthProvider(AuthProvider):
 
     @staticmethod
-    def get_form():
+    def get_form() -> FlaskForm:
         return PasswordForm(prefix='password')
 
     @staticmethod
-    def check_auth(user: User, form):
-        return LdapAuthProvider.check_auth_internal(
-                user, form.data['password'])
-
-    @staticmethod
-    def check_auth_internal(user, password):
-        server = Server(current_app.config['LDAP_URL'])
-        ldap_conn = Connection(server, user.entry_dn, password)
-        try:
-            return ldap_conn.bind()
-        except LDAPException:
+    def check_auth(user: User, form: FlaskForm) -> bool:
+        if isinstance(form.data['password'], str):
+            return PasswordAuthProvider.check_auth_internal(user, form.data['password'])
+        else:
             return False
+    @staticmethod
+    def check_auth_internal(user: User, password: str) -> bool:
+        return compare_hash(crypt.crypt(password, user.password_hashed),user.password_hashed) 
 
 
 class U2FAuthProvider(AuthProvider):
     @staticmethod
-    def get_from():
+    def get_from() -> FlaskForm:
         return Fido2Form(prefix='fido2')
 
 
@@ -67,7 +64,7 @@ class TotpAuthProvider(AuthProvider):
         return TotpForm(prefix='totp')
 
     @staticmethod
-    def check_auth(user, form):
+    def check_auth(user: User, form: FlaskForm) -> bool:
         data = form.data['totp']
         if data is not None:
             #print(f'data totp: {data}')
@@ -80,7 +77,7 @@ class TotpAuthProvider(AuthProvider):
 
 
 AUTH_PROVIDER_LIST = [
-    LdapAuthProvider,
+    PasswordAuthProvider,
     TotpAuthProvider
 ]
 

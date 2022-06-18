@@ -11,7 +11,6 @@ import logging
 import httpx
 
 from ..model import User
-from ..auth_providers import LdapAuthProvider
 from ..hydra import hydra_service
 from ory_hydra_client.api.admin import introspect_o_auth_2_token
 from ory_hydra_client.models import GenericError
@@ -37,7 +36,7 @@ def user_list() -> ResponseReturnValue:
 
     return jsonify([
             {'username': str(user.username), 'email': str(user.email)}
-            for user in User.query_().all()])
+            for user in User.query.all()])
 
 @api_views.route('/introspect', methods=['POST'])
 def introspect() -> ResponseReturnValue:
@@ -66,7 +65,7 @@ def email_login() -> ResponseReturnValue:
     if not request.is_json:
         return jsonify({}), 400
     req_payload = request.get_json()
-    logger.error(f'{req_payload}')
+    logger.debug(f'{req_payload}')
     if not isinstance(req_payload, dict):
         return 'bad request', 400
     password = req_payload["password"]

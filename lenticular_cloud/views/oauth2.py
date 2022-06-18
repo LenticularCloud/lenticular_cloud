@@ -28,8 +28,8 @@ def redirect_login() -> ResponseReturnValue:
     session['next_url'] = request.path
     redirect_uri = url_for('oauth2.authorized', _external=True)
     response = oauth2.custom.authorize_redirect(redirect_uri)
-    #if isinstance(response, ResponseReturnValue):
-    #    raise RuntimeError("invalid redirect")
+    if isinstance(response, Response):
+        raise RuntimeError("invalid redirect")
     return response
 
 
