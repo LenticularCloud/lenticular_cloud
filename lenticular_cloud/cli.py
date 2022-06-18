@@ -4,12 +4,13 @@ from .app import create_app
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_migrate import upgrade
 from pathlib import Path
+from flask import Flask
 
 import logging
 import os
 
 
-def entry_point():
+def entry_point() -> None:
     logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
     parser = argparse.ArgumentParser(description='lenticular_cloud cli')
@@ -54,12 +55,12 @@ def entry_point():
         args.func(args)
 
 
-def cli_user(args):
+def cli_user(args) -> None:
     for user in User.query.all():
         print(f'{user.id} - Enabled: {user.enabled} - Name:`{user.username}`')
     pass
 
-def cli_signup(args):
+def cli_signup(args) -> None:
 
     if args.signup_id is not None:
         user = User.query.get(args.signup_id)
@@ -76,12 +77,14 @@ def cli_signup(args):
             print(f'<Signup id={user.id}, username={user.username}>')
 
 
-def cli_run(app, args):
+def cli_run(app: Flask, args) -> None:
+    print("running in debug mode")
     logging.basicConfig(level=logging.DEBUG)
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    #app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
+    app.run(debug=False, host='127.0.0.1', port=5000)
 
-def cli_db_upgrade(args):
+
+def cli_db_upgrade(args) -> None:
     app = create_app()
     migration_dir = Path(app.root_path) / 'migrations'
     upgrade( str(migration_dir) )

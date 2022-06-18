@@ -1,10 +1,10 @@
 {% extends 'frontend/base.html.j2' %}
 
-{% block title %}{{ gettext('client certs') }}{% endblock %}
+{% block title %}{{ gettext('app token') }}{% endblock %}
 
 {% block content %}
 
-
+{#
 <ul class="nav nav-tabs" id="myTab" role="tablist">
   {% for service in services.values() %}
 	<li class="nav-item">
@@ -47,14 +47,11 @@
 	</div>
 	{% endfor %}
 </div>
-
+#}
 
 {% endblock %}
 
 
 {% block script_js %}
-
-client_cert.init_list();
-
 
 {% endblock %}

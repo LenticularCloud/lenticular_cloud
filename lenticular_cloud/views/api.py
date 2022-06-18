@@ -67,6 +67,8 @@ def email_login() -> ResponseReturnValue:
         return jsonify({}), 400
     req_payload = request.get_json()
     logger.error(f'{req_payload}')
+    if not isinstance(req_payload, dict):
+        return 'bad request', 400
     password = req_payload["password"]
     username = req_payload["username"]
 

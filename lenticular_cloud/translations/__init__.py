@@ -48,7 +48,7 @@ def init_babel(app: Flask) -> None:
     @app.context_processor
     def get_locale_jinja() -> dict:
         def get_locale_() -> str:
-            return get_locale()
+            return get_locale() # type: ignore
 
         return dict(get_locale=get_locale_)
     return None

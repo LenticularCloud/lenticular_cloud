@@ -44,13 +44,11 @@ def authorized() -> ResponseReturnValue:
         return 'bad request', 400
     session['token'] = token
     userinfo = oauth2.custom.get('/userinfo').json()
-    logger.info(f"userinfo `{userinfo}`")
     user = User.query.get(str(userinfo["sub"]))
     if user is None:
         return "user not found", 404
-    logger.info(f"login user `{user.username}`")
+    logger.info(f"user `{user.username}` successfully logged in")
     login_user(SecurityUser(user.username))
-    logger.info(f"session user `{session}`")
 
     next_url = request.args.get('next_url')
     if next_url is None:

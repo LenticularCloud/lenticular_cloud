@@ -139,7 +139,8 @@ def client_cert_new(service_name) -> ResponseReturnValue:
 
 @frontend_views.route('/app_token')
 def app_token() -> ResponseReturnValue:
-    return
+    delete_form = TOTPDeleteForm()
+    return render_template('frontend/app_token.html.j2', delete_form=delete_form)
 
 @frontend_views.route('/app_token/<service_name>/new')
 def app_token_new(service_name: str) -> ResponseReturnValue:
