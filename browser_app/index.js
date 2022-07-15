@@ -82,7 +82,7 @@ window.auth = {
 		submit: function(form) {
 			SimpleFormSubmit.submitForm(form.action, form)
 				.then(response =>{
-					response.json().then(function(data) {
+					response.json().then(data => {
 						if (data.errors) {
 							var msg ='<ul>';
 							for( var field in data.errors) {
@@ -156,7 +156,9 @@ window.password_change= {
 							new Dialog('Password changed', 'Password changed successfully!').show();
 						}
 					});
-				});
+				}).error(error =>{
+          new Dialog('Password change Error', `Error Happend: ${msg}`).show()
+        });
 			return false;
 		}
 
@@ -201,10 +203,10 @@ window.client_cert = {
 
 			SimpleFormSubmit.submitForm(form_sign_key.action, form_sign_key)
 				.then(response => {
-					response.json().then( response => {
-						if (data.errors) {
+					response.json().then( json_data => {
+						if (json_data.errors) {
 							var msg ='<ul>';
-							for( var field in data.errors) {
+							for( var field in json_data.repsonse) {
 								msg += `<li>${field}: ${data.errors[field]}</li>`;
 							}
 							msg += '</ul>';

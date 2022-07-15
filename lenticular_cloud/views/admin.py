@@ -9,6 +9,7 @@ from authlib.integrations.base_client.errors import InvalidTokenError
 from ory_hydra_client.api.admin import list_o_auth_2_clients, get_o_auth_2_client, update_o_auth_2_client, create_o_auth_2_client 
 from ory_hydra_client.models import OAuth2Client, GenericError
 from typing import Optional
+from collections.abc import Iterable
 import logging
 
 from ..model import db, User
@@ -44,19 +45,19 @@ async def index() -> ResponseReturnValue:
 
 @admin_views.route('/user', methods=['GET'])
 async def users():
-    users = User.query.all()
+    users = User.query.all() # type: Iterable[User]
     return render_template('admin/users.html.j2', users=users)
 
 
 @admin_views.route('/registrations', methods=['GET'])
 def registrations() -> ResponseReturnValue:
-    users = User.query.filter_by(enabled=False).all()
+    users = User.query.filter_by(enabled=False).all() # type: Iterable[User]
     return render_template('admin/registrations.html.j2', users=users)
 
 
 @admin_views.route('/registration/<registration_id>', methods=['DELETE'])
 def registration_delete(registration_id) -> ResponseReturnValue:
-    user = User.query.get(registration_id)
+    user = User.query.get(registration_id) # type: Optional[User]
     if user is None:
         return jsonify({}), 404
     db.session.delete(user)
@@ -66,7 +67,9 @@ def registration_delete(registration_id) -> ResponseReturnValue:
 
 @admin_views.route('/registration/<registration_id>', methods=['PUT'])
 def registration_accept(registration_id) -> ResponseReturnValue:
-    user = User.query.get(registration_id)
+    user = User.query.get(registration_id) # type: Optional[User]
+    if user is None:
+        return jsonify({'message':'user not found'}), 404
     user.enabled = True
     db.session.commit()
     return jsonify({})

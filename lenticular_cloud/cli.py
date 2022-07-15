@@ -81,7 +81,7 @@ def cli_run(app: Flask, args) -> None:
     print("running in debug mode")
     logging.basicConfig(level=logging.DEBUG)
     #app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
-    app.run(debug=False, host='127.0.0.1', port=5000)
+    app.run(debug=True, host='127.0.0.1', port=5000)
 
 
 def cli_db_upgrade(args) -> None:

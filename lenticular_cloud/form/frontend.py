@@ -33,6 +33,12 @@ class TOTPForm(FlaskForm):
 class TOTPDeleteForm(FlaskForm):
     submit = SubmitField(gettext('Delete'))
 
+class AppTokenForm(FlaskForm):
+    name = StringField(gettext('name'), validators=[DataRequired(),Length(min=1, max=255) ])
+    submit = SubmitField(gettext('Activate'))
+
+class AppTokenDeleteForm(FlaskForm):
+    submit = SubmitField(gettext('Delete'))
 
 class WebauthnRegisterForm(FlaskForm):
     """webauthn register token form"""

@@ -5,6 +5,7 @@ from flask_login import login_user, logout_user, current_user
 from flask.typing import ResponseReturnValue
 from flask_login import LoginManager
 from typing import Optional
+from werkzeug.wrappers.response import Response as WerkzeugResponse
 import logging
 
 from ..model import User, SecurityUser
@@ -28,7 +29,7 @@ def redirect_login() -> ResponseReturnValue:
     session['next_url'] = request.path
     redirect_uri = url_for('oauth2.authorized', _external=True)
     response = oauth2.custom.authorize_redirect(redirect_uri)
-    if isinstance(response, Response):
+    if not isinstance(response, WerkzeugResponse):
         raise RuntimeError("invalid redirect")
     return response
 
@@ -44,7 +45,7 @@ def authorized() -> ResponseReturnValue:
         return 'bad request', 400
     session['token'] = token
     userinfo = oauth2.custom.get('/userinfo').json()
-    user = User.query.get(str(userinfo["sub"]))
+    user = User.query.get(str(userinfo["sub"])) # type: Optional[User]
     if user is None:
         return "user not found", 404
     logger.info(f"user `{user.username}` successfully logged in")
@@ -60,14 +61,14 @@ def authorized() -> ResponseReturnValue:
 def login() -> ResponseReturnValue:
     redirect_uri = url_for('.authorized', _external=True)
     response = oauth2.custom.authorize_redirect(redirect_uri)
-    #if type(response) != Response:
-    #    raise RuntimeError("invalid redirect")
+    if not isinstance(response, WerkzeugResponse):
+        raise RuntimeError("invalid redirect")
     return response
 
 
 @login_manager.user_loader
 def user_loader(username) -> Optional[User]:
-    user =  User.query.filter_by(username=username).first()
+    user =  User.query.filter_by(username=username).first() # type: Optional[User]
     if isinstance(user, User):
         return user
     else:

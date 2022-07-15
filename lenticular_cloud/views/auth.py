@@ -60,7 +60,9 @@ async def consent() -> ResponseReturnValue:
     requested_audiences = consent_request.requested_access_token_audience
 
     if form.validate_on_submit() or consent_request.skip:
-        user = User.query.get(consent_request.subject)
+        user = User.query.get(consent_request.subject) # type: Optional[User]
+        if user is None:
+            return 'internal error', 500
         token_data = {
             'name': str(user.username),
             'preferred_username': str(user.username),
@@ -118,7 +120,7 @@ async def login() -> ResponseReturnValue:
         return redirect(resp.redirect_to)
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.data['name']).first()
+        user = User.query.filter_by(username=form.data['name']).first() # type: Optional[User]
         if user:
             session['username'] = str(user.username)
         else:
@@ -141,7 +143,7 @@ async def login_auth() -> ResponseReturnValue:
     if 'username' not in session:
         return redirect(url_for('auth.login'))
     auth_forms = {}
-    user = User.query.filter_by(username=session['username']).first()
+    user = User.query.filter_by(username=session['username']).first() # Optional[User]
     for auth_provider in AUTH_PROVIDER_LIST:
         form = auth_provider.get_form()
         if auth_provider.get_name() not in session['auth_providers'] and\
@@ -178,7 +180,7 @@ async def login_auth() -> ResponseReturnValue:
 def webauthn_pkcro_route():
     """login webauthn pkcro route"""
 
-    user = User.query.filter(User.id == session.get('webauthn_login_user_id')).one_or_none()
+    user = User.query.filter(User.id == session.get('webauthn_login_user_id')).one() #type: User
     form = ButtonForm()
     if user and form.validate_on_submit():
         pkcro, state = webauthn.authenticate_begin(webauthn_credentials(user))

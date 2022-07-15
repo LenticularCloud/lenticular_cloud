@@ -9,6 +9,8 @@ import pyotp
 import json
 import logging
 import crypt
+import secrets
+import string
 from flask_sqlalchemy import SQLAlchemy, orm
 from flask_migrate import Migrate
 from datetime import datetime
@@ -23,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 
-db = SQLAlchemy()  # type: SQLAlchemy
+db = SQLAlchemy()
 migrate = Migrate()
 
 
@@ -42,6 +44,7 @@ class Service(object):
 
     def __init__(self, name: str):
         self._name = name
+        self._app_token = False
         self._client_cert = False
         self._pki_config = {
                     'cn': '{username}',
@@ -53,6 +56,8 @@ class Service(object):
         """
         """
         service = Service(name)
+        if 'app_token' in config:
+            service._app_token = bool(config['app_token'])
         if 'client_cert' in config:
             service._client_cert = bool(config['client_cert'])
         if 'pki_config' in config:
@@ -67,6 +72,10 @@ class Service(object):
     @property
     def client_cert(self) -> bool:
         return self._client_cert
+
+    @property
+    def app_token(self) -> bool:
+        return self._app_token
 
     @property
     def pki_config(self) -> dict[str,str]:
@@ -148,6 +157,7 @@ class User(BaseModel):
 
     enabled = db.Column(db.Boolean, nullable=False, default=False)
 
+    app_tokens = db.relationship('AppToken', back_populates='user')
     totps = db.relationship('Totp', back_populates='user')
     webauthn_credentials = db.relationship('WebauthnCredential', back_populates='user', cascade='delete,delete-orphan', passive_deletes=True)
 
@@ -162,7 +172,7 @@ class User(BaseModel):
         print(f'getitem: {key}') # TODO
 
     @property
-    def groups(self) -> list[str]:
+    def groups(self) -> list['Group']:
         if self.username == 'tuxcoder':
             return [Group(name='admin')]
         else:
@@ -173,23 +183,44 @@ class User(BaseModel):
         domain = current_app.config['DOMAIN']
         return f'{self.username}@{domain}'
 
-    def change_password(self, password_new: str) -> bool:
-        password_hashed = crypt.crypt(password_new)
-        return True
+    def change_password(self, password_new: str) -> None:
+        self.password_hashed = crypt.crypt(password_new)
+
+    def get_tokens_by_service(self, service: Service) -> list['AppToken']:
+        return [ token for token in self.app_tokens if token.service_name == service.name ]
+
+    def get_token(self, service: Service, name: str) -> Optional['AppToken']:
+        for token in self.app_tokens:
+            if token.service_name == service.name and token.name == name:
+                return token # type: ignore
+        return None
+
 
 class AppToken(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     service_name = db.Column(db.String, nullable=False)
+    user_id = db.Column(
+            db.String(length=36),
+            db.ForeignKey(User.id), nullable=False)
+    user = db.relationship(User)
     token = db.Column(db.String, nullable=False)
     name = db.Column(db.String, nullable=False)
+    last_used = db.Column(db.DateTime, nullable=True)
 
+    @staticmethod
+    def new(service: Service):
+        app_token = AppToken()
+        app_token.service_name = service.name
+        alphabet = string.ascii_letters + string.digits
+        app_token.token = ''.join(secrets.choice(alphabet) for i in range(12))
+        return app_token
 
 class Totp(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     secret = db.Column(db.String, nullable=False)
     name = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
-    #last_used = db.Column(db.DateTime, nullable=True)
+    last_used = db.Column(db.DateTime, nullable=True)
 
     user_id = db.Column(
             db.String(length=36),

@@ -21,11 +21,13 @@ from ory_hydra_client.models import GenericError
 from urllib.parse import urlencode, parse_qs
 from random import SystemRandom
 import string
+from collections.abc import Iterable
 from typing import Optional
 
-from ..model import db, User, SecurityUser, Totp, WebauthnCredential
+from ..model import db, User, SecurityUser, Totp, AppToken, WebauthnCredential
 from ..form.frontend import ClientCertForm, TOTPForm, \
-    TOTPDeleteForm, PasswordChangeForm, WebauthnRegisterForm
+    TOTPDeleteForm, PasswordChangeForm, WebauthnRegisterForm, \
+    AppTokenForm, AppTokenDeleteForm
 from ..form.base import  ButtonForm
 from ..auth_providers import PasswordAuthProvider
 from .auth import webauthn
@@ -111,6 +113,8 @@ def revoke_client_cert(service_name, serial_number) -> ResponseReturnValue:
         '/client_cert/<service_name>/new',
         methods=['GET', 'POST'])
 def client_cert_new(service_name) -> ResponseReturnValue:
+    if service_name not in lenticular_services:
+        return '', 404
     service = lenticular_services[service_name]
     form = ClientCertForm()
     if form.validate_on_submit():
@@ -139,16 +143,51 @@ def client_cert_new(service_name) -> ResponseReturnValue:
 
 @frontend_views.route('/app_token')
 def app_token() -> ResponseReturnValue:
-    delete_form = TOTPDeleteForm()
-    return render_template('frontend/app_token.html.j2', delete_form=delete_form)
+    delete_form = AppTokenDeleteForm()
+    form = ClientCertForm()
+    return render_template('frontend/app_token.html.j2',
+                           delete_form=delete_form,
+                           services=lenticular_services)
 
-@frontend_views.route('/app_token/<service_name>/new')
+@frontend_views.route('/app_token/<service_name>/new', methods=['GET','POST'])
 def app_token_new(service_name: str) -> ResponseReturnValue:
-    return
+    if service_name not in lenticular_services:
+        return '', 404
+    service = lenticular_services[service_name]
+    form = AppTokenForm()
 
-@frontend_views.route('/app_token/<service_name>/<token_name>')
-def app_token_delete(service_name: str, token_name: str) -> ResponseReturnValue:
-    return
+    if form.validate_on_submit():
+        app_token = AppToken.new(service)
+        form.populate_obj(app_token)
+        # check for duplicate names
+        for user_app_token in current_user.app_tokens:
+            if user_app_token.name == app_token.name:
+                return 'name already exist', 400
+        current_user.app_tokens.append(app_token)
+        db.session.commit()
+        return render_template('frontend/app_token_new_show.html.j2', service=service, app_token=app_token)
+
+
+    return render_template('frontend/app_token_new.html.j2',
+                           form=form,
+                           service=service)
+
+@frontend_views.route('/app_token/<service_name>/<app_token_name>', methods=["POST"])
+def app_token_delete(service_name: str, app_token_name: str) -> ResponseReturnValue:
+    form = AppTokenDeleteForm()
+
+    if service_name not in lenticular_services:
+        return '', 404
+
+    service = lenticular_services[service_name]
+    if form.validate_on_submit():
+        app_token = current_user.get_token(service, app_token_name)
+        if app_token is None:
+            return 'not found', 404
+        db.session.delete(app_token)
+        db.session.commit()
+
+    return redirect(url_for('frontend.app_token'))
 
 @frontend_views.route('/totp')
 def totp() -> ResponseReturnValue:
@@ -178,7 +217,7 @@ def totp_new() -> ResponseReturnValue:
 
 @frontend_views.route('/totp/<totp_name>/delete', methods=['GET', 'POST'])
 def totp_delete(totp_name) -> ResponseReturnValue:
-    totp = Totp.query.filter(Totp.name == totp_name).first()
+    totp = Totp.query.filter(Totp.name == totp_name).first() # type: Optional[Totp]
     db.session.delete(totp)
     db.session.commit()
 
@@ -190,7 +229,7 @@ def totp_delete(totp_name) -> ResponseReturnValue:
 def webauthn_list_route() -> ResponseReturnValue:
     """list registered credentials for current user"""
 
-    creds = WebauthnCredential.query.all()
+    creds = WebauthnCredential.query.all() # type: Iterable[WebauthnCredential] 
     return render_template('frontend/webauthn_list.html', creds=creds, button_form=ButtonForm())
 
 
@@ -200,7 +239,7 @@ def webauthn_delete_route(webauthn_id: str) -> ResponseReturnValue:
 
     form = ButtonForm()
     if form.validate_on_submit():
-        cred = WebauthnCredential.query.filter(WebauthnCredential.id == webauthn_id).one()
+        cred = WebauthnCredential.query.filter(WebauthnCredential.id == webauthn_id).one() # type: WebauthnCredential
         db.session.delete(cred)
         db.session.commit()
         return redirect(url_for('app.webauthn_list_route'))
@@ -223,7 +262,9 @@ def random_string(length=32) -> str:
 def webauthn_pkcco_route() -> ResponseReturnValue:
     """get publicKeyCredentialCreationOptions"""
 
-    user = User.query.get(current_user.id)
+    user = User.query.get(current_user.id) #type: Optional[User]
+    if user is None:
+        return 'internal error', 500
     user_handle = random_string()
     exclude_credentials = webauthn_credentials(user)
     pkcco, state = webauthn.register_begin(
@@ -238,7 +279,7 @@ def webauthn_pkcco_route() -> ResponseReturnValue:
 def webauthn_register_route() -> ResponseReturnValue:
     """register credential for current user"""
 
-    user = User.query.get(current_user.id)
+    user = current_user # type: User 
     form = WebauthnRegisterForm()
     if form.validate_on_submit():
         try:
@@ -279,11 +320,11 @@ def password_change_post() -> ResponseReturnValue:
                 current_user, password_old):
             return jsonify(
                     {'errors': {'password_old': 'Old Password is invalid'}})
-        resp = current_user.change_password(password_new)
-        if resp:
-            return jsonify({})
-        else:
-            return jsonify({'errors': {'internal': 'internal server errror'}})
+
+        current_user.change_password(password_new)
+        logger.info(f"user {current_user.username} changed password")
+        db.session.commit()
+        return jsonify({})
     return jsonify({'errors': form.errors})
 
 

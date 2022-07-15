@@ -48,7 +48,7 @@ class Pki(object):
         '''
         pki_path: str base path from the pkis
         '''
-        self._pki_path = Path(os.getcwd()) / app.config['PKI_PATH']
+        self._pki_path = Path(app.root_path) / app.config['PKI_PATH']
         self._domain = app.config['DOMAIN']
 
 

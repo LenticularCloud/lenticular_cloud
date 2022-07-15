@@ -1,0 +1,25 @@
+{% extends 'frontend/base.html.j2' %}
+
+{% block title %}{{ gettext('new app token for {service_name}').format(service_name=service.name) }}{% endblock %}
+
+{% block content %}
+
+<div>
+	<p>
+		Your new App Token for {{ service.name }}:
+	</p>
+
+	<p>
+		<code id="app_token_secret">{{ app_token.token }}</code><br />
+	</p>
+	<p>
+		<button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('app_token_secret').textContent);">
+			<i class="fa-solid fa-clipboard"></i>
+			Copy Secret
+		</button>
+	</p>
+</div>
+{% endblock %}
+
+
+

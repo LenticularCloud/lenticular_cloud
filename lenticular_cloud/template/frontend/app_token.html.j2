@@ -4,50 +4,48 @@
 
 {% block content %}
 
-{#
 <ul class="nav nav-tabs" id="myTab" role="tablist">
-  {% for service in services.values() %}
+  {% for service in services.values() if service.app_token %}
 	<li class="nav-item">
 		<a class="nav-link{{' active' if loop.first else ''}}" id="home-tab" data-toggle="tab" href="#{{ service.name }}" role="tab" aria-controls="home" aria-selected="true">{{ service.name }}</a>
 	</li>
   {% endfor %}
 </ul>
+
 <div class="tab-content" id="myTabContent">
-	{% for service in services.values() if service.client_cert %}
+	{% for service in services.values() if service.app_token %}
 
 	<div class="tab-pane fade{{ ' show active' if loop.first else '' }}" id="{{ service.name }}" role="tabpanel" aria-labelledby="{{ service.name }}-tab">
 		<table class="table">
 			<thead>
 				<tr>
-					<th>not valid before</th>
-					<th>not valid after</th>
-					<th>serial_number<th>
+					<th>name</th>
+					<th>last used</th>
+					<th>created at<th>
 					<th> <th>
 				</tr>
 			</thead>
 			<tbody>
-				{% for cert in client_certs[service.name] %}
-				<tr {{ 'class="table-warning"' if not cert.is_valid else ''}}>
-					<td>{{ cert.not_valid_before }}</td>
-					<td>{{ cert.not_valid_after }}</td>
-					<td>{{ cert.serial_number_hex }}</td>
+				{% for app_token in current_user.get_tokens_by_service(service) %}
+				<tr>
+					<td>{{ app_token.name }}</td>
+					<td>{{ app_token.last_used }}</td>
+					<td>{{ app_token.created_at }}</td>
 					<td>
-						<a title="{{ gettext('Download') }}" href="{{ url_for('.get_client_cert', service_name=service.name, serial_number=cert.serial_number_hex) }}"><i class="fas fa-file-download"></i></a>
-						&nbsp;
-						{% if cert.is_valid %}
-							<a title="{{ gettext('Revoke')}}" href="{{ url_for('.revoke_client_cert', service_name=service.name, serial_number=cert.serial_number_hex) }}" onclick="client_cert.revoke_certificate(this.href, '{{ cert.serial_number_hex }}'); return false;"><i class="fas fa-ban"></i></a>
-						{% endif %}
+            {{ render_form(delete_form, action_url=url_for('frontend.app_token_delete', service_name=service.name,app_token_name=app_token.name)) }}
+            {#
+						<a title="{{ gettext('Revoke')}}" href="{{ url_for('.app_token_revoce', id=app_token.id) }}" onclick="client_cert.revoke_certificate(this.href, '{{ cert.serial_number_hex }}'); return false;"><i class="fas fa-ban"></i></a>
+            #}
 					</td>
 				</tr>
 				{% endfor %}
-		</table>
-		<a class="btn btn-primary" href="{{ url_for('frontend.client_cert_new', service_name=service.name) }}">
-			New Certificate
-		</a>
+    </table>
+		<a class="btn btn-primary" href="{{ url_for('frontend.app_token_new', service_name=service.name) }}">
+			New Token
+    </a>
 	</div>
 	{% endfor %}
 </div>
-#}
 
 {% endblock %}
 

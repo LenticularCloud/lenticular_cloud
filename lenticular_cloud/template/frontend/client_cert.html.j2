@@ -6,7 +6,7 @@
 
 
 <ul class="nav nav-tabs" id="myTab" role="tablist">
-  {% for service in services.values() %}
+  {% for service in services.values() if service.client_cert %}
 	<li class="nav-item">
 		<a class="nav-link{{' active' if loop.first else ''}}" id="home-tab" data-toggle="tab" href="#{{ service.name }}" role="tab" aria-controls="home" aria-selected="true">{{ service.name }}</a>
 	</li>

@@ -7,11 +7,15 @@ from flask.templating import render_template
 from flask.typing import ResponseReturnValue
 
 from flask import Blueprint, render_template, request, url_for
+from datetime import datetime
+from typing import Optional, Any
 import logging
 import httpx
+import secrets
 
-from ..model import User
+from ..model import db, User
 from ..hydra import hydra_service
+from ..lenticular_services import lenticular_services
 from ory_hydra_client.api.admin import introspect_o_auth_2_token
 from ory_hydra_client.models import GenericError
 
@@ -40,39 +44,50 @@ def user_list() -> ResponseReturnValue:
 
 @api_views.route('/introspect', methods=['POST'])
 def introspect() -> ResponseReturnValue:
-    token = request.form['token']
-    logger.error(f'debug token: {token}')
+    token = request.form['token'] # type: Optional[str]
     resp = httpx.post("https://hydra.cloud.tux.ac/oauth2/introspect", data={'token':token})
-    #if token_info is None or isinstance(token_info, GenericError):
     if resp.status_code != 200:
         return jsonify({}), 500
     token_info = resp.json()
-    #token_info = introspect_o_auth_2_token.sync(_client=hydra_service, token=token)
 
     if not token_info['active']:
         return jsonify({'active': False})
     token_info['email'] = token_info['ext']['email']
 
-    logger.error(f'debug: {token_info}')
 
     return jsonify(token_info)
 
 
-@api_views.route('email/login', methods=['POST'])
-def email_login() -> ResponseReturnValue:
-    logger.error(f'{request}')
-    logger.error(f'{request.headers}')
+@api_views.route('/login/<service_name>', methods=['POST'])
+def email_login(service_name: str) -> ResponseReturnValue:
+    if service_name not in lenticular_services:
+        return '', 404
+    service = lenticular_services[service_name]
+
     if not request.is_json:
         return jsonify({}), 400
-    req_payload = request.get_json()
-    logger.debug(f'{req_payload}')
+    req_payload = request.get_json() # type: Any
+
     if not isinstance(req_payload, dict):
         return 'bad request', 400
+
     password = req_payload["password"]
     username = req_payload["username"]
 
-    if password == "123456":
-        return jsonify({})
+    if '@' in username:
+        username = username.split('@')[0]
 
+    user = User.query.filter_by(username=username.lower()).first() # type: Optional[User]
+    if user is None:
+        logger.warning(f'login with invalid username')
+        return jsonify({}), 403
+
+    for app_token in user.get_tokens_by_service(service):
+        if secrets.compare_digest(password, app_token.token):
+            app_token.last_used = datetime.now()
+            db.session.commit()
+            return jsonify({'username': user.username}), 200
+
+    logger.warning(f'login with invalid password for {username}')
     return jsonify({}), 403
 
