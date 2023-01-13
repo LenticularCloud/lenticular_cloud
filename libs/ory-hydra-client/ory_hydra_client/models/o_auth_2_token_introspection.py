@@ -1,12 +1,22 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-from ..models.o_auth_2_token_introspection_ext import OAuth2TokenIntrospectionExt
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="OAuth2TokenIntrospection")
+from typing import Union
+from typing import Dict
+from typing import cast
+from ..types import UNSET, Unset
+from typing import cast, List
 
+
+
+
+T = TypeVar("T", bound="OAuth2TokenIntrospection")
 
 @attr.s(auto_attribs=True)
 class OAuth2TokenIntrospection:
@@ -54,7 +64,7 @@ class OAuth2TokenIntrospection:
     aud: Union[Unset, List[str]] = UNSET
     client_id: Union[Unset, str] = UNSET
     exp: Union[Unset, int] = UNSET
-    ext: Union[Unset, OAuth2TokenIntrospectionExt] = UNSET
+    ext: Union[Unset, 'OAuth2TokenIntrospectionExt'] = UNSET
     iat: Union[Unset, int] = UNSET
     iss: Union[Unset, str] = UNSET
     nbf: Union[Unset, int] = UNSET
@@ -66,11 +76,15 @@ class OAuth2TokenIntrospection:
     username: Union[Unset, str] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         active = self.active
         aud: Union[Unset, List[str]] = UNSET
         if not isinstance(self.aud, Unset):
             aud = self.aud
+
+
+
 
         client_id = self.client_id
         exp = self.exp
@@ -90,11 +104,9 @@ class OAuth2TokenIntrospection:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "active": active,
-            }
-        )
+        field_dict.update({
+            "active": active,
+        })
         if aud is not UNSET:
             field_dict["aud"] = aud
         if client_id is not UNSET:
@@ -124,6 +136,8 @@ class OAuth2TokenIntrospection:
 
         return field_dict
 
+
+
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
@@ -131,16 +145,20 @@ class OAuth2TokenIntrospection:
 
         aud = cast(List[str], _d.pop("aud", UNSET))
 
+
         client_id = _d.pop("client_id", UNSET)
 
         exp = _d.pop("exp", UNSET)
 
         _ext = _d.pop("ext", UNSET)
         ext: Union[Unset, OAuth2TokenIntrospectionExt]
-        if isinstance(_ext, Unset):
+        if isinstance(_ext,  Unset):
             ext = UNSET
         else:
             ext = OAuth2TokenIntrospectionExt.from_dict(_ext)
+
+
+
 
         iat = _d.pop("iat", UNSET)
 

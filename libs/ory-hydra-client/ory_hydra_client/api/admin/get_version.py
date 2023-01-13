@@ -1,23 +1,39 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
 from ...models.version import Version
-from ...types import Response
+from typing import cast
+from typing import Dict
+
 
 
 def _get_kwargs(
     *,
     _client: Client,
+
 ) -> Dict[str, Any]:
-    url = "{}/version".format(_client.base_url)
+    url = "{}/version".format(
+        _client.base_url)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
+    
+
+    
+
+    
+
     return {
-        "method": "get",
+	    "method": "get",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -26,8 +42,10 @@ def _get_kwargs(
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Version]:
-    if response.status_code == 200:
+    if response.status_code == HTTPStatus.OK:
         response_200 = Version.from_dict(response.json())
+
+
 
         return response_200
     return None
@@ -45,6 +63,7 @@ def _build_response(*, response: httpx.Response) -> Response[Version]:
 def sync_detailed(
     *,
     _client: Client,
+
 ) -> Response[Version]:
     """Get Service Version
 
@@ -57,8 +76,10 @@ def sync_detailed(
         Response[Version]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
+
     )
 
     response = httpx.request(
@@ -68,10 +89,10 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     *,
     _client: Client,
+
 ) -> Optional[Version]:
     """Get Service Version
 
@@ -84,14 +105,16 @@ def sync(
         Response[Version]
     """
 
+
     return sync_detailed(
         _client=_client,
-    ).parsed
 
+    ).parsed
 
 async def asyncio_detailed(
     *,
     _client: Client,
+
 ) -> Response[Version]:
     """Get Service Version
 
@@ -104,19 +127,23 @@ async def asyncio_detailed(
         Response[Version]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     *,
     _client: Client,
+
 ) -> Optional[Version]:
     """Get Service Version
 
@@ -129,8 +156,9 @@ async def asyncio(
         Response[Version]
     """
 
-    return (
-        await asyncio_detailed(
-            _client=_client,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        _client=_client,
+
+    )).parsed
+

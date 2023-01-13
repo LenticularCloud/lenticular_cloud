@@ -1,28 +1,43 @@
-from typing import Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-T = TypeVar("T", bound="OAuth2TokenIntrospectionExt")
+from ..types import UNSET, Unset
 
+
+
+
+
+T = TypeVar("T", bound="OAuth2TokenIntrospectionExt")
 
 @attr.s(auto_attribs=True)
 class OAuth2TokenIntrospectionExt:
-    """Extra is arbitrary data set by the session."""
+    """Extra is arbitrary data set by the session.
+
+    """
 
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
 
+    def to_dict(self) -> Dict[str, Any]:
+        
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
-        o_auth_2_token_introspection_ext = cls()
+        o_auth_2_token_introspection_ext = cls(
+        )
 
         o_auth_2_token_introspection_ext.additional_properties = _d
         return o_auth_2_token_introspection_ext

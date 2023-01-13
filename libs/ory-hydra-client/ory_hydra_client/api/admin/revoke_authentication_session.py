@@ -1,29 +1,46 @@
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
 from ...models.generic_error import GenericError
-from ...types import UNSET, Response
+from typing import cast
+from typing import Dict
+
 
 
 def _get_kwargs(
     *,
     _client: Client,
     subject: str,
+
 ) -> Dict[str, Any]:
-    url = "{}/oauth2/auth/sessions/login".format(_client.base_url)
+    url = "{}/oauth2/auth/sessions/login".format(
+        _client.base_url)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
     params: Dict[str, Any] = {}
     params["subject"] = subject
 
+
+
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
+
+    
+
+    
+
     return {
-        "method": "delete",
+	    "method": "delete",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -33,19 +50,25 @@ def _get_kwargs(
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Union[Any, GenericError]]:
-    if response.status_code == 204:
+    if response.status_code == HTTPStatus.NO_CONTENT:
         response_204 = cast(Any, None)
         return response_204
-    if response.status_code == 400:
+    if response.status_code == HTTPStatus.BAD_REQUEST:
         response_400 = GenericError.from_dict(response.json())
 
+
+
         return response_400
-    if response.status_code == 404:
+    if response.status_code == HTTPStatus.NOT_FOUND:
         response_404 = GenericError.from_dict(response.json())
 
+
+
         return response_404
-    if response.status_code == 500:
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = GenericError.from_dict(response.json())
+
+
 
         return response_500
     return None
@@ -64,6 +87,7 @@ def sync_detailed(
     *,
     _client: Client,
     subject: str,
+
 ) -> Response[Union[Any, GenericError]]:
     """Invalidates All Login Sessions of a Certain User
     Invalidates a Subject's Authentication Session
@@ -81,9 +105,11 @@ def sync_detailed(
         Response[Union[Any, GenericError]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
-        subject=subject,
+subject=subject,
+
     )
 
     response = httpx.request(
@@ -93,11 +119,11 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     *,
     _client: Client,
     subject: str,
+
 ) -> Optional[Union[Any, GenericError]]:
     """Invalidates All Login Sessions of a Certain User
     Invalidates a Subject's Authentication Session
@@ -115,16 +141,18 @@ def sync(
         Response[Union[Any, GenericError]]
     """
 
+
     return sync_detailed(
         _client=_client,
-        subject=subject,
-    ).parsed
+subject=subject,
 
+    ).parsed
 
 async def asyncio_detailed(
     *,
     _client: Client,
     subject: str,
+
 ) -> Response[Union[Any, GenericError]]:
     """Invalidates All Login Sessions of a Certain User
     Invalidates a Subject's Authentication Session
@@ -142,21 +170,25 @@ async def asyncio_detailed(
         Response[Union[Any, GenericError]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
-        subject=subject,
+subject=subject,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     *,
     _client: Client,
     subject: str,
+
 ) -> Optional[Union[Any, GenericError]]:
     """Invalidates All Login Sessions of a Certain User
     Invalidates a Subject's Authentication Session
@@ -174,9 +206,10 @@ async def asyncio(
         Response[Union[Any, GenericError]]
     """
 
-    return (
-        await asyncio_detailed(
-            _client=_client,
-            subject=subject,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        _client=_client,
+subject=subject,
+
+    )).parsed
+

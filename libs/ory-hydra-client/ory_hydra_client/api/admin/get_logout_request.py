@@ -1,30 +1,47 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
 from ...models.generic_error import GenericError
+from typing import cast
 from ...models.logout_request import LogoutRequest
-from ...types import UNSET, Response
+from typing import Dict
+
 
 
 def _get_kwargs(
     *,
     _client: Client,
     logout_challenge: str,
+
 ) -> Dict[str, Any]:
-    url = "{}/oauth2/auth/requests/logout".format(_client.base_url)
+    url = "{}/oauth2/auth/requests/logout".format(
+        _client.base_url)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
     params: Dict[str, Any] = {}
     params["logout_challenge"] = logout_challenge
 
+
+
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
+
+    
+
+    
+
     return {
-        "method": "get",
+	    "method": "get",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -34,16 +51,22 @@ def _get_kwargs(
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Union[GenericError, LogoutRequest]]:
-    if response.status_code == 200:
+    if response.status_code == HTTPStatus.OK:
         response_200 = LogoutRequest.from_dict(response.json())
 
+
+
         return response_200
-    if response.status_code == 404:
+    if response.status_code == HTTPStatus.NOT_FOUND:
         response_404 = GenericError.from_dict(response.json())
 
+
+
         return response_404
-    if response.status_code == 500:
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = GenericError.from_dict(response.json())
+
+
 
         return response_500
     return None
@@ -62,6 +85,7 @@ def sync_detailed(
     *,
     _client: Client,
     logout_challenge: str,
+
 ) -> Response[Union[GenericError, LogoutRequest]]:
     """Get a Logout Request
 
@@ -74,9 +98,11 @@ def sync_detailed(
         Response[Union[GenericError, LogoutRequest]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
-        logout_challenge=logout_challenge,
+logout_challenge=logout_challenge,
+
     )
 
     response = httpx.request(
@@ -86,11 +112,11 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     *,
     _client: Client,
     logout_challenge: str,
+
 ) -> Optional[Union[GenericError, LogoutRequest]]:
     """Get a Logout Request
 
@@ -103,16 +129,18 @@ def sync(
         Response[Union[GenericError, LogoutRequest]]
     """
 
+
     return sync_detailed(
         _client=_client,
-        logout_challenge=logout_challenge,
-    ).parsed
+logout_challenge=logout_challenge,
 
+    ).parsed
 
 async def asyncio_detailed(
     *,
     _client: Client,
     logout_challenge: str,
+
 ) -> Response[Union[GenericError, LogoutRequest]]:
     """Get a Logout Request
 
@@ -125,21 +153,25 @@ async def asyncio_detailed(
         Response[Union[GenericError, LogoutRequest]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
-        logout_challenge=logout_challenge,
+logout_challenge=logout_challenge,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     *,
     _client: Client,
     logout_challenge: str,
+
 ) -> Optional[Union[GenericError, LogoutRequest]]:
     """Get a Logout Request
 
@@ -152,9 +184,10 @@ async def asyncio(
         Response[Union[GenericError, LogoutRequest]]
     """
 
-    return (
-        await asyncio_detailed(
-            _client=_client,
-            logout_challenge=logout_challenge,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        _client=_client,
+logout_challenge=logout_challenge,
+
+    )).parsed
+

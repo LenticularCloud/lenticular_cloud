@@ -13,34 +13,37 @@ from typing import Union
 
 
 
-T = TypeVar("T", bound="PluginConfigUser")
+T = TypeVar("T", bound="IntrospectOAuth2TokenData")
 
 @attr.s(auto_attribs=True)
-class PluginConfigUser:
-    """PluginConfigUser plugin config user
-
+class IntrospectOAuth2TokenData:
+    """
     Attributes:
-        gid (Union[Unset, int]): g ID
-        uid (Union[Unset, int]): UID
+        token (str): The string value of the token. For access tokens, this
+            is the "access_token" value returned from the token endpoint
+            defined in OAuth 2.0. For refresh tokens, this is the "refresh_token"
+            value returned.
+        scope (Union[Unset, str]): An optional, space separated list of required scopes. If the access token was not
+            granted one of the
+            scopes, the result of active will be false.
     """
 
-    gid: Union[Unset, int] = UNSET
-    uid: Union[Unset, int] = UNSET
+    token: str
+    scope: Union[Unset, str] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
 
     def to_dict(self) -> Dict[str, Any]:
-        gid = self.gid
-        uid = self.uid
+        token = self.token
+        scope = self.scope
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
+            "token": token,
         })
-        if gid is not UNSET:
-            field_dict["GID"] = gid
-        if uid is not UNSET:
-            field_dict["UID"] = uid
+        if scope is not UNSET:
+            field_dict["scope"] = scope
 
         return field_dict
 
@@ -49,17 +52,17 @@ class PluginConfigUser:
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
-        gid = _d.pop("GID", UNSET)
+        token = _d.pop("token")
 
-        uid = _d.pop("UID", UNSET)
+        scope = _d.pop("scope", UNSET)
 
-        plugin_config_user = cls(
-            gid=gid,
-            uid=uid,
+        introspect_o_auth_2_token_data = cls(
+            token=token,
+            scope=scope,
         )
 
-        plugin_config_user.additional_properties = _d
-        return plugin_config_user
+        introspect_o_auth_2_token_data.additional_properties = _d
+        return introspect_o_auth_2_token_data
 
     @property
     def additional_keys(self) -> List[str]:

@@ -1,9 +1,18 @@
-from typing import Any, Dict, List, Type, TypeVar, cast
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-T = TypeVar("T", bound="PluginDevice")
+from ..types import UNSET, Unset
 
+from typing import cast, List
+
+
+
+
+T = TypeVar("T", bound="PluginDevice")
 
 @attr.s(auto_attribs=True)
 class PluginDevice:
@@ -22,24 +31,29 @@ class PluginDevice:
     settable: List[str]
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         description = self.description
         name = self.name
         path = self.path
         settable = self.settable
 
+
+
+
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "Description": description,
-                "Name": name,
-                "Path": path,
-                "Settable": settable,
-            }
-        )
+        field_dict.update({
+            "Description": description,
+            "Name": name,
+            "Path": path,
+            "Settable": settable,
+        })
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
@@ -51,6 +65,7 @@ class PluginDevice:
         path = _d.pop("Path")
 
         settable = cast(List[str], _d.pop("Settable"))
+
 
         plugin_device = cls(
             description=description,

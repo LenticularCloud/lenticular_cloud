@@ -1,11 +1,19 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="GenericError")
+from ..types import UNSET, Unset
+from typing import Union
 
+
+
+
+T = TypeVar("T", bound="GenericError")
 
 @attr.s(auto_attribs=True)
 class GenericError:
@@ -26,6 +34,7 @@ class GenericError:
     status_code: Union[Unset, int] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         error = self.error
         debug = self.debug
@@ -34,11 +43,9 @@ class GenericError:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "error": error,
-            }
-        )
+        field_dict.update({
+            "error": error,
+        })
         if debug is not UNSET:
             field_dict["debug"] = debug
         if error_description is not UNSET:
@@ -47,6 +54,8 @@ class GenericError:
             field_dict["status_code"] = status_code
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:

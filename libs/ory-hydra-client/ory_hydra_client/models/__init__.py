@@ -13,6 +13,7 @@ from .generic_error import GenericError
 from .health_not_ready_status import HealthNotReadyStatus
 from .health_not_ready_status_errors import HealthNotReadyStatusErrors
 from .health_status import HealthStatus
+from .introspect_o_auth_2_token_data import IntrospectOAuth2TokenData
 from .jose_json_web_key_set import JoseJSONWebKeySet
 from .json_raw_message import JSONRawMessage
 from .json_web_key import JSONWebKey
@@ -23,6 +24,7 @@ from .logout_request import LogoutRequest
 from .o_auth_2_client import OAuth2Client
 from .o_auth_2_token_introspection import OAuth2TokenIntrospection
 from .o_auth_2_token_introspection_ext import OAuth2TokenIntrospectionExt
+from .oauth_2_token_data import Oauth2TokenData
 from .oauth_2_token_response import Oauth2TokenResponse
 from .open_id_connect_context import OpenIDConnectContext
 from .open_id_connect_context_id_token_hint_claims import OpenIDConnectContextIdTokenHintClaims
@@ -40,6 +42,7 @@ from .plugin_mount import PluginMount
 from .plugin_settings import PluginSettings
 from .previous_consent_session import PreviousConsentSession
 from .reject_request import RejectRequest
+from .revoke_o_auth_2_token_data import RevokeOAuth2TokenData
 from .userinfo_response import UserinfoResponse
 from .version import Version
 from .volume_usage_data import VolumeUsageData

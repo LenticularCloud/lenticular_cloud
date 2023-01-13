@@ -1,11 +1,15 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
 from ...models.generic_error import GenericError
+from typing import cast
 from ...models.json_web_key import JSONWebKey
-from ...types import Response
+from typing import Dict
+
 
 
 def _get_kwargs(
@@ -14,16 +18,28 @@ def _get_kwargs(
     *,
     _client: Client,
     json_body: JSONWebKey,
+
 ) -> Dict[str, Any]:
-    url = "{}/keys/{set}/{kid}".format(_client.base_url, set=set_, kid=kid)
+    url = "{}/keys/{set}/{kid}".format(
+        _client.base_url,set=set_,kid=kid)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
+    
+
     json_json_body = json_body.to_dict()
 
+
+
+    
+
     return {
-        "method": "put",
+	    "method": "put",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -33,20 +49,28 @@ def _get_kwargs(
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Union[GenericError, JSONWebKey]]:
-    if response.status_code == 200:
+    if response.status_code == HTTPStatus.OK:
         response_200 = JSONWebKey.from_dict(response.json())
 
+
+
         return response_200
-    if response.status_code == 401:
+    if response.status_code == HTTPStatus.UNAUTHORIZED:
         response_401 = GenericError.from_dict(response.json())
 
+
+
         return response_401
-    if response.status_code == 403:
+    if response.status_code == HTTPStatus.FORBIDDEN:
         response_403 = GenericError.from_dict(response.json())
 
+
+
         return response_403
-    if response.status_code == 500:
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = GenericError.from_dict(response.json())
+
+
 
         return response_500
     return None
@@ -67,6 +91,7 @@ def sync_detailed(
     *,
     _client: Client,
     json_body: JSONWebKey,
+
 ) -> Response[Union[GenericError, JSONWebKey]]:
     """Update a JSON Web Key
 
@@ -90,11 +115,13 @@ def sync_detailed(
         Response[Union[GenericError, JSONWebKey]]
     """
 
+
     kwargs = _get_kwargs(
         set_=set_,
-        kid=kid,
-        _client=_client,
-        json_body=json_body,
+kid=kid,
+_client=_client,
+json_body=json_body,
+
     )
 
     response = httpx.request(
@@ -104,13 +131,13 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     set_: str,
     kid: str,
     *,
     _client: Client,
     json_body: JSONWebKey,
+
 ) -> Optional[Union[GenericError, JSONWebKey]]:
     """Update a JSON Web Key
 
@@ -134,13 +161,14 @@ def sync(
         Response[Union[GenericError, JSONWebKey]]
     """
 
+
     return sync_detailed(
         set_=set_,
-        kid=kid,
-        _client=_client,
-        json_body=json_body,
-    ).parsed
+kid=kid,
+_client=_client,
+json_body=json_body,
 
+    ).parsed
 
 async def asyncio_detailed(
     set_: str,
@@ -148,6 +176,7 @@ async def asyncio_detailed(
     *,
     _client: Client,
     json_body: JSONWebKey,
+
 ) -> Response[Union[GenericError, JSONWebKey]]:
     """Update a JSON Web Key
 
@@ -171,18 +200,21 @@ async def asyncio_detailed(
         Response[Union[GenericError, JSONWebKey]]
     """
 
+
     kwargs = _get_kwargs(
         set_=set_,
-        kid=kid,
-        _client=_client,
-        json_body=json_body,
+kid=kid,
+_client=_client,
+json_body=json_body,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     set_: str,
@@ -190,6 +222,7 @@ async def asyncio(
     *,
     _client: Client,
     json_body: JSONWebKey,
+
 ) -> Optional[Union[GenericError, JSONWebKey]]:
     """Update a JSON Web Key
 
@@ -213,11 +246,12 @@ async def asyncio(
         Response[Union[GenericError, JSONWebKey]]
     """
 
-    return (
-        await asyncio_detailed(
-            set_=set_,
-            kid=kid,
-            _client=_client,
-            json_body=json_body,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        set_=set_,
+kid=kid,
+_client=_client,
+json_body=json_body,
+
+    )).parsed
+

@@ -1,11 +1,19 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="LogoutRequest")
+from ..types import UNSET, Unset
+from typing import Union
 
+
+
+
+T = TypeVar("T", bound="LogoutRequest")
 
 @attr.s(auto_attribs=True)
 class LogoutRequest:
@@ -24,6 +32,7 @@ class LogoutRequest:
     subject: Union[Unset, str] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         request_url = self.request_url
         rp_initiated = self.rp_initiated
@@ -32,7 +41,8 @@ class LogoutRequest:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
         if request_url is not UNSET:
             field_dict["request_url"] = request_url
         if rp_initiated is not UNSET:
@@ -43,6 +53,8 @@ class LogoutRequest:
             field_dict["subject"] = subject
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:

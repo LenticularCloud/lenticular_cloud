@@ -1,31 +1,43 @@
-from typing import Any, Dict, List, Type, TypeVar, cast
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-from ..models.plugin_device import PluginDevice
-from ..models.plugin_mount import PluginMount
+from ..types import UNSET, Unset
+
+from typing import cast
+from typing import cast, List
+from typing import Dict
+
+
+
 
 T = TypeVar("T", bound="PluginSettings")
-
 
 @attr.s(auto_attribs=True)
 class PluginSettings:
     """
     Attributes:
         args (List[str]): args
-        devices (List[PluginDevice]): devices
+        devices (List['PluginDevice']): devices
         env (List[str]): env
-        mounts (List[PluginMount]): mounts
+        mounts (List['PluginMount']): mounts
     """
 
     args: List[str]
-    devices: List[PluginDevice]
+    devices: List['PluginDevice']
     env: List[str]
-    mounts: List[PluginMount]
+    mounts: List['PluginMount']
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
+
 
     def to_dict(self) -> Dict[str, Any]:
         args = self.args
+
+
+
 
         devices = []
         for devices_item_data in self.devices:
@@ -33,7 +45,13 @@ class PluginSettings:
 
             devices.append(devices_item)
 
+
+
+
         env = self.env
+
+
+
 
         mounts = []
         for mounts_item_data in self.mounts:
@@ -41,39 +59,51 @@ class PluginSettings:
 
             mounts.append(mounts_item)
 
+
+
+
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "Args": args,
-                "Devices": devices,
-                "Env": env,
-                "Mounts": mounts,
-            }
-        )
+        field_dict.update({
+            "Args": args,
+            "Devices": devices,
+            "Env": env,
+            "Mounts": mounts,
+        })
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
         args = cast(List[str], _d.pop("Args"))
 
+
         devices = []
         _devices = _d.pop("Devices")
-        for devices_item_data in _devices:
+        for devices_item_data in (_devices):
             devices_item = PluginDevice.from_dict(devices_item_data)
+
+
 
             devices.append(devices_item)
 
+
         env = cast(List[str], _d.pop("Env"))
+
 
         mounts = []
         _mounts = _d.pop("Mounts")
-        for mounts_item_data in _mounts:
+        for mounts_item_data in (_mounts):
             mounts_item = PluginMount.from_dict(mounts_item_data)
 
+
+
             mounts.append(mounts_item)
+
 
         plugin_settings = cls(
             args=args,

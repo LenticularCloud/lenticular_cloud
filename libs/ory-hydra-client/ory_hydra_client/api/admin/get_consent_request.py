@@ -1,30 +1,47 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
-from ...models.consent_request import ConsentRequest
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
 from ...models.generic_error import GenericError
-from ...types import UNSET, Response
+from ...models.consent_request import ConsentRequest
+from typing import cast
+from typing import Dict
+
 
 
 def _get_kwargs(
     *,
     _client: Client,
     consent_challenge: str,
+
 ) -> Dict[str, Any]:
-    url = "{}/oauth2/auth/requests/consent".format(_client.base_url)
+    url = "{}/oauth2/auth/requests/consent".format(
+        _client.base_url)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
     params: Dict[str, Any] = {}
     params["consent_challenge"] = consent_challenge
 
+
+
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
+
+    
+
+    
+
     return {
-        "method": "get",
+	    "method": "get",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -34,20 +51,28 @@ def _get_kwargs(
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Union[ConsentRequest, GenericError]]:
-    if response.status_code == 200:
+    if response.status_code == HTTPStatus.OK:
         response_200 = ConsentRequest.from_dict(response.json())
 
+
+
         return response_200
-    if response.status_code == 404:
+    if response.status_code == HTTPStatus.NOT_FOUND:
         response_404 = GenericError.from_dict(response.json())
 
+
+
         return response_404
-    if response.status_code == 409:
+    if response.status_code == HTTPStatus.CONFLICT:
         response_409 = GenericError.from_dict(response.json())
 
+
+
         return response_409
-    if response.status_code == 500:
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = GenericError.from_dict(response.json())
+
+
 
         return response_500
     return None
@@ -66,6 +91,7 @@ def sync_detailed(
     *,
     _client: Client,
     consent_challenge: str,
+
 ) -> Response[Union[ConsentRequest, GenericError]]:
     """Get Consent Request Information
 
@@ -94,9 +120,11 @@ def sync_detailed(
         Response[Union[ConsentRequest, GenericError]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
-        consent_challenge=consent_challenge,
+consent_challenge=consent_challenge,
+
     )
 
     response = httpx.request(
@@ -106,11 +134,11 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     *,
     _client: Client,
     consent_challenge: str,
+
 ) -> Optional[Union[ConsentRequest, GenericError]]:
     """Get Consent Request Information
 
@@ -139,16 +167,18 @@ def sync(
         Response[Union[ConsentRequest, GenericError]]
     """
 
+
     return sync_detailed(
         _client=_client,
-        consent_challenge=consent_challenge,
-    ).parsed
+consent_challenge=consent_challenge,
 
+    ).parsed
 
 async def asyncio_detailed(
     *,
     _client: Client,
     consent_challenge: str,
+
 ) -> Response[Union[ConsentRequest, GenericError]]:
     """Get Consent Request Information
 
@@ -177,21 +207,25 @@ async def asyncio_detailed(
         Response[Union[ConsentRequest, GenericError]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
-        consent_challenge=consent_challenge,
+consent_challenge=consent_challenge,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     *,
     _client: Client,
     consent_challenge: str,
+
 ) -> Optional[Union[ConsentRequest, GenericError]]:
     """Get Consent Request Information
 
@@ -220,9 +254,10 @@ async def asyncio(
         Response[Union[ConsentRequest, GenericError]]
     """
 
-    return (
-        await asyncio_detailed(
-            _client=_client,
-            consent_challenge=consent_challenge,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        _client=_client,
+consent_challenge=consent_challenge,
+
+    )).parsed
+

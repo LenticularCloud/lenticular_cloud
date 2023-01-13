@@ -1,11 +1,20 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="PluginConfigRootfs")
+from typing import cast, List
+from ..types import UNSET, Unset
+from typing import Union
 
+
+
+
+T = TypeVar("T", bound="PluginConfigRootfs")
 
 @attr.s(auto_attribs=True)
 class PluginConfigRootfs:
@@ -20,16 +29,21 @@ class PluginConfigRootfs:
     type: Union[Unset, str] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         diff_ids: Union[Unset, List[str]] = UNSET
         if not isinstance(self.diff_ids, Unset):
             diff_ids = self.diff_ids
 
+
+
+
         type = self.type
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
         if diff_ids is not UNSET:
             field_dict["diff_ids"] = diff_ids
         if type is not UNSET:
@@ -37,10 +51,13 @@ class PluginConfigRootfs:
 
         return field_dict
 
+
+
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
         diff_ids = cast(List[str], _d.pop("diff_ids", UNSET))
+
 
         type = _d.pop("type", UNSET)
 

@@ -1,9 +1,17 @@
-from typing import Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-T = TypeVar("T", bound="CompletedRequest")
+from ..types import UNSET, Unset
 
+
+
+
+
+T = TypeVar("T", bound="CompletedRequest")
 
 @attr.s(auto_attribs=True)
 class CompletedRequest:
@@ -16,18 +24,19 @@ class CompletedRequest:
     redirect_to: str
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         redirect_to = self.redirect_to
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "redirect_to": redirect_to,
-            }
-        )
+        field_dict.update({
+            "redirect_to": redirect_to,
+        })
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:

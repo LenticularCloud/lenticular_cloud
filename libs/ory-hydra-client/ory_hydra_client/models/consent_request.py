@@ -1,14 +1,22 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-from ..models.json_raw_message import JSONRawMessage
-from ..models.o_auth_2_client import OAuth2Client
-from ..models.open_id_connect_context import OpenIDConnectContext
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="ConsentRequest")
+from typing import Union
+from typing import Dict
+from typing import cast
+from ..types import UNSET, Unset
+from typing import cast, List
 
+
+
+
+T = TypeVar("T", bound="ConsentRequest")
 
 @attr.s(auto_attribs=True)
 class ConsentRequest:
@@ -50,17 +58,18 @@ class ConsentRequest:
 
     challenge: str
     acr: Union[Unset, str] = UNSET
-    client: Union[Unset, OAuth2Client] = UNSET
-    context: Union[Unset, JSONRawMessage] = UNSET
+    client: Union[Unset, 'OAuth2Client'] = UNSET
+    context: Union[Unset, 'JSONRawMessage'] = UNSET
     login_challenge: Union[Unset, str] = UNSET
     login_session_id: Union[Unset, str] = UNSET
-    oidc_context: Union[Unset, OpenIDConnectContext] = UNSET
+    oidc_context: Union[Unset, 'OpenIDConnectContext'] = UNSET
     request_url: Union[Unset, str] = UNSET
     requested_access_token_audience: Union[Unset, List[str]] = UNSET
     requested_scope: Union[Unset, List[str]] = UNSET
     skip: Union[Unset, bool] = UNSET
     subject: Union[Unset, str] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
+
 
     def to_dict(self) -> Dict[str, Any]:
         challenge = self.challenge
@@ -84,20 +93,24 @@ class ConsentRequest:
         if not isinstance(self.requested_access_token_audience, Unset):
             requested_access_token_audience = self.requested_access_token_audience
 
+
+
+
         requested_scope: Union[Unset, List[str]] = UNSET
         if not isinstance(self.requested_scope, Unset):
             requested_scope = self.requested_scope
+
+
+
 
         skip = self.skip
         subject = self.subject
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "challenge": challenge,
-            }
-        )
+        field_dict.update({
+            "challenge": challenge,
+        })
         if acr is not UNSET:
             field_dict["acr"] = acr
         if client is not UNSET:
@@ -123,6 +136,8 @@ class ConsentRequest:
 
         return field_dict
 
+
+
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
@@ -132,17 +147,23 @@ class ConsentRequest:
 
         _client = _d.pop("client", UNSET)
         client: Union[Unset, OAuth2Client]
-        if isinstance(_client, Unset):
+        if isinstance(_client,  Unset):
             client = UNSET
         else:
             client = OAuth2Client.from_dict(_client)
 
+
+
+
         _context = _d.pop("context", UNSET)
         context: Union[Unset, JSONRawMessage]
-        if isinstance(_context, Unset):
+        if isinstance(_context,  Unset):
             context = UNSET
         else:
             context = JSONRawMessage.from_dict(_context)
+
+
+
 
         login_challenge = _d.pop("login_challenge", UNSET)
 
@@ -150,16 +171,21 @@ class ConsentRequest:
 
         _oidc_context = _d.pop("oidc_context", UNSET)
         oidc_context: Union[Unset, OpenIDConnectContext]
-        if isinstance(_oidc_context, Unset):
+        if isinstance(_oidc_context,  Unset):
             oidc_context = UNSET
         else:
             oidc_context = OpenIDConnectContext.from_dict(_oidc_context)
+
+
+
 
         request_url = _d.pop("request_url", UNSET)
 
         requested_access_token_audience = cast(List[str], _d.pop("requested_access_token_audience", UNSET))
 
+
         requested_scope = cast(List[str], _d.pop("requested_scope", UNSET))
+
 
         skip = _d.pop("skip", UNSET)
 

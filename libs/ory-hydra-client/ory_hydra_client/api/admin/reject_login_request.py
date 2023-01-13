@@ -1,12 +1,16 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
+from typing import Dict
+from typing import cast
+from ...models.reject_request import RejectRequest
 from ...models.completed_request import CompletedRequest
 from ...models.generic_error import GenericError
-from ...models.reject_request import RejectRequest
-from ...types import UNSET, Response
+
 
 
 def _get_kwargs(
@@ -14,21 +18,34 @@ def _get_kwargs(
     _client: Client,
     json_body: RejectRequest,
     login_challenge: str,
+
 ) -> Dict[str, Any]:
-    url = "{}/oauth2/auth/requests/login/reject".format(_client.base_url)
+    url = "{}/oauth2/auth/requests/login/reject".format(
+        _client.base_url)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
     params: Dict[str, Any] = {}
     params["login_challenge"] = login_challenge
 
+
+
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
+
 
     json_json_body = json_body.to_dict()
 
+
+
+    
+
     return {
-        "method": "put",
+	    "method": "put",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -39,24 +56,34 @@ def _get_kwargs(
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Union[CompletedRequest, GenericError]]:
-    if response.status_code == 200:
+    if response.status_code == HTTPStatus.OK:
         response_200 = CompletedRequest.from_dict(response.json())
 
+
+
         return response_200
-    if response.status_code == 400:
+    if response.status_code == HTTPStatus.BAD_REQUEST:
         response_400 = GenericError.from_dict(response.json())
 
+
+
         return response_400
-    if response.status_code == 401:
+    if response.status_code == HTTPStatus.UNAUTHORIZED:
         response_401 = GenericError.from_dict(response.json())
 
+
+
         return response_401
-    if response.status_code == 404:
+    if response.status_code == HTTPStatus.NOT_FOUND:
         response_404 = GenericError.from_dict(response.json())
 
+
+
         return response_404
-    if response.status_code == 500:
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = GenericError.from_dict(response.json())
+
+
 
         return response_500
     return None
@@ -76,6 +103,7 @@ def sync_detailed(
     _client: Client,
     json_body: RejectRequest,
     login_challenge: str,
+
 ) -> Response[Union[CompletedRequest, GenericError]]:
     """Reject a Login Request
 
@@ -106,10 +134,12 @@ def sync_detailed(
         Response[Union[CompletedRequest, GenericError]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
-        json_body=json_body,
-        login_challenge=login_challenge,
+json_body=json_body,
+login_challenge=login_challenge,
+
     )
 
     response = httpx.request(
@@ -119,12 +149,12 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     *,
     _client: Client,
     json_body: RejectRequest,
     login_challenge: str,
+
 ) -> Optional[Union[CompletedRequest, GenericError]]:
     """Reject a Login Request
 
@@ -155,18 +185,20 @@ def sync(
         Response[Union[CompletedRequest, GenericError]]
     """
 
+
     return sync_detailed(
         _client=_client,
-        json_body=json_body,
-        login_challenge=login_challenge,
-    ).parsed
+json_body=json_body,
+login_challenge=login_challenge,
 
+    ).parsed
 
 async def asyncio_detailed(
     *,
     _client: Client,
     json_body: RejectRequest,
     login_challenge: str,
+
 ) -> Response[Union[CompletedRequest, GenericError]]:
     """Reject a Login Request
 
@@ -197,23 +229,27 @@ async def asyncio_detailed(
         Response[Union[CompletedRequest, GenericError]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
-        json_body=json_body,
-        login_challenge=login_challenge,
+json_body=json_body,
+login_challenge=login_challenge,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     *,
     _client: Client,
     json_body: RejectRequest,
     login_challenge: str,
+
 ) -> Optional[Union[CompletedRequest, GenericError]]:
     """Reject a Login Request
 
@@ -244,10 +280,11 @@ async def asyncio(
         Response[Union[CompletedRequest, GenericError]]
     """
 
-    return (
-        await asyncio_detailed(
-            _client=_client,
-            json_body=json_body,
-            login_challenge=login_challenge,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        _client=_client,
+json_body=json_body,
+login_challenge=login_challenge,
+
+    )).parsed
+

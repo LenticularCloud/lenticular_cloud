@@ -1,27 +1,43 @@
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
 from ...models.flush_inactive_o_auth_2_tokens_request import FlushInactiveOAuth2TokensRequest
 from ...models.generic_error import GenericError
-from ...types import Response
+from typing import cast
+from typing import Dict
+
 
 
 def _get_kwargs(
     *,
     _client: Client,
     json_body: FlushInactiveOAuth2TokensRequest,
+
 ) -> Dict[str, Any]:
-    url = "{}/oauth2/flush".format(_client.base_url)
+    url = "{}/oauth2/flush".format(
+        _client.base_url)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
+    
+
     json_json_body = json_body.to_dict()
 
+
+
+    
+
     return {
-        "method": "post",
+	    "method": "post",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -31,15 +47,19 @@ def _get_kwargs(
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Union[Any, GenericError]]:
-    if response.status_code == 204:
+    if response.status_code == HTTPStatus.NO_CONTENT:
         response_204 = cast(Any, None)
         return response_204
-    if response.status_code == 401:
+    if response.status_code == HTTPStatus.UNAUTHORIZED:
         response_401 = GenericError.from_dict(response.json())
 
+
+
         return response_401
-    if response.status_code == 500:
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = GenericError.from_dict(response.json())
+
+
 
         return response_500
     return None
@@ -58,6 +78,7 @@ def sync_detailed(
     *,
     _client: Client,
     json_body: FlushInactiveOAuth2TokensRequest,
+
 ) -> Response[Union[Any, GenericError]]:
     """Flush Expired OAuth2 Access Tokens
 
@@ -74,9 +95,11 @@ def sync_detailed(
         Response[Union[Any, GenericError]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
-        json_body=json_body,
+json_body=json_body,
+
     )
 
     response = httpx.request(
@@ -86,11 +109,11 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     *,
     _client: Client,
     json_body: FlushInactiveOAuth2TokensRequest,
+
 ) -> Optional[Union[Any, GenericError]]:
     """Flush Expired OAuth2 Access Tokens
 
@@ -107,16 +130,18 @@ def sync(
         Response[Union[Any, GenericError]]
     """
 
+
     return sync_detailed(
         _client=_client,
-        json_body=json_body,
-    ).parsed
+json_body=json_body,
 
+    ).parsed
 
 async def asyncio_detailed(
     *,
     _client: Client,
     json_body: FlushInactiveOAuth2TokensRequest,
+
 ) -> Response[Union[Any, GenericError]]:
     """Flush Expired OAuth2 Access Tokens
 
@@ -133,21 +158,25 @@ async def asyncio_detailed(
         Response[Union[Any, GenericError]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
-        json_body=json_body,
+json_body=json_body,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     *,
     _client: Client,
     json_body: FlushInactiveOAuth2TokensRequest,
+
 ) -> Optional[Union[Any, GenericError]]:
     """Flush Expired OAuth2 Access Tokens
 
@@ -164,9 +193,10 @@ async def asyncio(
         Response[Union[Any, GenericError]]
     """
 
-    return (
-        await asyncio_detailed(
-            _client=_client,
-            json_body=json_body,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        _client=_client,
+json_body=json_body,
+
+    )).parsed
+

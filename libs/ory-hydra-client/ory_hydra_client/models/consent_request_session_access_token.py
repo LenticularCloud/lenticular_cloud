@@ -1,33 +1,46 @@
-from typing import Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-T = TypeVar("T", bound="ConsentRequestSessionAccessToken")
+from ..types import UNSET, Unset
 
+
+
+
+
+T = TypeVar("T", bound="ConsentRequestSessionAccessToken")
 
 @attr.s(auto_attribs=True)
 class ConsentRequestSessionAccessToken:
     """AccessToken sets session data for the access and refresh token, as well as any future tokens issued by the
-    refresh grant. Keep in mind that this data will be available to anyone performing OAuth 2.0 Challenge Introspection.
-    If only your services can perform OAuth 2.0 Challenge Introspection, this is usually fine. But if third parties
-    can access that endpoint as well, sensitive data from the session might be exposed to them. Use with care!
+refresh grant. Keep in mind that this data will be available to anyone performing OAuth 2.0 Challenge Introspection.
+If only your services can perform OAuth 2.0 Challenge Introspection, this is usually fine. But if third parties
+can access that endpoint as well, sensitive data from the session might be exposed to them. Use with care!
 
     """
 
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
 
+    def to_dict(self) -> Dict[str, Any]:
+        
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
-        consent_request_session_access_token = cls()
+        consent_request_session_access_token = cls(
+        )
 
         consent_request_session_access_token.additional_properties = _d
         return consent_request_session_access_token

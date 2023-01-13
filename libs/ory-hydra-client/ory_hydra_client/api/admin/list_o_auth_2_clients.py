@@ -1,11 +1,19 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
+from typing import Dict
+from typing import Union
+from typing import cast
+from ...types import UNSET, Unset
 from ...models.generic_error import GenericError
+from typing import cast, List
 from ...models.o_auth_2_client import OAuth2Client
-from ...types import UNSET, Response, Unset
+from typing import Optional
+
 
 
 def _get_kwargs(
@@ -13,21 +21,35 @@ def _get_kwargs(
     _client: Client,
     limit: Union[Unset, None, int] = UNSET,
     offset: Union[Unset, None, int] = UNSET,
+
 ) -> Dict[str, Any]:
-    url = "{}/clients".format(_client.base_url)
+    url = "{}/clients".format(
+        _client.base_url)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
     params: Dict[str, Any] = {}
     params["limit"] = limit
 
+
     params["offset"] = offset
+
+
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
+
+    
+
+    
+
     return {
-        "method": "get",
+	    "method": "get",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -36,24 +58,28 @@ def _get_kwargs(
     }
 
 
-def _parse_response(*, response: httpx.Response) -> Optional[Union[GenericError, List[OAuth2Client]]]:
-    if response.status_code == 200:
+def _parse_response(*, response: httpx.Response) -> Optional[Union[GenericError, List['OAuth2Client']]]:
+    if response.status_code == HTTPStatus.OK:
         response_200 = []
         _response_200 = response.json()
-        for response_200_item_data in _response_200:
+        for response_200_item_data in (_response_200):
             response_200_item = OAuth2Client.from_dict(response_200_item_data)
+
+
 
             response_200.append(response_200_item)
 
         return response_200
-    if response.status_code == 500:
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = GenericError.from_dict(response.json())
+
+
 
         return response_500
     return None
 
 
-def _build_response(*, response: httpx.Response) -> Response[Union[GenericError, List[OAuth2Client]]]:
+def _build_response(*, response: httpx.Response) -> Response[Union[GenericError, List['OAuth2Client']]]:
     return Response(
         status_code=response.status_code,
         content=response.content,
@@ -67,7 +93,8 @@ def sync_detailed(
     _client: Client,
     limit: Union[Unset, None, int] = UNSET,
     offset: Union[Unset, None, int] = UNSET,
-) -> Response[Union[GenericError, List[OAuth2Client]]]:
+
+) -> Response[Union[GenericError, List['OAuth2Client']]]:
     """List OAuth 2.0 Clients
 
      This endpoint lists all clients in the database, and never returns client secrets. As a default it
@@ -89,13 +116,15 @@ def sync_detailed(
         offset (Union[Unset, None, int]):
 
     Returns:
-        Response[Union[GenericError, List[OAuth2Client]]]
+        Response[Union[GenericError, List['OAuth2Client']]]
     """
+
 
     kwargs = _get_kwargs(
         _client=_client,
-        limit=limit,
-        offset=offset,
+limit=limit,
+offset=offset,
+
     )
 
     response = httpx.request(
@@ -105,13 +134,13 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     *,
     _client: Client,
     limit: Union[Unset, None, int] = UNSET,
     offset: Union[Unset, None, int] = UNSET,
-) -> Optional[Union[GenericError, List[OAuth2Client]]]:
+
+) -> Optional[Union[GenericError, List['OAuth2Client']]]:
     """List OAuth 2.0 Clients
 
      This endpoint lists all clients in the database, and never returns client secrets. As a default it
@@ -133,22 +162,24 @@ def sync(
         offset (Union[Unset, None, int]):
 
     Returns:
-        Response[Union[GenericError, List[OAuth2Client]]]
+        Response[Union[GenericError, List['OAuth2Client']]]
     """
+
 
     return sync_detailed(
         _client=_client,
-        limit=limit,
-        offset=offset,
-    ).parsed
+limit=limit,
+offset=offset,
 
+    ).parsed
 
 async def asyncio_detailed(
     *,
     _client: Client,
     limit: Union[Unset, None, int] = UNSET,
     offset: Union[Unset, None, int] = UNSET,
-) -> Response[Union[GenericError, List[OAuth2Client]]]:
+
+) -> Response[Union[GenericError, List['OAuth2Client']]]:
     """List OAuth 2.0 Clients
 
      This endpoint lists all clients in the database, and never returns client secrets. As a default it
@@ -170,27 +201,31 @@ async def asyncio_detailed(
         offset (Union[Unset, None, int]):
 
     Returns:
-        Response[Union[GenericError, List[OAuth2Client]]]
+        Response[Union[GenericError, List['OAuth2Client']]]
     """
+
 
     kwargs = _get_kwargs(
         _client=_client,
-        limit=limit,
-        offset=offset,
+limit=limit,
+offset=offset,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     *,
     _client: Client,
     limit: Union[Unset, None, int] = UNSET,
     offset: Union[Unset, None, int] = UNSET,
-) -> Optional[Union[GenericError, List[OAuth2Client]]]:
+
+) -> Optional[Union[GenericError, List['OAuth2Client']]]:
     """List OAuth 2.0 Clients
 
      This endpoint lists all clients in the database, and never returns client secrets. As a default it
@@ -212,13 +247,14 @@ async def asyncio(
         offset (Union[Unset, None, int]):
 
     Returns:
-        Response[Union[GenericError, List[OAuth2Client]]]
+        Response[Union[GenericError, List['OAuth2Client']]]
     """
 
-    return (
-        await asyncio_detailed(
-            _client=_client,
-            limit=limit,
-            offset=offset,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        _client=_client,
+limit=limit,
+offset=offset,
+
+    )).parsed
+

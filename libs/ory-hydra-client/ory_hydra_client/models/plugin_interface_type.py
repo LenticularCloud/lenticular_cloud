@@ -1,9 +1,17 @@
-from typing import Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-T = TypeVar("T", bound="PluginInterfaceType")
+from ..types import UNSET, Unset
 
+
+
+
+
+T = TypeVar("T", bound="PluginInterfaceType")
 
 @attr.s(auto_attribs=True)
 class PluginInterfaceType:
@@ -20,6 +28,7 @@ class PluginInterfaceType:
     version: str
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         capability = self.capability
         prefix = self.prefix
@@ -27,15 +36,15 @@ class PluginInterfaceType:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "Capability": capability,
-                "Prefix": prefix,
-                "Version": version,
-            }
-        )
+        field_dict.update({
+            "Capability": capability,
+            "Prefix": prefix,
+            "Version": version,
+        })
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:

@@ -1,9 +1,18 @@
-from typing import Any, Dict, List, Type, TypeVar, cast
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-T = TypeVar("T", bound="PluginMount")
+from ..types import UNSET, Unset
 
+from typing import cast, List
+
+
+
+
+T = TypeVar("T", bound="PluginMount")
 
 @attr.s(auto_attribs=True)
 class PluginMount:
@@ -28,32 +37,39 @@ class PluginMount:
     type: str
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         description = self.description
         destination = self.destination
         name = self.name
         options = self.options
 
+
+
+
         settable = self.settable
+
+
+
 
         source = self.source
         type = self.type
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "Description": description,
-                "Destination": destination,
-                "Name": name,
-                "Options": options,
-                "Settable": settable,
-                "Source": source,
-                "Type": type,
-            }
-        )
+        field_dict.update({
+            "Description": description,
+            "Destination": destination,
+            "Name": name,
+            "Options": options,
+            "Settable": settable,
+            "Source": source,
+            "Type": type,
+        })
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
@@ -66,7 +82,9 @@ class PluginMount:
 
         options = cast(List[str], _d.pop("Options"))
 
+
         settable = cast(List[str], _d.pop("Settable"))
+
 
         source = _d.pop("Source")
 

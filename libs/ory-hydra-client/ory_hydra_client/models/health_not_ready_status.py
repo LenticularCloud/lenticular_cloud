@@ -1,12 +1,21 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-from ..models.health_not_ready_status_errors import HealthNotReadyStatusErrors
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="HealthNotReadyStatus")
+from typing import Union
+from typing import cast
+from ..types import UNSET, Unset
+from typing import Dict
 
+
+
+
+T = TypeVar("T", bound="HealthNotReadyStatus")
 
 @attr.s(auto_attribs=True)
 class HealthNotReadyStatus:
@@ -16,31 +25,39 @@ class HealthNotReadyStatus:
             status.
     """
 
-    errors: Union[Unset, HealthNotReadyStatusErrors] = UNSET
+    errors: Union[Unset, 'HealthNotReadyStatusErrors'] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
+
 
     def to_dict(self) -> Dict[str, Any]:
         errors: Union[Unset, Dict[str, Any]] = UNSET
         if not isinstance(self.errors, Unset):
             errors = self.errors.to_dict()
 
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
         if errors is not UNSET:
             field_dict["errors"] = errors
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
         _errors = _d.pop("errors", UNSET)
         errors: Union[Unset, HealthNotReadyStatusErrors]
-        if isinstance(_errors, Unset):
+        if isinstance(_errors,  Unset):
             errors = UNSET
         else:
             errors = HealthNotReadyStatusErrors.from_dict(_errors)
+
+
+
 
         health_not_ready_status = cls(
             errors=errors,

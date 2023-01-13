@@ -1,25 +1,41 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
 from ...models.generic_error import GenericError
+from typing import cast
 from ...models.o_auth_2_client import OAuth2Client
-from ...types import Response
+from typing import Dict
+
 
 
 def _get_kwargs(
     id: str,
     *,
     _client: Client,
+
 ) -> Dict[str, Any]:
-    url = "{}/clients/{id}".format(_client.base_url, id=id)
+    url = "{}/clients/{id}".format(
+        _client.base_url,id=id)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
+    
+
+    
+
+    
+
     return {
-        "method": "get",
+	    "method": "get",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -28,16 +44,22 @@ def _get_kwargs(
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Union[GenericError, OAuth2Client]]:
-    if response.status_code == 200:
+    if response.status_code == HTTPStatus.OK:
         response_200 = OAuth2Client.from_dict(response.json())
 
+
+
         return response_200
-    if response.status_code == 401:
+    if response.status_code == HTTPStatus.UNAUTHORIZED:
         response_401 = GenericError.from_dict(response.json())
 
+
+
         return response_401
-    if response.status_code == 500:
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = GenericError.from_dict(response.json())
+
+
 
         return response_500
     return None
@@ -56,6 +78,7 @@ def sync_detailed(
     id: str,
     *,
     _client: Client,
+
 ) -> Response[Union[GenericError, OAuth2Client]]:
     """Get an OAuth 2.0 Client.
 
@@ -73,9 +96,11 @@ def sync_detailed(
         Response[Union[GenericError, OAuth2Client]]
     """
 
+
     kwargs = _get_kwargs(
         id=id,
-        _client=_client,
+_client=_client,
+
     )
 
     response = httpx.request(
@@ -85,11 +110,11 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     id: str,
     *,
     _client: Client,
+
 ) -> Optional[Union[GenericError, OAuth2Client]]:
     """Get an OAuth 2.0 Client.
 
@@ -107,16 +132,18 @@ def sync(
         Response[Union[GenericError, OAuth2Client]]
     """
 
+
     return sync_detailed(
         id=id,
-        _client=_client,
-    ).parsed
+_client=_client,
 
+    ).parsed
 
 async def asyncio_detailed(
     id: str,
     *,
     _client: Client,
+
 ) -> Response[Union[GenericError, OAuth2Client]]:
     """Get an OAuth 2.0 Client.
 
@@ -134,21 +161,25 @@ async def asyncio_detailed(
         Response[Union[GenericError, OAuth2Client]]
     """
 
+
     kwargs = _get_kwargs(
         id=id,
-        _client=_client,
+_client=_client,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     id: str,
     *,
     _client: Client,
+
 ) -> Optional[Union[GenericError, OAuth2Client]]:
     """Get an OAuth 2.0 Client.
 
@@ -166,9 +197,10 @@ async def asyncio(
         Response[Union[GenericError, OAuth2Client]]
     """
 
-    return (
-        await asyncio_detailed(
-            id=id,
-            _client=_client,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        id=id,
+_client=_client,
+
+    )).parsed
+

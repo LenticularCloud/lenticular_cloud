@@ -1,13 +1,22 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-from ..models.o_auth_2_client import OAuth2Client
-from ..models.open_id_connect_context import OpenIDConnectContext
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="LoginRequest")
+from typing import Union
+from typing import Dict
+from typing import cast
+from ..types import UNSET, Unset
+from typing import cast, List
 
+
+
+
+T = TypeVar("T", bound="LoginRequest")
 
 @attr.s(auto_attribs=True)
 class LoginRequest:
@@ -42,15 +51,16 @@ class LoginRequest:
     """
 
     challenge: str
-    client: OAuth2Client
+    client: 'OAuth2Client'
     request_url: str
     requested_access_token_audience: List[str]
     requested_scope: List[str]
     skip: bool
     subject: str
-    oidc_context: Union[Unset, OpenIDConnectContext] = UNSET
+    oidc_context: Union[Unset, 'OpenIDConnectContext'] = UNSET
     session_id: Union[Unset, str] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
+
 
     def to_dict(self) -> Dict[str, Any]:
         challenge = self.challenge
@@ -59,7 +69,13 @@ class LoginRequest:
         request_url = self.request_url
         requested_access_token_audience = self.requested_access_token_audience
 
+
+
+
         requested_scope = self.requested_scope
+
+
+
 
         skip = self.skip
         subject = self.subject
@@ -71,23 +87,23 @@ class LoginRequest:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "challenge": challenge,
-                "client": client,
-                "request_url": request_url,
-                "requested_access_token_audience": requested_access_token_audience,
-                "requested_scope": requested_scope,
-                "skip": skip,
-                "subject": subject,
-            }
-        )
+        field_dict.update({
+            "challenge": challenge,
+            "client": client,
+            "request_url": request_url,
+            "requested_access_token_audience": requested_access_token_audience,
+            "requested_scope": requested_scope,
+            "skip": skip,
+            "subject": subject,
+        })
         if oidc_context is not UNSET:
             field_dict["oidc_context"] = oidc_context
         if session_id is not UNSET:
             field_dict["session_id"] = session_id
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
@@ -96,11 +112,16 @@ class LoginRequest:
 
         client = OAuth2Client.from_dict(_d.pop("client"))
 
+
+
+
         request_url = _d.pop("request_url")
 
         requested_access_token_audience = cast(List[str], _d.pop("requested_access_token_audience"))
 
+
         requested_scope = cast(List[str], _d.pop("requested_scope"))
+
 
         skip = _d.pop("skip")
 
@@ -108,10 +129,13 @@ class LoginRequest:
 
         _oidc_context = _d.pop("oidc_context", UNSET)
         oidc_context: Union[Unset, OpenIDConnectContext]
-        if isinstance(_oidc_context, Unset):
+        if isinstance(_oidc_context,  Unset):
             oidc_context = UNSET
         else:
             oidc_context = OpenIDConnectContext.from_dict(_oidc_context)
+
+
+
 
         session_id = _d.pop("session_id", UNSET)
 

@@ -1,11 +1,15 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
 from ...models.generic_error import GenericError
 from ...models.json_web_key_set import JSONWebKeySet
-from ...types import Response
+from typing import cast
+from typing import Dict
+
 
 
 def _get_kwargs(
@@ -13,14 +17,26 @@ def _get_kwargs(
     kid: str,
     *,
     _client: Client,
+
 ) -> Dict[str, Any]:
-    url = "{}/keys/{set}/{kid}".format(_client.base_url, set=set_, kid=kid)
+    url = "{}/keys/{set}/{kid}".format(
+        _client.base_url,set=set_,kid=kid)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
+    
+
+    
+
+    
+
     return {
-        "method": "get",
+	    "method": "get",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -29,16 +45,22 @@ def _get_kwargs(
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Union[GenericError, JSONWebKeySet]]:
-    if response.status_code == 200:
+    if response.status_code == HTTPStatus.OK:
         response_200 = JSONWebKeySet.from_dict(response.json())
 
+
+
         return response_200
-    if response.status_code == 404:
+    if response.status_code == HTTPStatus.NOT_FOUND:
         response_404 = GenericError.from_dict(response.json())
 
+
+
         return response_404
-    if response.status_code == 500:
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = GenericError.from_dict(response.json())
+
+
 
         return response_500
     return None
@@ -58,6 +80,7 @@ def sync_detailed(
     kid: str,
     *,
     _client: Client,
+
 ) -> Response[Union[GenericError, JSONWebKeySet]]:
     """Fetch a JSON Web Key
 
@@ -71,10 +94,12 @@ def sync_detailed(
         Response[Union[GenericError, JSONWebKeySet]]
     """
 
+
     kwargs = _get_kwargs(
         set_=set_,
-        kid=kid,
-        _client=_client,
+kid=kid,
+_client=_client,
+
     )
 
     response = httpx.request(
@@ -84,12 +109,12 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     set_: str,
     kid: str,
     *,
     _client: Client,
+
 ) -> Optional[Union[GenericError, JSONWebKeySet]]:
     """Fetch a JSON Web Key
 
@@ -103,18 +128,20 @@ def sync(
         Response[Union[GenericError, JSONWebKeySet]]
     """
 
+
     return sync_detailed(
         set_=set_,
-        kid=kid,
-        _client=_client,
-    ).parsed
+kid=kid,
+_client=_client,
 
+    ).parsed
 
 async def asyncio_detailed(
     set_: str,
     kid: str,
     *,
     _client: Client,
+
 ) -> Response[Union[GenericError, JSONWebKeySet]]:
     """Fetch a JSON Web Key
 
@@ -128,23 +155,27 @@ async def asyncio_detailed(
         Response[Union[GenericError, JSONWebKeySet]]
     """
 
+
     kwargs = _get_kwargs(
         set_=set_,
-        kid=kid,
-        _client=_client,
+kid=kid,
+_client=_client,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     set_: str,
     kid: str,
     *,
     _client: Client,
+
 ) -> Optional[Union[GenericError, JSONWebKeySet]]:
     """Fetch a JSON Web Key
 
@@ -158,10 +189,11 @@ async def asyncio(
         Response[Union[GenericError, JSONWebKeySet]]
     """
 
-    return (
-        await asyncio_detailed(
-            set_=set_,
-            kid=kid,
-            _client=_client,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        set_=set_,
+kid=kid,
+_client=_client,
+
+    )).parsed
+

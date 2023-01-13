@@ -1,13 +1,21 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-from ..models.consent_request_session_access_token import ConsentRequestSessionAccessToken
-from ..models.consent_request_session_id_token import ConsentRequestSessionIdToken
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="ConsentRequestSession")
+from typing import Union
+from typing import cast
+from ..types import UNSET, Unset
+from typing import Dict
 
+
+
+
+T = TypeVar("T", bound="ConsentRequestSession")
 
 @attr.s(auto_attribs=True)
 class ConsentRequestSession:
@@ -24,9 +32,10 @@ class ConsentRequestSession:
             by anyone that has access to the ID Challenge. Use with care!
     """
 
-    access_token: Union[Unset, ConsentRequestSessionAccessToken] = UNSET
-    id_token: Union[Unset, ConsentRequestSessionIdToken] = UNSET
+    access_token: Union[Unset, 'ConsentRequestSessionAccessToken'] = UNSET
+    id_token: Union[Unset, 'ConsentRequestSessionIdToken'] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
+
 
     def to_dict(self) -> Dict[str, Any]:
         access_token: Union[Unset, Dict[str, Any]] = UNSET
@@ -37,9 +46,11 @@ class ConsentRequestSession:
         if not isinstance(self.id_token, Unset):
             id_token = self.id_token.to_dict()
 
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
         if access_token is not UNSET:
             field_dict["access_token"] = access_token
         if id_token is not UNSET:
@@ -47,22 +58,30 @@ class ConsentRequestSession:
 
         return field_dict
 
+
+
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
         _access_token = _d.pop("access_token", UNSET)
         access_token: Union[Unset, ConsentRequestSessionAccessToken]
-        if isinstance(_access_token, Unset):
+        if isinstance(_access_token,  Unset):
             access_token = UNSET
         else:
             access_token = ConsentRequestSessionAccessToken.from_dict(_access_token)
 
+
+
+
         _id_token = _d.pop("id_token", UNSET)
         id_token: Union[Unset, ConsentRequestSessionIdToken]
-        if isinstance(_id_token, Unset):
+        if isinstance(_id_token,  Unset):
             id_token = UNSET
         else:
             id_token = ConsentRequestSessionIdToken.from_dict(_id_token)
+
+
+
 
         consent_request_session = cls(
             access_token=access_token,

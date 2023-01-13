@@ -1,15 +1,24 @@
-import datetime
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
-from dateutil.parser import isoparse
 
-from ..models.jose_json_web_key_set import JoseJSONWebKeySet
-from ..models.json_raw_message import JSONRawMessage
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="OAuth2Client")
+from dateutil.parser import isoparse
+from typing import Dict
+from typing import Union
+from typing import cast
+from ..types import UNSET, Unset
+from typing import cast, List
+import datetime
 
+
+
+
+T = TypeVar("T", bound="OAuth2Client")
 
 @attr.s(auto_attribs=True)
 class OAuth2Client:
@@ -117,10 +126,10 @@ class OAuth2Client:
     frontchannel_logout_session_required: Union[Unset, bool] = UNSET
     frontchannel_logout_uri: Union[Unset, str] = UNSET
     grant_types: Union[Unset, List[str]] = UNSET
-    jwks: Union[Unset, JoseJSONWebKeySet] = UNSET
+    jwks: Union[Unset, 'JoseJSONWebKeySet'] = UNSET
     jwks_uri: Union[Unset, str] = UNSET
     logo_uri: Union[Unset, str] = UNSET
-    metadata: Union[Unset, JSONRawMessage] = UNSET
+    metadata: Union[Unset, 'JSONRawMessage'] = UNSET
     owner: Union[Unset, str] = UNSET
     policy_uri: Union[Unset, str] = UNSET
     post_logout_redirect_uris: Union[Unset, List[str]] = UNSET
@@ -138,14 +147,21 @@ class OAuth2Client:
     userinfo_signed_response_alg: Union[Unset, str] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         allowed_cors_origins: Union[Unset, List[str]] = UNSET
         if not isinstance(self.allowed_cors_origins, Unset):
             allowed_cors_origins = self.allowed_cors_origins
 
+
+
+
         audience: Union[Unset, List[str]] = UNSET
         if not isinstance(self.audience, Unset):
             audience = self.audience
+
+
+
 
         backchannel_logout_session_required = self.backchannel_logout_session_required
         backchannel_logout_uri = self.backchannel_logout_uri
@@ -158,6 +174,9 @@ class OAuth2Client:
         if not isinstance(self.contacts, Unset):
             contacts = self.contacts
 
+
+
+
         created_at: Union[Unset, str] = UNSET
         if not isinstance(self.created_at, Unset):
             created_at = self.created_at.isoformat()
@@ -167,6 +186,9 @@ class OAuth2Client:
         grant_types: Union[Unset, List[str]] = UNSET
         if not isinstance(self.grant_types, Unset):
             grant_types = self.grant_types
+
+
+
 
         jwks: Union[Unset, Dict[str, Any]] = UNSET
         if not isinstance(self.jwks, Unset):
@@ -184,18 +206,30 @@ class OAuth2Client:
         if not isinstance(self.post_logout_redirect_uris, Unset):
             post_logout_redirect_uris = self.post_logout_redirect_uris
 
+
+
+
         redirect_uris: Union[Unset, List[str]] = UNSET
         if not isinstance(self.redirect_uris, Unset):
             redirect_uris = self.redirect_uris
+
+
+
 
         request_object_signing_alg = self.request_object_signing_alg
         request_uris: Union[Unset, List[str]] = UNSET
         if not isinstance(self.request_uris, Unset):
             request_uris = self.request_uris
 
+
+
+
         response_types: Union[Unset, List[str]] = UNSET
         if not isinstance(self.response_types, Unset):
             response_types = self.response_types
+
+
+
 
         scope = self.scope
         sector_identifier_uri = self.sector_identifier_uri
@@ -211,7 +245,8 @@ class OAuth2Client:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
         if allowed_cors_origins is not UNSET:
             field_dict["allowed_cors_origins"] = allowed_cors_origins
         if audience is not UNSET:
@@ -281,12 +316,16 @@ class OAuth2Client:
 
         return field_dict
 
+
+
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
         allowed_cors_origins = cast(List[str], _d.pop("allowed_cors_origins", UNSET))
 
+
         audience = cast(List[str], _d.pop("audience", UNSET))
+
 
         backchannel_logout_session_required = _d.pop("backchannel_logout_session_required", UNSET)
 
@@ -304,12 +343,16 @@ class OAuth2Client:
 
         contacts = cast(List[str], _d.pop("contacts", UNSET))
 
+
         _created_at = _d.pop("created_at", UNSET)
         created_at: Union[Unset, datetime.datetime]
-        if isinstance(_created_at, Unset):
+        if isinstance(_created_at,  Unset):
             created_at = UNSET
         else:
             created_at = isoparse(_created_at)
+
+
+
 
         frontchannel_logout_session_required = _d.pop("frontchannel_logout_session_required", UNSET)
 
@@ -317,12 +360,16 @@ class OAuth2Client:
 
         grant_types = cast(List[str], _d.pop("grant_types", UNSET))
 
+
         _jwks = _d.pop("jwks", UNSET)
         jwks: Union[Unset, JoseJSONWebKeySet]
-        if isinstance(_jwks, Unset):
+        if isinstance(_jwks,  Unset):
             jwks = UNSET
         else:
             jwks = JoseJSONWebKeySet.from_dict(_jwks)
+
+
+
 
         jwks_uri = _d.pop("jwks_uri", UNSET)
 
@@ -330,10 +377,13 @@ class OAuth2Client:
 
         _metadata = _d.pop("metadata", UNSET)
         metadata: Union[Unset, JSONRawMessage]
-        if isinstance(_metadata, Unset):
+        if isinstance(_metadata,  Unset):
             metadata = UNSET
         else:
             metadata = JSONRawMessage.from_dict(_metadata)
+
+
+
 
         owner = _d.pop("owner", UNSET)
 
@@ -341,13 +391,17 @@ class OAuth2Client:
 
         post_logout_redirect_uris = cast(List[str], _d.pop("post_logout_redirect_uris", UNSET))
 
+
         redirect_uris = cast(List[str], _d.pop("redirect_uris", UNSET))
+
 
         request_object_signing_alg = _d.pop("request_object_signing_alg", UNSET)
 
         request_uris = cast(List[str], _d.pop("request_uris", UNSET))
 
+
         response_types = cast(List[str], _d.pop("response_types", UNSET))
+
 
         scope = _d.pop("scope", UNSET)
 
@@ -363,10 +417,13 @@ class OAuth2Client:
 
         _updated_at = _d.pop("updated_at", UNSET)
         updated_at: Union[Unset, datetime.datetime]
-        if isinstance(_updated_at, Unset):
+        if isinstance(_updated_at,  Unset):
             updated_at = UNSET
         else:
             updated_at = isoparse(_updated_at)
+
+
+
 
         userinfo_signed_response_alg = _d.pop("userinfo_signed_response_alg", UNSET)
 

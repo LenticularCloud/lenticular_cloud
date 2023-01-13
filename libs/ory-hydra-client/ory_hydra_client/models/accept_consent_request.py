@@ -1,14 +1,24 @@
-import datetime
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
-from dateutil.parser import isoparse
 
-from ..models.consent_request_session import ConsentRequestSession
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="AcceptConsentRequest")
+from dateutil.parser import isoparse
+from typing import Dict
+from typing import Union
+from typing import cast
+from ..types import UNSET, Unset
+from typing import cast, List
+import datetime
 
+
+
+
+T = TypeVar("T", bound="AcceptConsentRequest")
 
 @attr.s(auto_attribs=True)
 class AcceptConsentRequest:
@@ -31,17 +41,24 @@ class AcceptConsentRequest:
     handled_at: Union[Unset, datetime.datetime] = UNSET
     remember: Union[Unset, bool] = UNSET
     remember_for: Union[Unset, int] = UNSET
-    session: Union[Unset, ConsentRequestSession] = UNSET
+    session: Union[Unset, 'ConsentRequestSession'] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
+
 
     def to_dict(self) -> Dict[str, Any]:
         grant_access_token_audience: Union[Unset, List[str]] = UNSET
         if not isinstance(self.grant_access_token_audience, Unset):
             grant_access_token_audience = self.grant_access_token_audience
 
+
+
+
         grant_scope: Union[Unset, List[str]] = UNSET
         if not isinstance(self.grant_scope, Unset):
             grant_scope = self.grant_scope
+
+
+
 
         handled_at: Union[Unset, str] = UNSET
         if not isinstance(self.handled_at, Unset):
@@ -53,9 +70,11 @@ class AcceptConsentRequest:
         if not isinstance(self.session, Unset):
             session = self.session.to_dict()
 
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
         if grant_access_token_audience is not UNSET:
             field_dict["grant_access_token_audience"] = grant_access_token_audience
         if grant_scope is not UNSET:
@@ -71,19 +90,26 @@ class AcceptConsentRequest:
 
         return field_dict
 
+
+
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
         grant_access_token_audience = cast(List[str], _d.pop("grant_access_token_audience", UNSET))
 
+
         grant_scope = cast(List[str], _d.pop("grant_scope", UNSET))
+
 
         _handled_at = _d.pop("handled_at", UNSET)
         handled_at: Union[Unset, datetime.datetime]
-        if isinstance(_handled_at, Unset):
+        if isinstance(_handled_at,  Unset):
             handled_at = UNSET
         else:
             handled_at = isoparse(_handled_at)
+
+
+
 
         remember = _d.pop("remember", UNSET)
 
@@ -91,10 +117,13 @@ class AcceptConsentRequest:
 
         _session = _d.pop("session", UNSET)
         session: Union[Unset, ConsentRequestSession]
-        if isinstance(_session, Unset):
+        if isinstance(_session,  Unset):
             session = UNSET
         else:
             session = ConsentRequestSession.from_dict(_session)
+
+
+
 
         accept_consent_request = cls(
             grant_access_token_audience=grant_access_token_audience,

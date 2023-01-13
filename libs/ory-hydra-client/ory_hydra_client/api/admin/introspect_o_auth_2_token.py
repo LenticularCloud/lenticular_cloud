@@ -1,24 +1,41 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
-from ...models.generic_error import GenericError
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
+from ...models.introspect_o_auth_2_token_data import IntrospectOAuth2TokenData
 from ...models.o_auth_2_token_introspection import OAuth2TokenIntrospection
-from ...types import Response
+from typing import Dict
+from typing import cast
+from ...models.generic_error import GenericError
+
 
 
 def _get_kwargs(
     *,
     _client: Client,
+
 ) -> Dict[str, Any]:
-    url = "{}/oauth2/introspect".format(_client.base_url)
+    url = "{}/oauth2/introspect".format(
+        _client.base_url)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
+    
+
+    
+
+    
+
     return {
-        "method": "post",
+	    "method": "post",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -27,16 +44,22 @@ def _get_kwargs(
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Union[GenericError, OAuth2TokenIntrospection]]:
-    if response.status_code == 200:
+    if response.status_code == HTTPStatus.OK:
         response_200 = OAuth2TokenIntrospection.from_dict(response.json())
 
+
+
         return response_200
-    if response.status_code == 401:
+    if response.status_code == HTTPStatus.UNAUTHORIZED:
         response_401 = GenericError.from_dict(response.json())
 
+
+
         return response_401
-    if response.status_code == 500:
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = GenericError.from_dict(response.json())
+
+
 
         return response_500
     return None
@@ -54,6 +77,7 @@ def _build_response(*, response: httpx.Response) -> Response[Union[GenericError,
 def sync_detailed(
     *,
     _client: Client,
+
 ) -> Response[Union[GenericError, OAuth2TokenIntrospection]]:
     """Introspect OAuth2 Tokens
 
@@ -70,8 +94,10 @@ def sync_detailed(
         Response[Union[GenericError, OAuth2TokenIntrospection]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
+
     )
 
     response = httpx.request(
@@ -81,10 +107,10 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     *,
     _client: Client,
+
 ) -> Optional[Union[GenericError, OAuth2TokenIntrospection]]:
     """Introspect OAuth2 Tokens
 
@@ -101,14 +127,16 @@ def sync(
         Response[Union[GenericError, OAuth2TokenIntrospection]]
     """
 
+
     return sync_detailed(
         _client=_client,
-    ).parsed
 
+    ).parsed
 
 async def asyncio_detailed(
     *,
     _client: Client,
+
 ) -> Response[Union[GenericError, OAuth2TokenIntrospection]]:
     """Introspect OAuth2 Tokens
 
@@ -125,19 +153,23 @@ async def asyncio_detailed(
         Response[Union[GenericError, OAuth2TokenIntrospection]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     *,
     _client: Client,
+
 ) -> Optional[Union[GenericError, OAuth2TokenIntrospection]]:
     """Introspect OAuth2 Tokens
 
@@ -154,8 +186,9 @@ async def asyncio(
         Response[Union[GenericError, OAuth2TokenIntrospection]]
     """
 
-    return (
-        await asyncio_detailed(
-            _client=_client,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        _client=_client,
+
+    )).parsed
+

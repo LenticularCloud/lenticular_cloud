@@ -1,9 +1,17 @@
-from typing import Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-T = TypeVar("T", bound="JsonWebKeySetGeneratorRequest")
+from ..types import UNSET, Unset
 
+
+
+
+
+T = TypeVar("T", bound="JsonWebKeySetGeneratorRequest")
 
 @attr.s(auto_attribs=True)
 class JsonWebKeySetGeneratorRequest:
@@ -22,6 +30,7 @@ class JsonWebKeySetGeneratorRequest:
     use: str
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         alg = self.alg
         kid = self.kid
@@ -29,15 +38,15 @@ class JsonWebKeySetGeneratorRequest:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "alg": alg,
-                "kid": kid,
-                "use": use,
-            }
-        )
+        field_dict.update({
+            "alg": alg,
+            "kid": kid,
+            "use": use,
+        })
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:

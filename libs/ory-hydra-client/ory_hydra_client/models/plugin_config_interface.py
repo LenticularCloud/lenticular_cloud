@@ -1,11 +1,20 @@
-from typing import Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-from ..models.plugin_interface_type import PluginInterfaceType
+from ..types import UNSET, Unset
+
+from typing import cast
+from typing import cast, List
+from typing import Dict
+
+
+
 
 T = TypeVar("T", bound="PluginConfigInterface")
-
 
 @attr.s(auto_attribs=True)
 class PluginConfigInterface:
@@ -13,12 +22,13 @@ class PluginConfigInterface:
 
     Attributes:
         socket (str): socket
-        types (List[PluginInterfaceType]): types
+        types (List['PluginInterfaceType']): types
     """
 
     socket: str
-    types: List[PluginInterfaceType]
+    types: List['PluginInterfaceType']
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
+
 
     def to_dict(self) -> Dict[str, Any]:
         socket = self.socket
@@ -28,16 +38,20 @@ class PluginConfigInterface:
 
             types.append(types_item)
 
+
+
+
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "Socket": socket,
-                "Types": types,
-            }
-        )
+        field_dict.update({
+            "Socket": socket,
+            "Types": types,
+        })
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
@@ -46,10 +60,13 @@ class PluginConfigInterface:
 
         types = []
         _types = _d.pop("Types")
-        for types_item_data in _types:
+        for types_item_data in (_types):
             types_item = PluginInterfaceType.from_dict(types_item_data)
 
+
+
             types.append(types_item)
+
 
         plugin_config_interface = cls(
             socket=socket,

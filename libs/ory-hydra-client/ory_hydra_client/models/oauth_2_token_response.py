@@ -1,11 +1,19 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="Oauth2TokenResponse")
+from ..types import UNSET, Unset
+from typing import Union
 
+
+
+
+T = TypeVar("T", bound="Oauth2TokenResponse")
 
 @attr.s(auto_attribs=True)
 class Oauth2TokenResponse:
@@ -28,6 +36,7 @@ class Oauth2TokenResponse:
     token_type: Union[Unset, str] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         access_token = self.access_token
         expires_in = self.expires_in
@@ -38,7 +47,8 @@ class Oauth2TokenResponse:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
         if access_token is not UNSET:
             field_dict["access_token"] = access_token
         if expires_in is not UNSET:
@@ -53,6 +63,8 @@ class Oauth2TokenResponse:
             field_dict["token_type"] = token_type
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:

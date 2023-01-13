@@ -1,53 +1,73 @@
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
 from ...models.generic_error import GenericError
+from typing import cast
 from ...models.reject_request import RejectRequest
-from ...types import UNSET, Response
+from typing import Dict
+
 
 
 def _get_kwargs(
     *,
     _client: Client,
-    form_data: RejectRequest,
     json_body: RejectRequest,
     logout_challenge: str,
+
 ) -> Dict[str, Any]:
-    url = "{}/oauth2/auth/requests/logout/reject".format(_client.base_url)
+    url = "{}/oauth2/auth/requests/logout/reject".format(
+        _client.base_url)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
     params: Dict[str, Any] = {}
     params["logout_challenge"] = logout_challenge
 
+
+
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
-    json_body.to_dict()
+
+    json_json_body = json_body.to_dict()
+
+
+
+    
 
     return {
-        "method": "put",
+	    "method": "put",
         "url": url,
         "headers": headers,
         "cookies": cookies,
         "timeout": _client.get_timeout(),
-        "data": form_data.to_dict(),
+        "json": json_json_body,
         "params": params,
     }
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Union[Any, GenericError]]:
-    if response.status_code == 204:
+    if response.status_code == HTTPStatus.NO_CONTENT:
         response_204 = cast(Any, None)
         return response_204
-    if response.status_code == 404:
+    if response.status_code == HTTPStatus.NOT_FOUND:
         response_404 = GenericError.from_dict(response.json())
 
+
+
         return response_404
-    if response.status_code == 500:
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = GenericError.from_dict(response.json())
+
+
 
         return response_500
     return None
@@ -65,9 +85,9 @@ def _build_response(*, response: httpx.Response) -> Response[Union[Any, GenericE
 def sync_detailed(
     *,
     _client: Client,
-    form_data: RejectRequest,
     json_body: RejectRequest,
     logout_challenge: str,
+
 ) -> Response[Union[Any, GenericError]]:
     """Reject a Logout Request
 
@@ -85,11 +105,12 @@ def sync_detailed(
         Response[Union[Any, GenericError]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
-        form_data=form_data,
-        json_body=json_body,
-        logout_challenge=logout_challenge,
+json_body=json_body,
+logout_challenge=logout_challenge,
+
     )
 
     response = httpx.request(
@@ -99,13 +120,12 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     *,
     _client: Client,
-    form_data: RejectRequest,
     json_body: RejectRequest,
     logout_challenge: str,
+
 ) -> Optional[Union[Any, GenericError]]:
     """Reject a Logout Request
 
@@ -123,20 +143,20 @@ def sync(
         Response[Union[Any, GenericError]]
     """
 
+
     return sync_detailed(
         _client=_client,
-        form_data=form_data,
-        json_body=json_body,
-        logout_challenge=logout_challenge,
-    ).parsed
+json_body=json_body,
+logout_challenge=logout_challenge,
 
+    ).parsed
 
 async def asyncio_detailed(
     *,
     _client: Client,
-    form_data: RejectRequest,
     json_body: RejectRequest,
     logout_challenge: str,
+
 ) -> Response[Union[Any, GenericError]]:
     """Reject a Logout Request
 
@@ -154,25 +174,27 @@ async def asyncio_detailed(
         Response[Union[Any, GenericError]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
-        form_data=form_data,
-        json_body=json_body,
-        logout_challenge=logout_challenge,
+json_body=json_body,
+logout_challenge=logout_challenge,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     *,
     _client: Client,
-    form_data: RejectRequest,
     json_body: RejectRequest,
     logout_challenge: str,
+
 ) -> Optional[Union[Any, GenericError]]:
     """Reject a Logout Request
 
@@ -190,11 +212,11 @@ async def asyncio(
         Response[Union[Any, GenericError]]
     """
 
-    return (
-        await asyncio_detailed(
-            _client=_client,
-            form_data=form_data,
-            json_body=json_body,
-            logout_challenge=logout_challenge,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        _client=_client,
+json_body=json_body,
+logout_challenge=logout_challenge,
+
+    )).parsed
+

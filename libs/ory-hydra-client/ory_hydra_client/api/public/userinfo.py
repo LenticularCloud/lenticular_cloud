@@ -1,24 +1,40 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import AuthenticatedClient
-from ...models.generic_error import GenericError
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
 from ...models.userinfo_response import UserinfoResponse
-from ...types import Response
+from ...models.generic_error import GenericError
+from typing import cast
+from typing import Dict
+
 
 
 def _get_kwargs(
     *,
     _client: AuthenticatedClient,
+
 ) -> Dict[str, Any]:
-    url = "{}/userinfo".format(_client.base_url)
+    url = "{}/userinfo".format(
+        _client.base_url)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
+    
+
+    
+
+    
+
     return {
-        "method": "get",
+	    "method": "get",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -27,16 +43,22 @@ def _get_kwargs(
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Union[GenericError, UserinfoResponse]]:
-    if response.status_code == 200:
+    if response.status_code == HTTPStatus.OK:
         response_200 = UserinfoResponse.from_dict(response.json())
 
+
+
         return response_200
-    if response.status_code == 401:
+    if response.status_code == HTTPStatus.UNAUTHORIZED:
         response_401 = GenericError.from_dict(response.json())
 
+
+
         return response_401
-    if response.status_code == 500:
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = GenericError.from_dict(response.json())
+
+
 
         return response_500
     return None
@@ -54,6 +76,7 @@ def _build_response(*, response: httpx.Response) -> Response[Union[GenericError,
 def sync_detailed(
     *,
     _client: AuthenticatedClient,
+
 ) -> Response[Union[GenericError, UserinfoResponse]]:
     """OpenID Connect Userinfo
 
@@ -67,8 +90,10 @@ def sync_detailed(
         Response[Union[GenericError, UserinfoResponse]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
+
     )
 
     response = httpx.request(
@@ -78,10 +103,10 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     *,
     _client: AuthenticatedClient,
+
 ) -> Optional[Union[GenericError, UserinfoResponse]]:
     """OpenID Connect Userinfo
 
@@ -95,14 +120,16 @@ def sync(
         Response[Union[GenericError, UserinfoResponse]]
     """
 
+
     return sync_detailed(
         _client=_client,
-    ).parsed
 
+    ).parsed
 
 async def asyncio_detailed(
     *,
     _client: AuthenticatedClient,
+
 ) -> Response[Union[GenericError, UserinfoResponse]]:
     """OpenID Connect Userinfo
 
@@ -116,19 +143,23 @@ async def asyncio_detailed(
         Response[Union[GenericError, UserinfoResponse]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     *,
     _client: AuthenticatedClient,
+
 ) -> Optional[Union[GenericError, UserinfoResponse]]:
     """OpenID Connect Userinfo
 
@@ -142,8 +173,9 @@ async def asyncio(
         Response[Union[GenericError, UserinfoResponse]]
     """
 
-    return (
-        await asyncio_detailed(
-            _client=_client,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        _client=_client,
+
+    )).parsed
+

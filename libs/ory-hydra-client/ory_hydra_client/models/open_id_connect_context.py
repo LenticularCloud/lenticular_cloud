@@ -1,12 +1,22 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-from ..models.open_id_connect_context_id_token_hint_claims import OpenIDConnectContextIdTokenHintClaims
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="OpenIDConnectContext")
+from typing import Union
+from typing import Dict
+from typing import cast
+from ..types import UNSET, Unset
+from typing import cast, List
 
+
+
+
+T = TypeVar("T", bound="OpenIDConnectContext")
 
 @attr.s(auto_attribs=True)
 class OpenIDConnectContext:
@@ -58,15 +68,19 @@ class OpenIDConnectContext:
 
     acr_values: Union[Unset, List[str]] = UNSET
     display: Union[Unset, str] = UNSET
-    id_token_hint_claims: Union[Unset, OpenIDConnectContextIdTokenHintClaims] = UNSET
+    id_token_hint_claims: Union[Unset, 'OpenIDConnectContextIdTokenHintClaims'] = UNSET
     login_hint: Union[Unset, str] = UNSET
     ui_locales: Union[Unset, List[str]] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
+
 
     def to_dict(self) -> Dict[str, Any]:
         acr_values: Union[Unset, List[str]] = UNSET
         if not isinstance(self.acr_values, Unset):
             acr_values = self.acr_values
+
+
+
 
         display = self.display
         id_token_hint_claims: Union[Unset, Dict[str, Any]] = UNSET
@@ -78,9 +92,14 @@ class OpenIDConnectContext:
         if not isinstance(self.ui_locales, Unset):
             ui_locales = self.ui_locales
 
+
+
+
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
         if acr_values is not UNSET:
             field_dict["acr_values"] = acr_values
         if display is not UNSET:
@@ -94,23 +113,30 @@ class OpenIDConnectContext:
 
         return field_dict
 
+
+
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
         acr_values = cast(List[str], _d.pop("acr_values", UNSET))
 
+
         display = _d.pop("display", UNSET)
 
         _id_token_hint_claims = _d.pop("id_token_hint_claims", UNSET)
         id_token_hint_claims: Union[Unset, OpenIDConnectContextIdTokenHintClaims]
-        if isinstance(_id_token_hint_claims, Unset):
+        if isinstance(_id_token_hint_claims,  Unset):
             id_token_hint_claims = UNSET
         else:
             id_token_hint_claims = OpenIDConnectContextIdTokenHintClaims.from_dict(_id_token_hint_claims)
 
+
+
+
         login_hint = _d.pop("login_hint", UNSET)
 
         ui_locales = cast(List[str], _d.pop("ui_locales", UNSET))
+
 
         open_id_connect_context = cls(
             acr_values=acr_values,

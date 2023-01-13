@@ -1,32 +1,45 @@
-from typing import Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-T = TypeVar("T", bound="OpenIDConnectContextIdTokenHintClaims")
+from ..types import UNSET, Unset
 
+
+
+
+
+T = TypeVar("T", bound="OpenIDConnectContextIdTokenHintClaims")
 
 @attr.s(auto_attribs=True)
 class OpenIDConnectContextIdTokenHintClaims:
     """IDTokenHintClaims are the claims of the ID Token previously issued by the Authorization Server being passed as a
-    hint about the
-    End-User's current or past authenticated session with the Client.
+hint about the
+End-User's current or past authenticated session with the Client.
 
     """
 
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
 
+    def to_dict(self) -> Dict[str, Any]:
+        
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
-        open_id_connect_context_id_token_hint_claims = cls()
+        open_id_connect_context_id_token_hint_claims = cls(
+        )
 
         open_id_connect_context_id_token_hint_claims.additional_properties = _d
         return open_id_connect_context_id_token_hint_claims

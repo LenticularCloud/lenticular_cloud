@@ -1,12 +1,21 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-from ..models.json_raw_message import JSONRawMessage
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="AcceptLoginRequest")
+from typing import Union
+from typing import cast
+from ..types import UNSET, Unset
+from typing import Dict
 
+
+
+
+T = TypeVar("T", bound="AcceptLoginRequest")
 
 @attr.s(auto_attribs=True)
 class AcceptLoginRequest:
@@ -49,11 +58,12 @@ class AcceptLoginRequest:
 
     subject: str
     acr: Union[Unset, str] = UNSET
-    context: Union[Unset, JSONRawMessage] = UNSET
+    context: Union[Unset, 'JSONRawMessage'] = UNSET
     force_subject_identifier: Union[Unset, str] = UNSET
     remember: Union[Unset, bool] = UNSET
     remember_for: Union[Unset, int] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
+
 
     def to_dict(self) -> Dict[str, Any]:
         subject = self.subject
@@ -68,11 +78,9 @@ class AcceptLoginRequest:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "subject": subject,
-            }
-        )
+        field_dict.update({
+            "subject": subject,
+        })
         if acr is not UNSET:
             field_dict["acr"] = acr
         if context is not UNSET:
@@ -86,6 +94,8 @@ class AcceptLoginRequest:
 
         return field_dict
 
+
+
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
@@ -95,10 +105,13 @@ class AcceptLoginRequest:
 
         _context = _d.pop("context", UNSET)
         context: Union[Unset, JSONRawMessage]
-        if isinstance(_context, Unset):
+        if isinstance(_context,  Unset):
             context = UNSET
         else:
             context = JSONRawMessage.from_dict(_context)
+
+
+
 
         force_subject_identifier = _d.pop("force_subject_identifier", UNSET)
 

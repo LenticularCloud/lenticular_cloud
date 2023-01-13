@@ -1,27 +1,43 @@
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
-from ...types import Response
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
+
 
 
 def _get_kwargs(
     *,
     _client: Client,
+
 ) -> Dict[str, Any]:
-    url = "{}/metrics/prometheus".format(_client.base_url)
+    url = "{}/metrics/prometheus".format(
+        _client.base_url)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
+    
+
+    
+
+    
+
     return {
-        "method": "get",
+	    "method": "get",
         "url": url,
         "headers": headers,
         "cookies": cookies,
         "timeout": _client.get_timeout(),
     }
+
+
 
 
 def _build_response(*, response: httpx.Response) -> Response[Any]:
@@ -36,6 +52,7 @@ def _build_response(*, response: httpx.Response) -> Response[Any]:
 def sync_detailed(
     *,
     _client: Client,
+
 ) -> Response[Any]:
     """Get Snapshot Metrics from the Hydra Service.
 
@@ -55,8 +72,10 @@ def sync_detailed(
         Response[Any]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
+
     )
 
     response = httpx.request(
@@ -70,6 +89,7 @@ def sync_detailed(
 async def asyncio_detailed(
     *,
     _client: Client,
+
 ) -> Response[Any]:
     """Get Snapshot Metrics from the Hydra Service.
 
@@ -89,11 +109,17 @@ async def asyncio_detailed(
         Response[Any]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
+
+

@@ -1,13 +1,22 @@
-import datetime
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
-from dateutil.parser import isoparse
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="FlushInactiveOAuth2TokensRequest")
+from dateutil.parser import isoparse
+from typing import Union
+from typing import cast
+from ..types import UNSET, Unset
+import datetime
 
+
+
+
+T = TypeVar("T", bound="FlushInactiveOAuth2TokensRequest")
 
 @attr.s(auto_attribs=True)
 class FlushInactiveOAuth2TokensRequest:
@@ -21,28 +30,36 @@ class FlushInactiveOAuth2TokensRequest:
     not_after: Union[Unset, datetime.datetime] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         not_after: Union[Unset, str] = UNSET
         if not isinstance(self.not_after, Unset):
             not_after = self.not_after.isoformat()
 
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
         if not_after is not UNSET:
             field_dict["notAfter"] = not_after
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
         _not_after = _d.pop("notAfter", UNSET)
         not_after: Union[Unset, datetime.datetime]
-        if isinstance(_not_after, Unset):
+        if isinstance(_not_after,  Unset):
             not_after = UNSET
         else:
             not_after = isoparse(_not_after)
+
+
+
 
         flush_inactive_o_auth_2_tokens_request = cls(
             not_after=not_after,

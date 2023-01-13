@@ -1,9 +1,17 @@
-from typing import Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-T = TypeVar("T", bound="PluginConfigNetwork")
+from ..types import UNSET, Unset
 
+
+
+
+
+T = TypeVar("T", bound="PluginConfigNetwork")
 
 @attr.s(auto_attribs=True)
 class PluginConfigNetwork:
@@ -16,18 +24,19 @@ class PluginConfigNetwork:
     type: str
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         type = self.type
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "Type": type,
-            }
-        )
+        field_dict.update({
+            "Type": type,
+        })
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:

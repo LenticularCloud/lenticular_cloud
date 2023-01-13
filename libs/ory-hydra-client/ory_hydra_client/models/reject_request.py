@@ -1,11 +1,19 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="RejectRequest")
+from ..types import UNSET, Unset
+from typing import Union
 
+
+
+
+T = TypeVar("T", bound="RejectRequest")
 
 @attr.s(auto_attribs=True)
 class RejectRequest:
@@ -32,6 +40,7 @@ class RejectRequest:
     status_code: Union[Unset, int] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
+
     def to_dict(self) -> Dict[str, Any]:
         error = self.error
         error_debug = self.error_debug
@@ -41,7 +50,8 @@ class RejectRequest:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
         if error is not UNSET:
             field_dict["error"] = error
         if error_debug is not UNSET:
@@ -54,6 +64,8 @@ class RejectRequest:
             field_dict["status_code"] = status_code
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:

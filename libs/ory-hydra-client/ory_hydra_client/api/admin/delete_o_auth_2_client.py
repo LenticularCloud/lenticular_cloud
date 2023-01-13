@@ -1,24 +1,40 @@
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
 from ...models.generic_error import GenericError
-from ...types import Response
+from typing import cast
+from typing import Dict
+
 
 
 def _get_kwargs(
     id: str,
     *,
     _client: Client,
+
 ) -> Dict[str, Any]:
-    url = "{}/clients/{id}".format(_client.base_url, id=id)
+    url = "{}/clients/{id}".format(
+        _client.base_url,id=id)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
+    
+
+    
+
+    
+
     return {
-        "method": "delete",
+	    "method": "delete",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -27,15 +43,19 @@ def _get_kwargs(
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Union[Any, GenericError]]:
-    if response.status_code == 204:
+    if response.status_code == HTTPStatus.NO_CONTENT:
         response_204 = cast(Any, None)
         return response_204
-    if response.status_code == 404:
+    if response.status_code == HTTPStatus.NOT_FOUND:
         response_404 = GenericError.from_dict(response.json())
 
+
+
         return response_404
-    if response.status_code == 500:
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = GenericError.from_dict(response.json())
+
+
 
         return response_500
     return None
@@ -54,6 +74,7 @@ def sync_detailed(
     id: str,
     *,
     _client: Client,
+
 ) -> Response[Union[Any, GenericError]]:
     """Deletes an OAuth 2.0 Client
 
@@ -71,9 +92,11 @@ def sync_detailed(
         Response[Union[Any, GenericError]]
     """
 
+
     kwargs = _get_kwargs(
         id=id,
-        _client=_client,
+_client=_client,
+
     )
 
     response = httpx.request(
@@ -83,11 +106,11 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     id: str,
     *,
     _client: Client,
+
 ) -> Optional[Union[Any, GenericError]]:
     """Deletes an OAuth 2.0 Client
 
@@ -105,16 +128,18 @@ def sync(
         Response[Union[Any, GenericError]]
     """
 
+
     return sync_detailed(
         id=id,
-        _client=_client,
-    ).parsed
+_client=_client,
 
+    ).parsed
 
 async def asyncio_detailed(
     id: str,
     *,
     _client: Client,
+
 ) -> Response[Union[Any, GenericError]]:
     """Deletes an OAuth 2.0 Client
 
@@ -132,21 +157,25 @@ async def asyncio_detailed(
         Response[Union[Any, GenericError]]
     """
 
+
     kwargs = _get_kwargs(
         id=id,
-        _client=_client,
+_client=_client,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     id: str,
     *,
     _client: Client,
+
 ) -> Optional[Union[Any, GenericError]]:
     """Deletes an OAuth 2.0 Client
 
@@ -164,9 +193,10 @@ async def asyncio(
         Response[Union[Any, GenericError]]
     """
 
-    return (
-        await asyncio_detailed(
-            id=id,
-            _client=_client,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        id=id,
+_client=_client,
+
+    )).parsed
+

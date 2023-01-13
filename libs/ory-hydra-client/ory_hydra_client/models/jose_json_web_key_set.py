@@ -1,28 +1,42 @@
-from typing import Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
 
-T = TypeVar("T", bound="JoseJSONWebKeySet")
+from ..types import UNSET, Unset
 
+
+
+
+
+T = TypeVar("T", bound="JoseJSONWebKeySet")
 
 @attr.s(auto_attribs=True)
 class JoseJSONWebKeySet:
-    """ """
+    """
+    """
 
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
 
+    def to_dict(self) -> Dict[str, Any]:
+        
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
 
         return field_dict
+
+
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
-        jose_json_web_key_set = cls()
+        jose_json_web_key_set = cls(
+        )
 
         jose_json_web_key_set.additional_properties = _d
         return jose_json_web_key_set

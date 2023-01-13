@@ -11,23 +11,26 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="ConsentRequestSessionIdToken")
+T = TypeVar("T", bound="RevokeOAuth2TokenData")
 
 @attr.s(auto_attribs=True)
-class ConsentRequestSessionIdToken:
-    """IDToken sets session data for the OpenID Connect ID token. Keep in mind that the session'id payloads are readable
-by anyone that has access to the ID Challenge. Use with care!
-
+class RevokeOAuth2TokenData:
+    """
+    Attributes:
+        token (str):
     """
 
+    token: str
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
 
     def to_dict(self) -> Dict[str, Any]:
-        
+        token = self.token
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
+            "token": token,
         })
 
         return field_dict
@@ -37,11 +40,14 @@ by anyone that has access to the ID Challenge. Use with care!
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
-        consent_request_session_id_token = cls(
+        token = _d.pop("token")
+
+        revoke_o_auth_2_token_data = cls(
+            token=token,
         )
 
-        consent_request_session_id_token.additional_properties = _d
-        return consent_request_session_id_token
+        revoke_o_auth_2_token_data.additional_properties = _d
+        return revoke_o_auth_2_token_data
 
     @property
     def additional_keys(self) -> List[str]:

@@ -1,43 +1,53 @@
-import datetime
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+
+from typing import List
+
 
 import attr
-from dateutil.parser import isoparse
 
-from ..models.consent_request import ConsentRequest
-from ..models.consent_request_session import ConsentRequestSession
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="PreviousConsentSession")
+from dateutil.parser import isoparse
+from typing import Union
+from typing import Dict
+from typing import cast
+from ..types import UNSET, Unset
+from typing import cast, List
+import datetime
 
+
+
+
+T = TypeVar("T", bound="PreviousConsentSession")
 
 @attr.s(auto_attribs=True)
 class PreviousConsentSession:
     """The response used to return used consent requests
-    same as HandledLoginRequest, just with consent_request exposed as json
+same as HandledLoginRequest, just with consent_request exposed as json
 
-        Attributes:
-            consent_request (Union[Unset, ConsentRequest]):
-            grant_access_token_audience (Union[Unset, List[str]]):
-            grant_scope (Union[Unset, List[str]]):
-            handled_at (Union[Unset, datetime.datetime]):
-            remember (Union[Unset, bool]): Remember, if set to true, tells ORY Hydra to remember this consent authorization
-                and reuse it if the same
-                client asks the same user for the same, or a subset of, scope.
-            remember_for (Union[Unset, int]): RememberFor sets how long the consent authorization should be remembered for
-                in seconds. If set to `0`, the
-                authorization will be remembered indefinitely.
-            session (Union[Unset, ConsentRequestSession]):
+    Attributes:
+        consent_request (Union[Unset, ConsentRequest]):
+        grant_access_token_audience (Union[Unset, List[str]]):
+        grant_scope (Union[Unset, List[str]]):
+        handled_at (Union[Unset, datetime.datetime]):
+        remember (Union[Unset, bool]): Remember, if set to true, tells ORY Hydra to remember this consent authorization
+            and reuse it if the same
+            client asks the same user for the same, or a subset of, scope.
+        remember_for (Union[Unset, int]): RememberFor sets how long the consent authorization should be remembered for
+            in seconds. If set to `0`, the
+            authorization will be remembered indefinitely.
+        session (Union[Unset, ConsentRequestSession]):
     """
 
-    consent_request: Union[Unset, ConsentRequest] = UNSET
+    consent_request: Union[Unset, 'ConsentRequest'] = UNSET
     grant_access_token_audience: Union[Unset, List[str]] = UNSET
     grant_scope: Union[Unset, List[str]] = UNSET
     handled_at: Union[Unset, datetime.datetime] = UNSET
     remember: Union[Unset, bool] = UNSET
     remember_for: Union[Unset, int] = UNSET
-    session: Union[Unset, ConsentRequestSession] = UNSET
+    session: Union[Unset, 'ConsentRequestSession'] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
+
 
     def to_dict(self) -> Dict[str, Any]:
         consent_request: Union[Unset, Dict[str, Any]] = UNSET
@@ -48,9 +58,15 @@ class PreviousConsentSession:
         if not isinstance(self.grant_access_token_audience, Unset):
             grant_access_token_audience = self.grant_access_token_audience
 
+
+
+
         grant_scope: Union[Unset, List[str]] = UNSET
         if not isinstance(self.grant_scope, Unset):
             grant_scope = self.grant_scope
+
+
+
 
         handled_at: Union[Unset, str] = UNSET
         if not isinstance(self.handled_at, Unset):
@@ -62,9 +78,11 @@ class PreviousConsentSession:
         if not isinstance(self.session, Unset):
             session = self.session.to_dict()
 
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update({
+        })
         if consent_request is not UNSET:
             field_dict["consent_request"] = consent_request
         if grant_access_token_audience is not UNSET:
@@ -82,26 +100,36 @@ class PreviousConsentSession:
 
         return field_dict
 
+
+
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
         _consent_request = _d.pop("consent_request", UNSET)
         consent_request: Union[Unset, ConsentRequest]
-        if isinstance(_consent_request, Unset):
+        if isinstance(_consent_request,  Unset):
             consent_request = UNSET
         else:
             consent_request = ConsentRequest.from_dict(_consent_request)
 
+
+
+
         grant_access_token_audience = cast(List[str], _d.pop("grant_access_token_audience", UNSET))
+
 
         grant_scope = cast(List[str], _d.pop("grant_scope", UNSET))
 
+
         _handled_at = _d.pop("handled_at", UNSET)
         handled_at: Union[Unset, datetime.datetime]
-        if isinstance(_handled_at, Unset):
+        if isinstance(_handled_at,  Unset):
             handled_at = UNSET
         else:
             handled_at = isoparse(_handled_at)
+
+
+
 
         remember = _d.pop("remember", UNSET)
 
@@ -109,10 +137,13 @@ class PreviousConsentSession:
 
         _session = _d.pop("session", UNSET)
         session: Union[Unset, ConsentRequestSession]
-        if isinstance(_session, Unset):
+        if isinstance(_session,  Unset):
             session = UNSET
         else:
             session = ConsentRequestSession.from_dict(_session)
+
+
+
 
         previous_consent_session = cls(
             consent_request=consent_request,

@@ -1,24 +1,40 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ...client import Client
-from ...models.health_not_ready_status import HealthNotReadyStatus
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+
 from ...models.health_status import HealthStatus
-from ...types import Response
+from typing import cast
+from ...models.health_not_ready_status import HealthNotReadyStatus
+from typing import Dict
+
 
 
 def _get_kwargs(
     *,
     _client: Client,
+
 ) -> Dict[str, Any]:
-    url = "{}/health/ready".format(_client.base_url)
+    url = "{}/health/ready".format(
+        _client.base_url)
 
     headers: Dict[str, str] = _client.get_headers()
     cookies: Dict[str, Any] = _client.get_cookies()
 
+    
+
+    
+
+    
+
+    
+
+    
+
     return {
-        "method": "get",
+	    "method": "get",
         "url": url,
         "headers": headers,
         "cookies": cookies,
@@ -27,12 +43,16 @@ def _get_kwargs(
 
 
 def _parse_response(*, response: httpx.Response) -> Optional[Union[HealthNotReadyStatus, HealthStatus]]:
-    if response.status_code == 200:
+    if response.status_code == HTTPStatus.OK:
         response_200 = HealthStatus.from_dict(response.json())
 
+
+
         return response_200
-    if response.status_code == 503:
+    if response.status_code == HTTPStatus.SERVICE_UNAVAILABLE:
         response_503 = HealthNotReadyStatus.from_dict(response.json())
+
+
 
         return response_503
     return None
@@ -50,6 +70,7 @@ def _build_response(*, response: httpx.Response) -> Response[Union[HealthNotRead
 def sync_detailed(
     *,
     _client: Client,
+
 ) -> Response[Union[HealthNotReadyStatus, HealthStatus]]:
     """Check Readiness Status
 
@@ -67,8 +88,10 @@ def sync_detailed(
         Response[Union[HealthNotReadyStatus, HealthStatus]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
+
     )
 
     response = httpx.request(
@@ -78,10 +101,10 @@ def sync_detailed(
 
     return _build_response(response=response)
 
-
 def sync(
     *,
     _client: Client,
+
 ) -> Optional[Union[HealthNotReadyStatus, HealthStatus]]:
     """Check Readiness Status
 
@@ -99,14 +122,16 @@ def sync(
         Response[Union[HealthNotReadyStatus, HealthStatus]]
     """
 
+
     return sync_detailed(
         _client=_client,
-    ).parsed
 
+    ).parsed
 
 async def asyncio_detailed(
     *,
     _client: Client,
+
 ) -> Response[Union[HealthNotReadyStatus, HealthStatus]]:
     """Check Readiness Status
 
@@ -124,19 +149,23 @@ async def asyncio_detailed(
         Response[Union[HealthNotReadyStatus, HealthStatus]]
     """
 
+
     kwargs = _get_kwargs(
         _client=_client,
+
     )
 
     async with httpx.AsyncClient(verify=_client.verify_ssl) as __client:
-        response = await __client.request(**kwargs)
+        response = await __client.request(
+            **kwargs
+        )
 
     return _build_response(response=response)
-
 
 async def asyncio(
     *,
     _client: Client,
+
 ) -> Optional[Union[HealthNotReadyStatus, HealthStatus]]:
     """Check Readiness Status
 
@@ -154,8 +183,9 @@ async def asyncio(
         Response[Union[HealthNotReadyStatus, HealthStatus]]
     """
 
-    return (
-        await asyncio_detailed(
-            _client=_client,
-        )
-    ).parsed
+
+    return (await asyncio_detailed(
+        _client=_client,
+
+    )).parsed
+
