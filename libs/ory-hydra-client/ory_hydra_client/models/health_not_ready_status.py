@@ -1,4 +1,4 @@
-from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO, TYPE_CHECKING
 
 from typing import List
 
@@ -7,10 +7,13 @@ import attr
 
 from ..types import UNSET, Unset
 
-from typing import Union
-from typing import cast
 from ..types import UNSET, Unset
 from typing import Dict
+from typing import Union
+from typing import cast
+
+if TYPE_CHECKING:
+  from ..models.health_not_ready_status_errors import HealthNotReadyStatusErrors
 
 
 
@@ -30,6 +33,7 @@ class HealthNotReadyStatus:
 
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.health_not_ready_status_errors import HealthNotReadyStatusErrors
         errors: Union[Unset, Dict[str, Any]] = UNSET
         if not isinstance(self.errors, Unset):
             errors = self.errors.to_dict()
@@ -48,6 +52,7 @@ class HealthNotReadyStatus:
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+        from ..models.health_not_ready_status_errors import HealthNotReadyStatusErrors
         _d = src_dict.copy()
         _errors = _d.pop("errors", UNSET)
         errors: Union[Unset, HealthNotReadyStatusErrors]

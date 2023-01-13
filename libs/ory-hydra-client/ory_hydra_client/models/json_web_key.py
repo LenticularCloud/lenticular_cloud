@@ -1,4 +1,4 @@
-from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO, TYPE_CHECKING
 
 from typing import List
 
@@ -14,14 +14,12 @@ from typing import Union
 
 
 
-T = TypeVar("T", bound="JSONWebKey")
+
+T = TypeVar("T", bound="JsonWebKey")
 
 @attr.s(auto_attribs=True)
-class JSONWebKey:
-    """It is important that this model object is named JSONWebKey for
-"swagger generate spec" to generate only on definition of a
-JSONWebKey.
-
+class JsonWebKey:
+    """
     Attributes:
         alg (str): The "alg" (algorithm) parameter identifies the algorithm intended for
             use with the key.  The values used should either be registered in the

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO, TYPE_CHECKING
 
 from typing import List
 
@@ -9,6 +9,7 @@ from ..types import UNSET, Unset
 
 from ..types import UNSET, Unset
 from typing import Union
+
 
 
 

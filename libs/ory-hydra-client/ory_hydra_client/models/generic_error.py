@@ -1,4 +1,4 @@
-from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO, TYPE_CHECKING
 
 from typing import List
 
@@ -13,45 +13,73 @@ from typing import Union
 
 
 
+
 T = TypeVar("T", bound="GenericError")
 
 @attr.s(auto_attribs=True)
 class GenericError:
-    """Error responses are sent when an error (e.g. unauthorized, bad request, ...) occurred.
-
+    """
     Attributes:
-        error (str): Name is the error name. Example: The requested resource could not be found.
-        debug (Union[Unset, str]): Debug contains debug information. This is usually not available and has to be
-            enabled. Example: The database adapter was unable to find the element.
-        error_description (Union[Unset, str]): Description contains further information on the nature of the error.
-            Example: Object with ID 12345 does not exist.
-        status_code (Union[Unset, int]): Code represents the error status code (404, 403, 401, ...). Example: 404.
+        message (str): Error message
+
+            The error's message. Example: The resource could not be found.
+        code (Union[Unset, int]): The status code Example: 404.
+        debug (Union[Unset, str]): Debug information
+
+            This field is often not exposed to protect against leaking
+            sensitive information. Example: SQL field "foo" is not a bool..
+        details (Union[Unset, Any]): Further error details
+        id (Union[Unset, str]): The error ID
+
+            Useful when trying to identify various errors in application logic.
+        reason (Union[Unset, str]): A human-readable reason for the error Example: User with ID 1234 does not exist..
+        request (Union[Unset, str]): The request ID
+
+            The request ID is often exposed internally in order to trace
+            errors across service architectures. This is often a UUID. Example: d7ef54b1-ec15-46e6-bccb-524b82c035e6.
+        status (Union[Unset, str]): The status description Example: Not Found.
     """
 
-    error: str
+    message: str
+    code: Union[Unset, int] = UNSET
     debug: Union[Unset, str] = UNSET
-    error_description: Union[Unset, str] = UNSET
-    status_code: Union[Unset, int] = UNSET
+    details: Union[Unset, Any] = UNSET
+    id: Union[Unset, str] = UNSET
+    reason: Union[Unset, str] = UNSET
+    request: Union[Unset, str] = UNSET
+    status: Union[Unset, str] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
 
     def to_dict(self) -> Dict[str, Any]:
-        error = self.error
+        message = self.message
+        code = self.code
         debug = self.debug
-        error_description = self.error_description
-        status_code = self.status_code
+        details = self.details
+        id = self.id
+        reason = self.reason
+        request = self.request
+        status = self.status
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
-            "error": error,
+            "message": message,
         })
+        if code is not UNSET:
+            field_dict["code"] = code
         if debug is not UNSET:
             field_dict["debug"] = debug
-        if error_description is not UNSET:
-            field_dict["error_description"] = error_description
-        if status_code is not UNSET:
-            field_dict["status_code"] = status_code
+        if details is not UNSET:
+            field_dict["details"] = details
+        if id is not UNSET:
+            field_dict["id"] = id
+        if reason is not UNSET:
+            field_dict["reason"] = reason
+        if request is not UNSET:
+            field_dict["request"] = request
+        if status is not UNSET:
+            field_dict["status"] = status
 
         return field_dict
 
@@ -60,19 +88,31 @@ class GenericError:
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         _d = src_dict.copy()
-        error = _d.pop("error")
+        message = _d.pop("message")
+
+        code = _d.pop("code", UNSET)
 
         debug = _d.pop("debug", UNSET)
 
-        error_description = _d.pop("error_description", UNSET)
+        details = _d.pop("details", UNSET)
 
-        status_code = _d.pop("status_code", UNSET)
+        id = _d.pop("id", UNSET)
+
+        reason = _d.pop("reason", UNSET)
+
+        request = _d.pop("request", UNSET)
+
+        status = _d.pop("status", UNSET)
 
         generic_error = cls(
-            error=error,
+            message=message,
+            code=code,
             debug=debug,
-            error_description=error_description,
-            status_code=status_code,
+            details=details,
+            id=id,
+            reason=reason,
+            request=request,
+            status=status,
         )
 
         generic_error.additional_properties = _d

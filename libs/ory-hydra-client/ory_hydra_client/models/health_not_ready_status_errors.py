@@ -1,4 +1,4 @@
-from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO
+from typing import Any, Dict, Type, TypeVar, Tuple, Optional, BinaryIO, TextIO, TYPE_CHECKING
 
 from typing import List
 
@@ -6,6 +6,7 @@ from typing import List
 import attr
 
 from ..types import UNSET, Unset
+
 
 
 
@@ -38,6 +39,7 @@ class HealthNotReadyStatusErrors:
         _d = src_dict.copy()
         health_not_ready_status_errors = cls(
         )
+
 
         health_not_ready_status_errors.additional_properties = _d
         return health_not_ready_status_errors
