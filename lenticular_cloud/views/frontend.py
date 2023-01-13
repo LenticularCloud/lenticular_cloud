@@ -2,8 +2,7 @@
 from authlib.integrations.base_client.errors import MissingTokenError, InvalidTokenError
 from base64 import b64encode, b64decode
 from fido2 import cbor
-from fido2.client import ClientData
-from fido2.ctap2 import AttestationObject, AttestedCredentialData, AuthenticatorData
+from fido2.webauthn import AttestationObject, AttestedCredentialData, AuthenticatorData
 from flask import Blueprint, Response, redirect, request
 from flask import current_app
 from flask import jsonify, session, flash
