@@ -26,7 +26,7 @@
     "terser-webpack-plugin": "*",
     "ts-loader": "^9.3.0",
     "url-loader": "*",
-    "webpack": "^5.72.1",
+    "webpack": "^5.76.0",
     "webpack-cli": "*",
     "simple-form-submit": "*"
   },
