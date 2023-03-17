@@ -2,7 +2,7 @@
 from authlib.integrations.base_client.errors import MissingTokenError, InvalidTokenError
 from base64 import b64encode, b64decode
 from fido2 import cbor
-from fido2.webauthn import AttestationObject, AttestedCredentialData, AuthenticatorData
+from fido2.webauthn import CollectedClientData, AttestationObject, AttestedCredentialData, AuthenticatorData, PublicKeyCredentialUserEntity
 from flask import Blueprint, Response, redirect, request
 from flask import current_app
 from flask import jsonify, session, flash
@@ -15,13 +15,13 @@ from datetime import timedelta
 from base64 import b64decode
 from flask.typing import ResponseReturnValue 
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
-from ory_hydra_client.api.admin import list_subject_consent_sessions, revoke_consent_sessions
+from ory_hydra_client.api.o_auth_2 import list_o_auth_2_consent_sessions, revoke_o_auth_2_consent_sessions
 from ory_hydra_client.models import GenericError
 from urllib.parse import urlencode, parse_qs
 from random import SystemRandom
 import string
 from collections.abc import Iterable
-from typing import Optional
+from typing import Optional, Mapping, Iterator, List
 
 from ..model import db, User, SecurityUser, Totp, AppToken, WebauthnCredential
 from ..form.frontend import ClientCertForm, TOTPForm, \
@@ -247,9 +247,17 @@ def webauthn_delete_route(webauthn_id: str) -> ResponseReturnValue:
 
 
 
+
 def webauthn_credentials(user: User) -> list[AttestedCredentialData]:
     """get and decode all credentials for given user"""
-    return [AttestedCredentialData.create(**cbor.decode(cred.credential_data)) for cred in user.webauthn_credentials]
+
+    def decode(creds: List[WebauthnCredential]) -> Iterator[AttestedCredentialData]:
+        for cred in creds:
+            data = cbor.decode(cred.credential_data)
+            if isinstance(data, Mapping):
+                yield AttestedCredentialData.create(**data)
+
+    return list(decode(user.webauthn_credentials))
 
 
 def random_string(length=32) -> str:
@@ -267,8 +275,9 @@ def webauthn_pkcco_route() -> ResponseReturnValue:
     user_handle = random_string()
     exclude_credentials = webauthn_credentials(user)
     pkcco, state = webauthn.register_begin(
-        {'id': user_handle.encode('utf-8'), 'name': user.username, 'displayName': user.username},
-        exclude_credentials)
+        user=PublicKeyCredentialUserEntity(id=user_handle.encode('utf-8'), name=user.username, display_name=user.username),
+        credentials=exclude_credentials
+    )
     session['webauthn_register_user_handle'] = user_handle
     session['webauthn_register_state'] = state
     return Response(b64encode(cbor.encode(pkcco)).decode('utf-8'), mimetype='text/plain')
@@ -283,9 +292,11 @@ def webauthn_register_route() -> ResponseReturnValue:
     if form.validate_on_submit():
         try:
             attestation = cbor.decode(b64decode(form.attestation.data))
+            if not isinstance(attestation, Mapping) or 'clientDataJSON' not in attestation or 'attestationObject' not in attestation:
+                return 'invalid attestion data', 400
             auth_data = webauthn.register_complete(
                 session.pop('webauthn_register_state'),
-                ClientData(attestation['clientDataJSON']),
+                CollectedClientData(attestation['clientDataJSON']),
                 AttestationObject(attestation['attestationObject']))
 
             db.session.add(WebauthnCredential(
@@ -331,7 +342,7 @@ def password_change_post() -> ResponseReturnValue:
 async def oauth2_tokens() -> ResponseReturnValue:
 
     subject = oauth2.custom.get('/userinfo').json()['sub']
-    consent_sessions = await list_subject_consent_sessions.asyncio(subject=subject, _client=hydra_service.hydra_client)
+    consent_sessions = await list_o_auth_2_consent_sessions.asyncio(subject=subject, _client=hydra_service.hydra_client)
     if consent_sessions is None or isinstance( consent_sessions, GenericError):
        return 'internal error, could not fetch sessions', 500
     return render_template(
@@ -342,7 +353,7 @@ async def oauth2_tokens() -> ResponseReturnValue:
 @frontend_views.route('/oauth2_token/<client_id>', methods=['DELETE'])
 async def oauth2_token_revoke(client_id: str) -> ResponseReturnValue:
     subject = oauth2.session.get('/userinfo').json()['sub']
-    await revoke_consent_sessions.asyncio( _client=hydra_service.hydra_client,
+    await revoke_o_auth_2_consent_sessions.asyncio_detailed( _client=hydra_service.hydra_client,
                                 subject=subject,
                                 client=client_id)
 

@@ -3,7 +3,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import rsa, dh
 from cryptography.x509.oid import NameOID, ExtendedKeyUsageOID
 from cryptography.x509 import ObjectIdentifier
 from pathlib import Path
@@ -108,6 +108,9 @@ class Pki(object):
     def signing_publickey(self, user: User, service: Service, publickey: str, valid_time=DAY*365):
         _public_key = serialization.load_pem_public_key(
                 publickey.encode(), backend=default_backend())
+
+        if isinstance(_public_key, dh.DHPublicKey):
+            raise AssertionError('key can not be a dsa key')
 
         ca_private_key, ca_cert = self._init_ca(service)
         ca_name = service.name

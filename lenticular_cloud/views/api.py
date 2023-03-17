@@ -16,7 +16,7 @@ import secrets
 from ..model import db, User
 from ..hydra import hydra_service
 from ..lenticular_services import lenticular_services
-from ory_hydra_client.api.admin import introspect_o_auth_2_token
+from ory_hydra_client.api.o_auth_2 import introspect_o_auth_2_token
 from ory_hydra_client.models import GenericError
 
 

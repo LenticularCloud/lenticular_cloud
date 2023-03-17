@@ -6,8 +6,8 @@ from flask.typing import ResponseReturnValue
 from flask_login import current_user, logout_user
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from authlib.integrations.base_client.errors import InvalidTokenError
-from ory_hydra_client.api.admin import list_o_auth_2_clients, get_o_auth_2_client, update_o_auth_2_client, create_o_auth_2_client 
-from ory_hydra_client.models import OAuth2Client, GenericError
+from ory_hydra_client.api.o_auth_2 import list_o_auth_2_clients, get_o_auth_2_client, set_o_auth_2_client, create_o_auth_2_client 
+from ory_hydra_client.models import OAuth20Client, GenericError
 from typing import Optional
 from collections.abc import Iterable
 import logging
@@ -77,7 +77,7 @@ def registration_accept(registration_id) -> ResponseReturnValue:
 
 @admin_views.route('/clients')
 async def clients() -> ResponseReturnValue:
-    clients = await list_o_auth_2_clients.asyncio(_client=hydra_service.hydra_client)
+    clients = await list_o_auth_2_clients.asyncio_detailed(_client=hydra_service.hydra_client)
     return render_template('admin/clients.html.j2', clients=clients)
 
 @admin_views.route('/client/<client_id>', methods=['GET', 'POST'])
@@ -92,7 +92,7 @@ async def client(client_id: str) -> ResponseReturnValue:
     if form.validate_on_submit():
         form.populate_obj(client)
  
-        client = await update_o_auth_2_client.asyncio(id=client_id ,json_body=client, _client=hydra_service.hydra_client)
+        client = await set_o_auth_2_client.asyncio(id=client_id ,json_body=client, _client=hydra_service.hydra_client)
         if client is None or isinstance(client, GenericError):
             logger.error(f"oauth2 client update failed: '{client_id}'")
             return 'client update failed', 500
@@ -105,7 +105,7 @@ async def client(client_id: str) -> ResponseReturnValue:
 @admin_views.route('/client_new', methods=['GET','POST'])
 async def client_new() -> ResponseReturnValue:
     
-    client = OAuth2Client()
+    client = OAuth20Client()
 
     form = OAuth2ClientForm()
     if form.validate_on_submit():
