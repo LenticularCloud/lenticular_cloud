@@ -11,7 +11,7 @@ import logging
 import crypt
 import secrets
 import string
-from flask_sqlalchemy import SQLAlchemy, orm
+from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 import uuid

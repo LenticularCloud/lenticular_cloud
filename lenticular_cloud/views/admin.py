@@ -8,8 +8,10 @@ from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from authlib.integrations.base_client.errors import InvalidTokenError
 from ory_hydra_client.api.o_auth_2 import list_o_auth_2_clients, get_o_auth_2_client, set_o_auth_2_client, create_o_auth_2_client 
 from ory_hydra_client.models import OAuth20Client, GenericError
-from typing import Optional
+from typing import Optional, List
 from collections.abc import Iterable
+from http import HTTPStatus
+import httpx
 import logging
 
 from ..model import db, User
@@ -77,7 +79,12 @@ def registration_accept(registration_id) -> ResponseReturnValue:
 
 @admin_views.route('/clients')
 async def clients() -> ResponseReturnValue:
-    clients = await list_o_auth_2_clients.asyncio_detailed(_client=hydra_service.hydra_client)
+    response = await list_o_auth_2_clients.asyncio_detailed(_client=hydra_service.hydra_client)
+    clients = response.parsed
+    if clients is None:
+        logger.error(f"could not fetch client list response {response}")
+        return 'internal error', 500
+    logger.error(f'{clients}')
     return render_template('admin/clients.html.j2', clients=clients)
 
 @admin_views.route('/client/<client_id>', methods=['GET', 'POST'])

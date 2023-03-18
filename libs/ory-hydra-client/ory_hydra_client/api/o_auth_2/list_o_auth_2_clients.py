@@ -8,6 +8,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...types import UNSET, Unset
+from ...models import OAuth20Client
 from typing import Optional
 from typing import Union
 
@@ -63,16 +64,17 @@ def _get_kwargs(
     }
 
 
-def _parse_response(*, client: Client, response: httpx.Response) -> Optional[Any]:
+def _parse_response(*, client: Client, response: httpx.Response) -> Optional[List[OAuth20Client]]:
     if response.status_code == HTTPStatus.OK:
-        return None
+        response_200 = list([ OAuth20Client.from_dict(data) for data in response.json() ])
+        return response_200
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(f"Unexpected status code: {response.status_code}")
     else:
         return None
 
 
-def _build_response(*, client: Client, response: httpx.Response) -> Response[Any]:
+def _build_response(*, client: Client, response: httpx.Response) -> Response[List[OAuth20Client]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -89,7 +91,7 @@ def sync_detailed(
     client_name: Union[Unset, None, str] = UNSET,
     owner: Union[Unset, None, str] = UNSET,
 
-) -> Response[Any]:
+) -> Response[List[OAuth20Client]]:
     """List OAuth 2.0 Clients
 
      This endpoint lists all clients in the database, and never returns client secrets.
@@ -135,7 +137,7 @@ async def asyncio_detailed(
     client_name: Union[Unset, None, str] = UNSET,
     owner: Union[Unset, None, str] = UNSET,
 
-) -> Response[Any]:
+) -> Response[List[OAuth20Client]]:
     """List OAuth 2.0 Clients
 
      This endpoint lists all clients in the database, and never returns client secrets.

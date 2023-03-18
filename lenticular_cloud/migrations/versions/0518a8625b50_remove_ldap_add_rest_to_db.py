@@ -9,9 +9,6 @@ from alembic import op
 import sqlalchemy as sa
 from flask import current_app
 from lenticular_cloud.model import User
-from ldap3_orm import AttrDef, EntryBase as _EntryBase, ObjectDef, EntryType
-from ldap3_orm import Reader
-from ldap3 import Connection, Server, ALL
 import logging
 
 
@@ -23,6 +20,10 @@ depends_on = None
 
 
 def upgrade():
+    from ldap3_orm import AttrDef, EntryBase as _EntryBase, ObjectDef, EntryType
+    from ldap3_orm import Reader
+    from ldap3 import Connection, Server, ALL
+
     app = current_app
     server = Server(app.config['LDAP_URL'], get_info=ALL)
     ldap_conn = Connection(server, app.config['LDAP_BIND_DN'], app.config['LDAP_BIND_PW'], auto_bind=True) # TODO auto_bind read docu

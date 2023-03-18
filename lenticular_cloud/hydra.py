@@ -6,8 +6,8 @@ from typing import Optional
 class HydraService:
 
     def __init__(self):
-        self._hydra_client = None # type: Optional[Client]
-        self._oauth_client = None # type: Optional[Client]
+        self._hydra_client: Optional[Client] = None
+        self._oauth_client: Optional[Client] = None
 
     @property
     def hydra_client(self) -> Client:

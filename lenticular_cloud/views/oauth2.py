@@ -92,11 +92,12 @@ def init_login_manager(app: Flask) -> None:
         name="custom",
         client_id=app.config['OAUTH_ID'],
         client_secret=app.config['OAUTH_SECRET'],
+        server_metadata_url=f'{base_url}/.well-known/openid-configuration',
         access_token_url=f"{base_url}/oauth2/token",
         authorize_url=f"{base_url}/oauth2/auth",
         api_base_url=base_url,
 
-        client_kwargs={'scope': ' '.join(['openid', 'profile', 'manage'])}
+        client_kwargs={'scope': ' '.join(['openid', 'profile', 'manage'])},
     )
     oauth2.init_app(app)
     login_manager.init_app(app)
