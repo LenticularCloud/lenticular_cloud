@@ -1,12 +1,10 @@
-{
-  pkgs ? import <nixpkgs> {},
-  python ? pkgs.python310
-}:
-let
-  settings = import ./default.nix {inherit pkgs python;};
-in
-pkgs.mkShell {
-    # nativeBuildInputs is usually what you want -- tools you need to run
-    nativeBuildInputs = settings.nativeBuildInputs ++ settings.testBuildInputs ++ [ pkgs.nodePackages.npm pkgs.nodejs python.pkgs.build ];
-}
-
+(import
+  (
+    let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in
+    fetchTarball {
+      url = "https://github.com/edolstra/flake-compat/archive/${lock.nodes.flake-compat.locked.rev}.tar.gz";
+      sha256 = lock.nodes.flake-compat.locked.narHash;
+    }
+  )
+  { src = ./.; }
+).defaultNix
