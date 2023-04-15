@@ -84,7 +84,6 @@ async def clients() -> ResponseReturnValue:
     if clients is None:
         logger.error(f"could not fetch client list response {response}")
         return 'internal error', 500
-    logger.error(f'{clients}')
     return render_template('admin/clients.html.j2', clients=clients)
 
 @admin_views.route('/client/<client_id>', methods=['GET', 'POST'])
@@ -120,7 +119,7 @@ async def client_new() -> ResponseReturnValue:
  
         resp_client = await create_o_auth_2_client.asyncio(json_body=client, _client=hydra_service.hydra_client)
         if resp_client is None:
-            logger.error(f"oauth2 client update failed: '{client.client_id}'")
+            logger.error(f"oauth2 client created failed: '{client.client_id}'")
             return 'internal error', 500
         return redirect(url_for('.client', client_id=client.client_id))
 
