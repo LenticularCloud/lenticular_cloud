@@ -1,10 +1,7 @@
-{ lenticular_cloud }: { config, pkgs, lib, modulesPath, ... }:
+{ config, pkgs, lib, ... }:
 let
-  python = pkgs.python310;
-  gevent = python.pkgs.gevent;
-  gunicorn = python.pkgs.gunicorn;
-  psycopg2 = python.pkgs.psycopg2;
-  lenticular-pkg = lenticular_cloud { inherit python;};
+  cfg = config.services.lenticular-cloud;
+  python = pkgs.python3;
 in
 {
   options = with lib.options; {
@@ -12,10 +9,12 @@ in
       enable = mkEnableOption "lenticluar service enable";
     };
   };
-  imports = [
-  ];
   config = {
-    environment.systemPackages = [ lenticular-pkg ];
+    environment.systemPackages = [ pkgs.lenticular-cloud ];
+
+    nixpkgs.overlays = [
+      (import ./overlay.nix)
+    ];
     
     users = {
       groups.lenticular = {
@@ -35,12 +34,14 @@ in
       description = "lenticular account";
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
+      enable = cfg.enable;
 
       environment = let
-        python_path = python.pkgs.makePythonPath [ lenticular-pkg gevent psycopg2];
+        python_path = with python.pkgs; makePythonPath [ lenticular-cloud gevent psycopg2];
       in {
         CONFIG_FILE = "/etc/lenticular_cloud/production.conf";
-        PYTHONPATH =  "${lenticular-pkg.pythonPath}:${lenticular-pkg}/lib/python3.10/site-packages:${python_path}";
+        PYTHONPATH = "${python_path}";
+        # PYTHONPATH =  "${lenticular-pkg.pythonPath}:${lenticular-pkg}/lib/python3.10/site-packages:${python_path}";
       };
 
       serviceConfig = {
@@ -52,9 +53,9 @@ in
               #cat > /var/lib/lenticular/foobar.conf <<EOF
               #SECRET_KEY=""
               #EOF
-              ${lenticular-pkg}/bin/lenticular_cloud-cli db_upgrade
+              ${pkgs.lenticular-cloud}/bin/lenticular_cloud-cli db_upgrade
             '';
-        ExecStart = ''${gunicorn}/bin/gunicorn lenticular_cloud.wsgi --name lenticular_cloud \
+        ExecStart = ''${python.pkgs.gunicorn}/bin/gunicorn lenticular_cloud.wsgi --name lenticular_cloud \
               -u lenticular \
               -g lenticular \
               --workers 3 --log-level=info \

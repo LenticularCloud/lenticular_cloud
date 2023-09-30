@@ -11,12 +11,14 @@ import logging
 import crypt
 import secrets
 import string
+from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass, Mapped, mapped_column, relationship, declarative_base
 from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy.model import Model, DefaultMeta
+from flask_sqlalchemy.extension import _FSAModel
 from flask_migrate import Migrate
 from datetime import datetime
 import uuid
-import pyotp
-from typing import Optional, Callable
+from typing import Optional, List, Dict, Tuple, Any, Type, TYPE_CHECKING
 from cryptography.x509 import Certificate as CertificateObj
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
@@ -28,8 +30,17 @@ logger = logging.getLogger(__name__)
 db = SQLAlchemy()
 migrate = Migrate()
 
+class BaseModelIntern(MappedAsDataclass, DeclarativeBase):
+    pass
 
-BaseModel: DeclarativeMeta = db.Model
+if TYPE_CHECKING:
+    class BaseModel (_FSAModel,BaseModelIntern):
+        pass
+else:
+    BaseModel: Type[_FSAModel] = db.Model
+class ModelUpdatedMixin:
+    created_at: Mapped[datetime] = mapped_column(db.DateTime, default=datetime.now())
+    last_update: Mapped[datetime] = mapped_column(db.DateTime, default=datetime.now(), onupdate=datetime.now)
 
 class SecurityUser(UserMixin):
 
