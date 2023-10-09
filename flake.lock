@@ -3,11 +3,11 @@
     "flake-compat": {
       "flake": false,
       "locked": {
-        "lastModified": 1673956053,
-        "narHash": "sha256-4gtG9iQuiKITOjNQQeQIpoIB6b16fm+504Ch3sNKLd8=",
+        "lastModified": 1696426674,
+        "narHash": "sha256-kvjfFW7WAETZlt09AgDn1MrtKzP7t90Vf7vypd3OL1U=",
         "owner": "edolstra",
         "repo": "flake-compat",
-        "rev": "35bb57c0c8d8b62bbfd284272c928ceb64ddbde9",
+        "rev": "0f9255e01c2351cc7d116c072cb317785dd33b33",
         "type": "github"
       },
       "original": {
@@ -52,17 +52,17 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1696022471,
-        "narHash": "sha256-3U5nqHQ9JFUoY4GJ89ErqzRmkgAhPYjbPn4vP+CpltM=",
+        "lastModified": 1696374741,
+        "narHash": "sha256-gt8B3G0ryizT9HSB4cCO8QoxdbsHnrQH+/BdKxOwqF0=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "336d12bc4cdb0980f5ff450d7bc599bdb4ed5e74",
+        "rev": "8a4c17493e5c39769f79117937c79e1c88de6729",
         "type": "github"
       },
       "original": {
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "type": "github"
+        "id": "nixpkgs",
+        "ref": "nixos-23.05",
+        "type": "indirect"
       }
     },
     "root": {
@@ -70,7 +70,8 @@
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
         "nix-node-package": "nix-node-package",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "tuxpkgs": "tuxpkgs"
       }
     },
     "systems": {
@@ -86,6 +87,29 @@
         "owner": "nix-systems",
         "repo": "default",
         "type": "github"
+      }
+    },
+    "tuxpkgs": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1696700871,
+        "narHash": "sha256-9VFEJEfnfnCS1+kLznxd+OiDYdMnLP00+XR53iPfnK4=",
+        "ref": "refs/heads/master",
+        "rev": "a25f5792a256beaed2a9f944fccdea8ea7a8d44b",
+        "revCount": 6,
+        "type": "git",
+        "url": "ssh://git@git.o-g.at/nixpkg/tuxpkgs.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@git.o-g.at/nixpkg/tuxpkgs.git"
       }
     }
   },

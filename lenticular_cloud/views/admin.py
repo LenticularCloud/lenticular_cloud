@@ -46,7 +46,7 @@ async def index() -> ResponseReturnValue:
 
 
 @admin_views.route('/user', methods=['GET'])
-async def users():
+async def users() -> ResponseReturnValue:
     users = User.query.all() # type: Iterable[User]
     return render_template('admin/users.html.j2', users=users)
 

@@ -6,16 +6,11 @@ PREFERRED_URL_SCHEME = 'https'
 DATA_FOLDER = "../data"
 
 SCRIPT_LOCATION="lenticular_cloud:migrations"
-SQLALCHEMY_DATABASE_URI = f'sqlite:///{DATA_FOLDER}/db.sqlite'
-SQLALCHEMY_TRACK_MODIFICATIONS=False
-
-LDAP_URL = 'ldaps://ldap.example.org'
-LDAP_BASE_DN = 'dc=example,dc=com'
-LDAP_BIND_DN = 'cn=admin,' + LDAP_BASE_DN
-LDAP_BIND_PW = '123456'
+SQLALCHEMY_DATABASE_URI = 'sqlite:///../data/db.sqlite'
+SQLALCHEMY_TRACK_MODIFICATIONS = false
 
 
-PKI_PATH = f'{DATA_FOLDER}/pki'
+PKI_PATH = "../data/pki"
 DOMAIN = 'example.com'
 #SERVER_NAME = f'account.{ DOMAIN }:9090'
 
@@ -30,17 +25,24 @@ OAUTH_ID = 'identiy_provider'
 OAUTH_SECRET = 'ThisIsNotSafe'
 
 
+[LENTICULAR_CLOUD_SERVICES.jabber]
+app_token = true
+# client_cert= true
 
-LENTICULAR_CLOUD_SERVICES = {
-	'jabber': {
-		'client_cert': True,
-		'pki_config':{
-			'email': '{username}@jabber.{domain}'
-		},
-    'app_token': True
-	},
-	'mail-cardav': {
-		'client_cert': False,
-    'app_token': True
-	}
-}
+
+[LENTICULAR_CLOUD_SERVICES.mail-cardav]
+app_token = true
+
+# LENTICULAR_CLOUD_SERVICES = {
+# 	'jabber': {
+# 		'client_cert': True,
+# 		'pki_config':{
+# 			'email': '{username}@jabber.{domain}'
+# 		},
+#     'app_token': True
+# 	},
+# 	'mail-cardav': {
+# 		'client_cert': False,
+#     'app_token': True
+# 	}
+# }

@@ -1,4 +1,5 @@
 import argparse
+from typing import Optional
 from .model import db, User
 from .app import create_app
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -64,7 +65,7 @@ def cli_signup(args) -> None:
 
     if args.signup_id is not None:
         user = User.query.get(args.signup_id)
-        if user == None:
+        if user is None:
             print("user not found")
             return
         user.enabled = True
@@ -87,7 +88,7 @@ def cli_run(app: Flask, args) -> None:
 def cli_db_upgrade(args) -> None:
     app = create_app()
     migration_dir = Path(app.root_path) / 'migrations'
-    upgrade( str(migration_dir) )
+    upgrade( str(migration_dir), revision='head' )
 
 
 if __name__ == "__main__":

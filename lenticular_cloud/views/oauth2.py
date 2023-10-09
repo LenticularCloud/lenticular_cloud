@@ -9,6 +9,7 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 import logging
 
 from ..model import User, SecurityUser
+from ..hydra import hydra_service
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +91,7 @@ def init_login_manager(app: Flask) -> None:
 
     oauth2.register(
         name="custom",
-        client_id=app.config['OAUTH_ID'],
+        client_id=hydra_service.client_id,
         client_secret=app.config['OAUTH_SECRET'],
         server_metadata_url=f'{base_url}/.well-known/openid-configuration',
         access_token_url=f"{base_url}/oauth2/token",

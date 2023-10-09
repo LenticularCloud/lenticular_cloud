@@ -11,6 +11,7 @@ import logging
 import crypt
 import secrets
 import string
+from sqlalchemy import null
 from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass, Mapped, mapped_column, relationship, declarative_base
 from flask_sqlalchemy import SQLAlchemy
 from flask_sqlalchemy.model import Model, DefaultMeta
@@ -38,9 +39,10 @@ if TYPE_CHECKING:
         pass
 else:
     BaseModel: Type[_FSAModel] = db.Model
+
 class ModelUpdatedMixin:
-    created_at: Mapped[datetime] = mapped_column(db.DateTime, default=datetime.now())
-    last_update: Mapped[datetime] = mapped_column(db.DateTime, default=datetime.now(), onupdate=datetime.now)
+    created_at: Mapped[datetime] = mapped_column(db.DateTime, default=datetime.now(), nullable=False)
+    modified_at: Mapped[datetime] = mapped_column(db.DateTime, default=datetime.now(), onupdate=datetime.now, nullable=False)
 
 class SecurityUser(UserMixin):
 
@@ -151,28 +153,27 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 
-class User(BaseModel):
-    id = db.Column(
-            db.String(length=36), primary_key=True, default=generate_uuid)
-    username = db.Column(
-            db.String, unique=True, nullable=False)
-    password_hashed = db.Column(
-            db.String, nullable=False)
-    alternative_email = db.Column(
-            db.String, nullable=True)
-    created_at = db.Column(db.DateTime, nullable=False,
-                            default=datetime.now)
-    modified_at = db.Column(db.DateTime, nullable=False,
-                            default=datetime.now, onupdate=datetime.now)
-    last_login = db.Column(db.DateTime, nullable=True)
+class User(BaseModel, ModelUpdatedMixin):
+    id: Mapped[uuid.UUID] = mapped_column(db.Uuid, primary_key=True, default=uuid.uuid4)
+    username: Mapped[str] = mapped_column(db.String, unique=True, nullable=False)
+    password_hashed: Mapped[str] = mapped_column(db.String, nullable=False)
+    alternative_email: Mapped[Optional[str]] = mapped_column( db.String, nullable=True)
+    last_login: Mapped[Optional[datetime]] = mapped_column(db.DateTime, nullable=True)
 
-    enabled = db.Column(db.Boolean, nullable=False, default=False)
+    enabled: Mapped[bool] = mapped_column(db.Boolean, nullable=False, default=False)
 
-    app_tokens = db.relationship('AppToken', back_populates='user')
-    totps = db.relationship('Totp', back_populates='user')
-    webauthn_credentials = db.relationship('WebauthnCredential', back_populates='user', cascade='delete,delete-orphan', passive_deletes=True)
+    app_tokens: Mapped[List['AppToken']] = relationship('AppToken', back_populates='user')
+    # totps: Mapped[List['Totp']] = relationship('Totp', back_populates='user', default_factory=list)
+    # webauthn_credentials: Mapped[List['WebauthnCredential']] = relationship('WebauthnCredential', back_populates='user', cascade='delete,delete-orphan', passive_deletes=True, default_factory=list)
 
-    def __init__(self, **kwargs):
+    @property
+    def totps(self) -> List['Totp']:
+        return []
+    @property
+    def webauthn_credentials(self) -> List['WebauthnCredential']:
+        return []
+
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
     @property
@@ -207,56 +208,53 @@ class User(BaseModel):
         return None
 
 
-class AppToken(BaseModel):
-    id = db.Column(db.Integer, primary_key=True)
-    service_name = db.Column(db.String, nullable=False)
-    user_id = db.Column(
-            db.String(length=36),
+class AppToken(BaseModel, ModelUpdatedMixin):
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    service_name: Mapped[str] = mapped_column(nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+            db.Uuid,
             db.ForeignKey(User.id), nullable=False)
-    user = db.relationship(User)
-    token = db.Column(db.String, nullable=False)
-    name = db.Column(db.String, nullable=False)
-    last_used = db.Column(db.DateTime, nullable=True)
+    user: Mapped[User] = relationship(User, back_populates="app_tokens")
+    token: Mapped[str] = mapped_column(nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False)
+    last_used: Mapped[Optional[datetime]] = mapped_column(db.DateTime, nullable=True, default=None)
 
     @staticmethod
-    def new(service: Service):
-        app_token = AppToken()
-        app_token.service_name = service.name
+    def new(user: User, service: Service, name: str):
         alphabet = string.ascii_letters + string.digits
-        app_token.token = ''.join(secrets.choice(alphabet) for i in range(12))
-        return app_token
+        token = ''.join(secrets.choice(alphabet) for i in range(12))
+        return AppToken(service_name=service.name, token=token, user=user, name=name)
 
-class Totp(BaseModel):
-    id = db.Column(db.Integer, primary_key=True)
-    secret = db.Column(db.String, nullable=False)
-    name = db.Column(db.String, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
-    last_used = db.Column(db.DateTime, nullable=True)
+class Totp(BaseModel, ModelUpdatedMixin):
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    secret: Mapped[str] = mapped_column(db.String, nullable=False)
+    name: Mapped[str] = mapped_column(db.String, nullable=False)
 
-    user_id = db.Column(
-            db.String(length=36),
+    user_id: Mapped[uuid.UUID] = mapped_column(
+            db.Uuid,
             db.ForeignKey(User.id), nullable=False)
-    user = db.relationship(User)
+    # user: Mapped[User] = relationship(User, back_populates="totp")
+    last_used: Mapped[Optional[datetime]] = mapped_column(db.DateTime, nullable=True, default=None)
 
     def verify(self, token: str) -> bool:
         totp = pyotp.TOTP(self.secret)
         return totp.verify(token)
 
 
-class WebauthnCredential(BaseModel):  # pylint: disable=too-few-public-methods
+class WebauthnCredential(BaseModel, ModelUpdatedMixin):  # pylint: disable=too-few-public-methods
     """Webauthn credential model"""
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String(length=36), db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
-    user_handle = db.Column(db.String(64), nullable=False)
-    credential_data = db.Column(db.LargeBinary, nullable=False)
-    name = db.Column(db.String(250))
-    registered = db.Column(db.DateTime, default=datetime.utcnow)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(db.Uuid, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    user_handle: Mapped[str] = mapped_column(db.String(64), nullable=False)
+    credential_data: Mapped[bytes] = mapped_column(db.LargeBinary, nullable=False)
+    name: Mapped[str] = mapped_column(db.String(250), nullable=False)
+    registered: Mapped[datetime] = mapped_column(db.DateTime, default=datetime.utcnow, nullable=False)
 
-    user = db.relationship('User', back_populates='webauthn_credentials')
+    # user = db.relationship('User', back_populates='webauthn_credentials')
 
 
-class Group(BaseModel):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(), nullable=False, unique=True)
+class Group(BaseModel, ModelUpdatedMixin):
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(db.String(), nullable=False, unique=True)
 

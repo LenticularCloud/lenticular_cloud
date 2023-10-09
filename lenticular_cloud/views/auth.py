@@ -21,6 +21,7 @@ from ory_hydra_client.api.o_auth_2 import get_o_auth_2_consent_request, accept_o
 from ory_hydra_client import models as ory_hydra_m
 from ory_hydra_client.models import TheRequestPayloadUsedToAcceptALoginOrConsentRequest, TheRequestPayloadUsedToAcceptAConsentRequest, GenericError
 from typing import Optional
+from uuid import uuid4
 
 from ..model import db, User, SecurityUser
 from ..form.auth import ConsentForm, LoginForm, RegistrationForm
@@ -136,7 +137,7 @@ async def login_auth() -> ResponseReturnValue:
     if 'username' not in session:
         return redirect(url_for('auth.login'))
     auth_forms = {}
-    user = User.query.filter_by(username=session['username']).first() # Optional[User]
+    user = User.query.filter_by(username=session['username']).first_or_404()
     for auth_provider in AUTH_PROVIDER_LIST:
         form = auth_provider.get_form()
         if auth_provider.get_name() not in session['auth_providers'] and\
@@ -154,7 +155,7 @@ async def login_auth() -> ResponseReturnValue:
 #           db.session.add(db_user)
 #           db.session.commit()
 
-        subject = user.id
+        subject = str(user.id)
         user.last_login = datetime.now()
         db.session.commit()
         resp = await accept_o_auth_2_login_request.asyncio(_client=hydra_service.hydra_client,
@@ -170,8 +171,9 @@ async def login_auth() -> ResponseReturnValue:
 
 
 @auth_views.route('/webauthn/pkcro', methods=['POST'])
-def webauthn_pkcro_route():
+def webauthn_pkcro_route() -> ResponseReturnValue:
     """login webauthn pkcro route"""
+    return '', 404
 
     user = User.query.filter(User.id == session.get('webauthn_login_user_id')).one() #type: User
     form = ButtonForm()
@@ -213,6 +215,7 @@ def sign_up_submit():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User()
+        user.id = uuid4()
         user.username = form.data['username']
         user.password_hashed = crypt.crypt(form.data['password'])
         user.alternative_email = form.data['alternative_email']

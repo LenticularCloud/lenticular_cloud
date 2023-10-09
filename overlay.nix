@@ -4,6 +4,16 @@ let
 in {
   python3 = prev.python3.override {
     packageOverrides = final: prev: with final; {
+      sqlalchemy = prev.sqlalchemy.overridePythonAttrs (old: rec {
+        version = "2.0.19";
+        src = pkgs.fetchFromGitHub {
+          owner = "sqlalchemy";
+          repo = "sqlalchemy";
+          rev = "refs/tags/rel_${lib.replaceStrings [ "." ] [ "_" ] version}";
+          hash = "sha256-97q04wQVtlV2b6VJHxvnQ9ep76T5umn1KI3hXh6a8kU=";
+        };
+        disabledTestPaths = old.disabledTestPaths ++ [ "test/typing" ];
+      });
       urlobject = buildPythonPackage rec {
           pname = "URLObject";
           version = "2.4.3";
@@ -23,7 +33,7 @@ in {
           inherit pname version;
           sha256 = "a37dec5c3a21f13966178285d5c10691cd72203dcef8a01db802fef6287e716d";
         };
-        doCheck = false;
+        doCheck = true;
         propagatedBuildInputs = [
           requests
           oauthlib
@@ -79,58 +89,64 @@ in {
           typing-extensions
         ];
       });
+      flask = prev.flask.overridePythonAttrs (old: {
+        propagatedBuildInputs = old.propagatedBuildInputs ++ flask.optional-dependencies.async;
+      });
+      lenticular-cloud = buildPythonPackage {
+        pname = "lenticular_cloud";
+        version = "0.3";
+        src = ./.;
+        propagatedBuildInputs = [
+          flask
+          flask-restful
+          flask_sqlalchemy
+          flask_wtf
+          flask-babel
+          flask_login
+          requests
+          requests_oauthlib
+          ldap3
+          #ldap3-orm
+          pyotp
+          cryptography
+          blinker
+          authlib # as oauth client lib
+          fido2 # for webauthn
+          flask_migrate # db migrations
+          flask-dance
+          ory-hydra-client
+          toml
+
+          pkgs.nodejs
+          #node-env
+          gunicorn
+          psycopg2
+        ];
+        testBuildInputs = [
+          pytest
+          pytest-mypy
+          flask_testing
+          tox
+
+          types-dateutil
+          types-toml
+
+          nose
+          mypy
+
+        ];
+        # passthru = {
+        #   inherit python;
+        #   pythonPath = python.pkgs.makePythonPath propagatedBuildInputs;
+        # };
+
+
+        doCheck = false;
+        checkInputs = [
+          pytest
+        ];
+      };
     };
   };
-  lenticular-cloud = with final.python3.pkgs; buildPythonApplication {
-    pname = "lenticular_cloud";
-    version = "0.2";
-    src = ./.;
-    propagatedBuildInputs = [
-      flask
-      flask-restful
-      flask_sqlalchemy
-      flask_wtf
-      flask-babel
-      flask_login
-      requests
-      requests_oauthlib
-      ldap3
-      #ldap3-orm
-      pyotp
-      cryptography
-      blinker
-      authlib # as oauth client lib
-      fido2 # for webauthn
-      flask_migrate # db migrations
-      flask-dance
-      ory-hydra-client
-
-      pkgs.nodejs
-      #node-env
-      gunicorn
-
-    ];
-    testBuildInputs = [
-      pytest
-      pytest-mypy
-      flask_testing
-      tox
-
-      types-dateutil
-
-      nose
-      mypy
-
-    ];
-    # passthru = {
-    #   inherit python;
-    #   pythonPath = python.pkgs.makePythonPath propagatedBuildInputs;
-    # };
-
-
-    doCheck = false;
-    checkInputs = [
-      pytest
-    ];
-  };
+  lenticular-cloud = final.python3.pkgs.lenticular-cloud;
 }
