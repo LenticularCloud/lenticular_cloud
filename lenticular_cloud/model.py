@@ -19,7 +19,7 @@ from flask_sqlalchemy.extension import _FSAModel
 from flask_migrate import Migrate
 from datetime import datetime
 import uuid
-from typing import Optional, List, Dict, Tuple, Any, Type, TYPE_CHECKING
+from typing import Iterator, Optional, List, Dict, Tuple, Any, Type, TYPE_CHECKING
 from cryptography.x509 import Certificate as CertificateObj
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
@@ -201,16 +201,15 @@ class User(BaseModel, ModelUpdatedMixin):
     def get_tokens_by_service(self, service: Service) -> list['AppToken']:
         return [ token for token in self.app_tokens if token.service_name == service.name ]
 
-    def get_token(self, service: Service, name: str) -> Optional['AppToken']:
+    def get_token_by_scope(self, scope: str) -> Iterator['AppToken']:
         for token in self.app_tokens:
-            if token.service_name == service.name and token.name == name:
-                return token # type: ignore
-        return None
+            if scope in token.scopes.split():
+                yield token # type: ignore
 
 
 class AppToken(BaseModel, ModelUpdatedMixin):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    service_name: Mapped[str] = mapped_column(nullable=False)
+    scopes: Mapped[str] = mapped_column(nullable=False) # string of a list seperated by `,` 
     user_id: Mapped[uuid.UUID] = mapped_column(
             db.Uuid,
             db.ForeignKey(User.id), nullable=False)
@@ -220,10 +219,10 @@ class AppToken(BaseModel, ModelUpdatedMixin):
     last_used: Mapped[Optional[datetime]] = mapped_column(db.DateTime, nullable=True, default=None)
 
     @staticmethod
-    def new(user: User, service: Service, name: str):
+    def new(user: User, scopes: str, name: str):
         alphabet = string.ascii_letters + string.digits
         token = ''.join(secrets.choice(alphabet) for i in range(12))
-        return AppToken(service_name=service.name, token=token, user=user, name=name)
+        return AppToken(scopes=scopes, token=token, user=user, name=name)
 
 class Totp(BaseModel, ModelUpdatedMixin):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

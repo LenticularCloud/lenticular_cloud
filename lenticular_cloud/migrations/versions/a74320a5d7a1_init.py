@@ -40,7 +40,7 @@ def upgrade():
     )
     op.create_table('app_token',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('service_name', sa.String(), nullable=False),
+    sa.Column('scopes', sa.String(), nullable=False),
     sa.Column('user_id', sa.Uuid(), nullable=False),
     sa.Column('token', sa.String(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
