@@ -1,7 +1,7 @@
 {
   description = "Lenticular cloud interface";
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-23.05";
+    nixpkgs.url = "nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     flake-compat = { # for shell.nix
       url = "github:edolstra/flake-compat";
@@ -47,7 +47,12 @@
           tuxpkgs.nixosModules.ory-hydra
           "${nixpkgs}/nixos/modules/virtualisation/qemu-vm.nix"
           ({...}:{
-            services.lenticular-cloud.enable = true;
+            security.acme.acceptTerms = true;
+            security.acme.defaults.email = "acme@example.com";
+            services.lenticular-cloud = {
+              enable = true;
+              domain = "example.com";
+            };
             services.ory-hydra = {
               enable = true;
               admin_domain = "admin-hydra.local";

@@ -7,7 +7,7 @@ let
 in
 {
   options = with lib.options; {
-    services.lenticular-cloud ={
+    services.lenticular-cloud = {
       enable = mkEnableOption "lenticluar service enable";
       domain = mkOption {
         type = lib.types.str;
@@ -83,11 +83,11 @@ in
       description = "lenticular account";
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
-      requires = [ "ory-hydra.service" ];
+      requires = [ "ory-hydra.service" "postgresql.service" ];
       enable = cfg.enable;
 
       environment = let
-        python_path = with python.pkgs; makePythonPath [ pkgs.lenticular-cloud gevent ];
+        python_path = with python.pkgs; makePythonPath [ pkgs.lenticular-cloud gevent setuptools ];
       in {
         # CONFIG_FILE = "/etc/lenticular_cloud/production.conf";
         CONFIG_FILE = pkgs.writeText "lenticular-cloud.json" (builtins.toJSON cfg.settings);
