@@ -58,36 +58,36 @@ def introspect() -> ResponseReturnValue:
     return jsonify(token_info)
 
 
-@api_views.route('/login/<service_name>', methods=['POST'])
-def email_login(service_name: str) -> ResponseReturnValue:
-    if service_name not in lenticular_services:
-        return '', 404
-    service = lenticular_services[service_name]
+# @api_views.route('/login/<service_name>', methods=['POST'])
+# def email_login(service_name: str) -> ResponseReturnValue:
+#     if service_name not in lenticular_services:
+#         return '', 404
+#     service = lenticular_services[service_name]
 
-    if not request.is_json:
-        return jsonify({}), 400
-    req_payload = request.get_json() # type: Any
+#     if not request.is_json:
+#         return jsonify({}), 400
+#     req_payload = request.get_json() # type: Any
 
-    if not isinstance(req_payload, dict):
-        return 'bad request', 400
+#     if not isinstance(req_payload, dict):
+#         return 'bad request', 400
 
-    password = req_payload["password"]
-    username = req_payload["username"]
+#     password = req_payload["password"]
+#     username = req_payload["username"]
 
-    if '@' in username:
-        username = username.split('@')[0]
+#     if '@' in username:
+#         username = username.split('@')[0]
 
-    user = User.query.filter_by(username=username.lower()).first() # type: Optional[User]
-    if user is None:
-        logger.warning(f'login with invalid username')
-        return jsonify({}), 403
+#     user = User.query.filter_by(username=username.lower()).first() # type: Optional[User]
+#     if user is None:
+#         logger.warning(f'login with invalid username')
+#         return jsonify({}), 403
 
-    for app_token in user.get_tokens_by_service(service):
-        if secrets.compare_digest(password, app_token.token):
-            app_token.last_used = datetime.now()
-            db.session.commit()
-            return jsonify({'username': user.username}), 200
+#     for app_token in user.get_token_by_name(service):
+#         if secrets.compare_digest(password, app_token.token):
+#             app_token.last_used = datetime.now()
+#             db.session.commit()
+#             return jsonify({'username': user.username}), 200
 
-    logger.warning(f'login with invalid password for {username}')
-    return jsonify({}), 403
+#     logger.warning(f'login with invalid password for {username}')
+#     return jsonify({}), 403
 

@@ -198,8 +198,12 @@ class User(BaseModel, ModelUpdatedMixin):
     def change_password(self, password_new: str) -> None:
         self.password_hashed = crypt.crypt(password_new)
 
-    def get_tokens_by_service(self, service: Service) -> list['AppToken']:
-        return [ token for token in self.app_tokens if token.service_name == service.name ]
+    def get_token_by_name(self, name: str) -> Optional['AppToken']:
+        for token in self.app_tokens:
+            if token.name == name:
+                return token
+        return None
+        
 
     def get_token_by_scope(self, scope: str) -> Iterator['AppToken']:
         for token in self.app_tokens:

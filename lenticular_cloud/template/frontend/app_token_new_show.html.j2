@@ -1,12 +1,12 @@
 {% extends 'frontend/base.html.j2' %}
 
-{% block title %}{{ gettext('new app token for {service_name}').format(service_name=service.name) }}{% endblock %}
+{% block title %}{{ gettext('new app token') }}{% endblock %}
 
 {% block content %}
 
 <div>
 	<p>
-		Your new App Token for {{ service.name }}:
+		Your new App Token for scopes: {app_token.scopes}:
 	</p>
 
 	<p>

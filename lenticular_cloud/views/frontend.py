@@ -153,17 +153,14 @@ def app_token() -> ResponseReturnValue:
                            delete_form=delete_form,
                            services=lenticular_services)
 
-@frontend_views.route('/app_token/<service_name>/new', methods=['GET','POST'])
-def app_token_new(service_name: str) -> ResponseReturnValue:
-    if service_name not in lenticular_services:
-        return '', 404
-    service = lenticular_services[service_name]
+@frontend_views.route('/app_token/new', methods=['GET','POST'])
+def app_token_new() -> ResponseReturnValue:
     form = AppTokenForm()
 
     if form.validate_on_submit():
         user_any = get_current_user() # type: Any
         user = user_any # type: User
-        app_token = AppToken.new(user, service, "")
+        app_token = AppToken.new(user, name="",scopes="")
         form.populate_obj(app_token)
         # check for duplicate names
         for user_app_token in user.app_tokens:
@@ -171,23 +168,18 @@ def app_token_new(service_name: str) -> ResponseReturnValue:
                 return 'name already exist', 400
         user.app_tokens.append(app_token)
         db.session.commit()
-        return render_template('frontend/app_token_new_show.html.j2', service=service, app_token=app_token)
+        return render_template('frontend/app_token_new_show.html.j2', app_token=app_token)
 
 
     return render_template('frontend/app_token_new.html.j2',
-                           form=form,
-                           service=service)
+                           form=form)
 
-@frontend_views.route('/app_token/<service_name>/<app_token_name>', methods=["POST"])
-def app_token_delete(service_name: str, app_token_name: str) -> ResponseReturnValue:
+@frontend_views.route('/app_token/<app_token_name>', methods=["POST"])
+def app_token_delete(app_token_name: str) -> ResponseReturnValue:
     form = AppTokenDeleteForm()
 
-    if service_name not in lenticular_services:
-        return '', 404
-
-    service = lenticular_services[service_name]
     if form.validate_on_submit():
-        app_token = get_current_user().get_token(service, app_token_name)
+        app_token = get_current_user().get_token_by_name(app_token_name)
         if app_token is None:
             return 'not found', 404
         db.session.delete(app_token)

@@ -35,6 +35,7 @@ class TOTPDeleteForm(FlaskForm):
 
 class AppTokenForm(FlaskForm):
     name = StringField(gettext('name'), validators=[DataRequired(),Length(min=1, max=255) ])
+    scopes = StringField(gettext('scopes'), validators=[DataRequired(),Length(min=1, max=255) ])
     submit = SubmitField(gettext('Activate'))
 
 class AppTokenDeleteForm(FlaskForm):
